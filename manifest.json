@@ -1,0 +1,6 @@
+{
+    "version": "0.9.0-beta",
+    "thumbnail": "assets/homeassistant.png",
+    "id": "de_gensyn_HomeAssistantPlugin",
+    "name": "Home Assistant"
+}

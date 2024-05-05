@@ -1,0 +1,13 @@
+{
+    "actions.base.global_settings.label": "Home Assistant Einstellungen",
+    "actions.base.host.label": "Host:",
+    "actions.base.port.label": "Port:",
+    "actions.base.ssl.label": "SSL:",
+    "actions.base.token.label": "Token:",
+    "actions.home_assistant.button_settings.label": "Button Einstellungen",
+    "actions.home_assistant.domain.label": "Domäne:",
+    "actions.home_assistant.entity.label": "Entität:",
+    "actions.home_assistant.service.label": "Service:",
+    "actions.home_assistant.execute_on_key_down.label": "Ausführen bei Drücken:",
+    "actions.home_assistant.execute_on_key_up.label": "Ausführen bei Loslassen:"
+}
