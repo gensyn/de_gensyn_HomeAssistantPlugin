@@ -1,1 +1,2 @@
+CairoSVG==2.7.1
 websocket-client==1.8.0
