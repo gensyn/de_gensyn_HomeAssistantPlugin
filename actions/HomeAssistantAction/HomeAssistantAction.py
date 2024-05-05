@@ -1,14 +1,12 @@
 # Import python modules
+import io
 import logging
-import os
 from typing import Any
 
 import cairosvg
 # Import gtk modules - used for the config rows
 import gi
-import io
 from PIL import Image
-
 from data.plugins.de_gensyn_HomeAssistantPlugin.HomeAssistant import CONNECTED
 from data.plugins.de_gensyn_HomeAssistantPlugin.HomeAssistantActionBase import HomeAssistantActionBase
 from src.backend.DeckManagement.DeckController import DeckController
@@ -17,7 +15,7 @@ from src.backend.PluginManager.PluginBase import PluginBase
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository.Gtk import Align, Label, SignalListItemFactory, StringList
+from gi.repository.Gtk import StringList
 from gi.repository.Adw import ComboRow, PreferencesGroup, SwitchRow
 
 
@@ -43,7 +41,8 @@ class HomeAssistantAction(HomeAssistantActionBase):
         entity = self.get_setting("entity")
 
         if entity:
-            self.plugin_base.backend.add_tracked_entity(entity, f"{self.page.json_path}{self.page_coords}", self.entity_updated)
+            self.plugin_base.backend.add_tracked_entity(entity, f"{self.page.json_path}{self.page_coords}",
+                                                        self.entity_updated)
 
         self.entity_updated(entity)
 
@@ -163,7 +162,8 @@ class HomeAssistantAction(HomeAssistantActionBase):
             self.plugin_base.backend.remove_tracked_entity(old_entity, f"{self.page.json_path}{self.page_coords}")
 
         if entity:
-            self.plugin_base.backend.add_tracked_entity(entity, f"{self.page.json_path}{self.page_coords}", self.entity_updated)
+            self.plugin_base.backend.add_tracked_entity(entity, f"{self.page.json_path}{self.page_coords}",
+                                                        self.entity_updated)
             self.entity_updated(entity)
 
     def entity_updated(self, entity: str, icon_svg: str = ""):

@@ -1,9 +1,10 @@
 {
     "generic": {
-        "copyright": "",
+        "copyright": "gensyn",
         "original-url": "",
-        "license": "",
-        "license-url": "",
-        "description": ""
+        "license": "GPL-3.0",
+        "license-url": "https://www.gnu.org/licenses/gpl-3.0.txt",
+        "description": "",
+        "license-description": null
     }
 }

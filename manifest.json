@@ -2,5 +2,18 @@
     "version": "0.9.0-beta",
     "thumbnail": "assets/homeassistant.png",
     "id": "de_gensyn_HomeAssistantPlugin",
-    "name": "Home Assistant"
+    "name": "Home Assistant",
+    "descriptions": {
+        "en_US": "Control your Home Assistant instance from your StreamDeck.",
+        "de_DE": "Steuere dein Home Assistant von deinem StreamDeck aus"
+    },
+    "short-descriptions": {
+        "en_US": "Control Home Assistant",
+        "de_DE": "Steuere Home Assistant"
+    },
+    "tags": ["Utilities"],
+    "minimum-app-version": "1.0.0",
+    "app-version": "1.4.11-beta",
+    "description": "Control your Home Assistant instance from your StreamDeck.",
+    "short-description": "Control Home Assistant"
 }

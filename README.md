@@ -1,6 +1,8 @@
 # HomeAssistantPlugin for [StreamController](https://github.com/StreamController/StreamController)
 ## Control your Home Assistant instance from your StreamDeck
 
+This is no official plugin - I have no affiliation with Home Assistant or StreamController.
+
 ### Features
 * Connect to your Home Assistant instance
 * Select a domain, an entity and a service to call the service for the entity either on key down or key up (or both, if you wish to)
@@ -14,3 +16,4 @@
 * Reconnect on lost connection to Home Assistant is only triggered when you try to interact with Home Assistant (i.e. send service calls)
   * Automatic reconnects are planned
 * Entity IDs are truncated in the drop-down menu
+* Icons don't update when Home Assistant settings are changed (they should update on connect)
