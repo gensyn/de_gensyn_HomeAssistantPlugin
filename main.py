@@ -1,8 +1,7 @@
-from data.plugins.de_gensyn_HomeAssistantPlugin.HomeAssistant import HomeAssistantBackend
-from data.plugins.de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.HomeAssistantAction import \
-    HomeAssistantAction
 from src.backend.PluginManager.ActionHolder import ActionHolder
 from src.backend.PluginManager.PluginBase import PluginBase
+from .HomeAssistant import HomeAssistantBackend
+from .actions.HomeAssistantAction.HomeAssistantAction import HomeAssistantAction
 
 
 class HomeAssistant(PluginBase):
