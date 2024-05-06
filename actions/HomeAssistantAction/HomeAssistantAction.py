@@ -7,11 +7,12 @@ import cairosvg
 # Import gtk modules - used for the config rows
 import gi
 from PIL import Image
-from data.plugins.de_gensyn_HomeAssistantPlugin.HomeAssistant import CONNECTED
-from data.plugins.de_gensyn_HomeAssistantPlugin.HomeAssistantActionBase import HomeAssistantActionBase
+
 from src.backend.DeckManagement.DeckController import DeckController
 from src.backend.PageManagement.Page import Page
 from src.backend.PluginManager.PluginBase import PluginBase
+from ...HomeAssistant import CONNECTED
+from ...HomeAssistantActionBase import HomeAssistantActionBase
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
