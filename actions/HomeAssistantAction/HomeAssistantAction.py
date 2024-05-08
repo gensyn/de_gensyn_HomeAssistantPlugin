@@ -16,7 +16,7 @@ from ...HomeAssistantActionBase import HomeAssistantActionBase
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository.Gtk import StringList
+from gi.repository.Gtk import Align, Label, SignalListItemFactory, StringList
 from gi.repository.Adw import ComboRow, PreferencesGroup, SwitchRow
 
 
@@ -70,18 +70,20 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
         rows: list = super().get_config_rows()
 
+        combo_factory = SignalListItemFactory()
+        combo_factory.connect('setup', self._factory_setup)
+        combo_factory.connect('bind', self._factory_bind)
+
         self.domain_combo = ComboRow(title=lm.get("actions.home_assistant.domain.label"))
+        self.domain_combo.set_factory(combo_factory)
 
         self.entity_combo = ComboRow(title=lm.get("actions.home_assistant.entity.label"))
         self.entity_combo.set_sensitive(False)
-
-        # entity_factory = SignalListItemFactory()
-        # entity_factory.connect('setup', self._entity_factory_setup)
-        # entity_factory.connect('bind', self._entity_factory_bind)
-        # self.entity_combo.set_factory(entity_factory)
+        self.entity_combo.set_factory(combo_factory)
 
         self.service_combo = ComboRow(title=lm.get("actions.home_assistant.service.label"))
         self.service_combo.set_sensitive(False)
+        self.service_combo.set_factory(combo_factory)
 
         self.execute_on_key_down = SwitchRow(title=lm.get("actions.home_assistant.execute_on_key_down.label"))
         self.execute_on_key_down.set_active(self.get_setting("execute_on_key_down", True))
@@ -118,18 +120,19 @@ class HomeAssistantAction(HomeAssistantActionBase):
         settings[args[1]] = switch.get_active()
         self.set_settings(settings)
 
-    # def _entity_factory_setup(self, factory, item):
-    #     label = Label(halign=Align.END)
-    #     item.set_child(label)
-    #
-    # def _entity_factory_bind(self, factory, item):
-    #     label = item.get_child()
-    #
-    #     entity_id = item.get_item().get_string()
-    #
-    #     friendly_name = self.plugin_base.backend.get_entity(entity_id).get("friendly_name", "")
-    #
-    #     label.set_label(f"{item.get_item().get_string()}" + f" ({friendly_name})" if friendly_name else "")
+    def _factory_setup(self, _, item):
+        label = Label(halign=Align.END)
+        item.set_child(label)
+
+    def _factory_bind(self, _, item):
+        label = item.get_child()
+
+        entity_id = item.get_item().get_string()
+
+        friendly_name = self.plugin_base.backend.get_entity(entity_id).get("friendly_name", "")
+
+        label.set_text(entity_id)
+        label.set_tooltip_text(friendly_name if friendly_name else entity_id)
 
     def on_change_domain(self, combo, *args):
         settings = self.get_settings()

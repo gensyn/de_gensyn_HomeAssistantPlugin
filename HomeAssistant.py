@@ -311,7 +311,7 @@ class HomeAssistantBackend:
         return self._domains
 
     def get_entity(self, entity_id: str):
-        if not entity_id:
+        if not entity_id or not "." in entity_id:
             return {}
 
         domain = entity_id.split(".")[0]
