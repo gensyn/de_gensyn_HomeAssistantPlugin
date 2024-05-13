@@ -467,7 +467,7 @@ class HomeAssistantBackend:
         entity_settings["subscription_id"] = -1
 
     def is_connected(self) -> bool:
-        return self._connection_state == CONNECTED
+        return self._websocket and self._websocket.connected
         # if not self._websocket or not self._websocket.connected or not self._changes_websocket or not self._changes_websocket.connected:
         #     return False
         #
@@ -501,9 +501,6 @@ class HomeAssistantBackend:
         WEBSOCKET_SEMAPHORE.release()
 
         return response
-
-    def get_connection_state(self) -> str:
-        return self._connection_state
 
     def _keep_alive(self):
         while True:
