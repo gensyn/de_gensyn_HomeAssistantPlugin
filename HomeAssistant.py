@@ -240,7 +240,7 @@ class HomeAssistantBackend:
             # use icons for service instead of entity
             if "media_play_pause" == service:
                 if not state:
-                    state = self.get_state(entity_id).get("state")
+                    state = self.get_state(entity_id)
 
                 if "playing" == state:
                     icon_name = "pause"
@@ -273,7 +273,7 @@ class HomeAssistantBackend:
             icon = self._get_icon_svg(icon_text)
 
             if not state:
-                state = self.get_state(entity_id).get("state")
+                state = self.get_state(entity_id)
 
             color = COLOR_ON if "on" == state else COLOR_OFF
 
@@ -283,23 +283,15 @@ class HomeAssistantBackend:
             .replace("<color>", color)
         )
 
-    def get_state(self, entity_id: str) -> dict:
-        if not self.connect():
-            return {}
+    def get_state(self, entity_id: str) -> str:
+        if not self.connect() or "." not in entity_id:
+            return "off"
 
-        message = self.create_message("get_states")
+        self._load_domains_and_entities()
 
-        response = self._send_and_wait_for_response(message)
+        domain = entity_id.split(".")[0]
 
-        success = _get_field_from_message(response, FIELD_SUCCESS)
-
-        if not success:
-            log.error(f"Error retrieving state for {entity_id}.")
-            return {"state": "off"}
-
-        all_states: List[Dict[str, Any]] = _get_field_from_message(response, FIELD_RESULT)
-
-        return next((item for item in all_states if item[ENTITY_ID] == entity_id), {"state": "off"})
+        return self._entities[domain][entity_id]["state"]
 
     def get_domains(self) -> list:
         if not self.connect():
@@ -311,7 +303,7 @@ class HomeAssistantBackend:
         return self._domains
 
     def get_entity(self, entity_id: str):
-        if not entity_id:
+        if not entity_id or not "." in entity_id:
             return {}
 
         domain = entity_id.split(".")[0]
