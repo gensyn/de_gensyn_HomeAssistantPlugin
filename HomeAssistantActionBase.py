@@ -8,7 +8,7 @@ from src.backend.PluginManager.PluginBase import PluginBase
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository.Adw import EntryRow, PasswordEntryRow, PreferencesGroup, SpinRow, SwitchRow
+from gi.repository.Adw import EntryRow, PasswordEntryRow, PreferencesGroup, SwitchRow
 
 
 class HomeAssistantActionBase(ActionBase):
@@ -18,9 +18,10 @@ class HomeAssistantActionBase(ActionBase):
     token_entry: PasswordEntryRow
 
     def __init__(self, action_id: str, action_name: str,
-                 deck_controller: "DeckController", page: Page, coords: str, plugin_base: PluginBase):
+                 deck_controller: "DeckController", page: Page, coords: str, plugin_base: PluginBase, state: int):
         super().__init__(action_id=action_id, action_name=action_name,
-                         deck_controller=deck_controller, page=page, coords=coords, plugin_base=plugin_base)
+                         deck_controller=deck_controller, page=page, coords=coords, plugin_base=plugin_base,
+                         state=state)
 
     def get_config_rows(self) -> list:
         lm = self.plugin_base.locale_manager

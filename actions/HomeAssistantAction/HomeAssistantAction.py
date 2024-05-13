@@ -38,9 +38,10 @@ class HomeAssistantAction(HomeAssistantActionBase):
     service_on_key_up: SwitchRow
 
     def __init__(self, action_id: str, action_name: str,
-                 deck_controller: DeckController, page: Page, coords: str, plugin_base: PluginBase):
+                 deck_controller: DeckController, page: Page, coords: str, plugin_base: PluginBase, state: int):
         super().__init__(action_id=action_id, action_name=action_name,
-                         deck_controller=deck_controller, page=page, coords=coords, plugin_base=plugin_base)
+                         deck_controller=deck_controller, page=page, coords=coords, plugin_base=plugin_base,
+                         state=state)
 
     def on_ready(self) -> None:
         entity = self.get_setting("entity")
@@ -52,11 +53,11 @@ class HomeAssistantAction(HomeAssistantActionBase):
         self.entity_updated(entity)
 
     def on_key_down(self) -> None:
-        if self.get_setting("execute_on_key_down", True):
+        if self.get_setting("service_on_key_down", True):
             self.call_service()
 
     def on_key_up(self) -> None:
-        if self.get_setting("execute_on_key_up", False):
+        if self.get_setting("service_on_key_up", False):
             self.call_service()
 
     def call_service(self) -> None:
@@ -86,6 +87,8 @@ class HomeAssistantAction(HomeAssistantActionBase):
         # connect as the last action - else the on_change functions trigger on populating the models
         self._connect_rows()
 
+        self.set_enabled_disabled()
+
         if self.plugin_base.backend.get_connection_state() == CONNECTED:
             # already connected to home assistant -> put global settings at the bottom
             return [entity_group, service_group, *rows]
@@ -97,7 +100,6 @@ class HomeAssistantAction(HomeAssistantActionBase):
         self.domain_combo.set_factory(self.combo_factory)
 
         self.entity_combo = ComboRow(title=self.lm.get("actions.home_assistant.entity.label"))
-        self.entity_combo.set_sensitive(False)
         self.entity_combo.set_factory(self.combo_factory)
 
         group = PreferencesGroup()
@@ -110,15 +112,12 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
     def _get_service_group(self) -> PreferencesGroup:
         self.service_combo = ComboRow(title=self.lm.get("actions.home_assistant.service.label"))
-        self.service_combo.set_sensitive(False)
         self.service_combo.set_factory(self.combo_factory)
 
         self.service_on_key_down = SwitchRow(title=self.lm.get("actions.home_assistant.service_on_key_down.label"))
-        self.service_on_key_down.set_sensitive(False)
         self.service_on_key_down.set_active(self.get_setting("service_on_key_down", True))
 
         self.service_on_key_up = SwitchRow(title=self.lm.get("actions.home_assistant.service_on_key_up.label"))
-        self.service_on_key_up.set_sensitive(False)
         self.service_on_key_up.set_active(self.get_setting("service_on_key_up", False))
 
         group = PreferencesGroup()
@@ -141,6 +140,8 @@ class HomeAssistantAction(HomeAssistantActionBase):
         settings = self.get_settings()
         settings[args[1]] = switch.get_active()
         self.set_settings(settings)
+
+        self.set_enabled_disabled()
 
     def _factory_setup(self, _, item):
         label = Label(halign=Align.END)
@@ -169,13 +170,15 @@ class HomeAssistantAction(HomeAssistantActionBase):
             settings["service"] = ""
             self.set_settings(settings)
 
+            self.entity_combo.set_model(None)
+            self.service_combo.set_model(None)
+            self.set_media(image=None)
+
         if domain:
             self.load_entities()
             self.load_services()
 
-        enabled = bool(domain)
-        self.entity_combo.set_sensitive(enabled)
-        self.service_combo.set_sensitive(enabled)
+        self.set_enabled_disabled()
 
     def on_change_entity(self, combo, _):
         settings = self.get_settings()
@@ -196,6 +199,14 @@ class HomeAssistantAction(HomeAssistantActionBase):
                                                         self.entity_updated)
 
         self.entity_updated(entity)
+
+    def on_change_service(self, combo, _):
+        service = combo.get_selected_item().get_string()
+        settings = self.get_settings()
+        settings["service"] = service
+        self.set_settings(settings)
+
+        self.set_enabled_disabled()
 
     def entity_updated(self, entity: str, icon_svg: str = "") -> None:
         if not entity:
@@ -223,17 +234,6 @@ class HomeAssistantAction(HomeAssistantActionBase):
         image = Image.open(io.BytesIO(png_data))
 
         self.set_media(image=image)
-
-    def on_change_service(self, combo, _):
-        service = combo.get_selected_item().get_string()
-        settings = self.get_settings()
-        settings["service"] = service
-        self.set_settings(settings)
-
-        enabled = bool(service)
-
-        self.service_on_key_down.set_sensitive(enabled)
-        self.service_on_key_up.set_sensitive(enabled)
 
     def load_domains(self):
         old_domain = self.get_settings().get("domain", "")
@@ -282,6 +282,17 @@ class HomeAssistantAction(HomeAssistantActionBase):
         value = settings.setdefault(setting, default)
         self.set_settings(settings)
         return value
+
+    def set_enabled_disabled(self) -> None:
+        domain = self.domain_combo.get_selected_item().get_string() if self.domain_combo.get_selected_item() else False
+        domain_enabled = bool(domain)
+        self.entity_combo.set_sensitive(domain_enabled)
+        self.service_combo.set_sensitive(domain_enabled)
+
+        service = self.service_combo.get_selected_item().get_string() if self.service_combo.get_selected_item() else False
+        service_enabled = bool(service)
+        self.service_on_key_down.set_sensitive(service_enabled)
+        self.service_on_key_up.set_sensitive(service_enabled)
 
 
 def set_value_in_combo(combo: ComboRow, model: StringList, value: str):
