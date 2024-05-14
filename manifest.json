@@ -1,5 +1,5 @@
 {
-    "version": "0.9.1-beta",
+    "version": "0.9.2-beta",
     "thumbnail": "assets/homeassistant.png",
     "id": "de_gensyn_HomeAssistantPlugin",
     "name": "Home Assistant",
@@ -13,7 +13,7 @@
     },
     "tags": ["Utilities"],
     "minimum-app-version": "1.0.0",
-    "app-version": "1.4.11-beta",
+    "app-version": "1.5.1-beta",
     "description": "Control your Home Assistant instance from your StreamDeck.",
     "short-description": "Control Home Assistant"
 }
