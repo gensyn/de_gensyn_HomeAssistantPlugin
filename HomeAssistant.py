@@ -11,22 +11,12 @@ HASS_WEBSOCKET_API = "/api/websocket?latest"
 
 FIELD_EVENT = "event"
 
-MDI_SVG_JSON = "mdi-svg.json"
 ENTITY_ID = "entity_id"
 ID = "id"
 
 FIELD_TYPE = "type"
 FIELD_SUCCESS = "success"
 FIELD_RESULT = "result"
-
-ICON_SCALE = 0.66
-
-COLOR_ON = "#eeff1b"
-COLOR_OFF = "#bebebe"
-
-MDI_TRANSFORM = 'fill="<color>" transform="translate(4.5, 5) scale(<scale>)"'
-
-MDI_DEFAULT_PATH = "M7,2V13H10V22L17,10H13L17,2H7Z"
 
 BUTTON_ENCODE_SYMBOL = "-"
 
@@ -58,9 +48,6 @@ class HomeAssistantBackend:
 
     def __init__(self):
         super().__init__()
-
-        filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", MDI_SVG_JSON)
-        self._mdi_icons = json.loads(open(filename, "r").read())
 
     def set_host(self, host: str):
         if "//" in host:
@@ -217,78 +204,16 @@ class HomeAssistantBackend:
 
                 state = new_state.get("state")
 
-                icon = self.get_icon(entity_id, state=state)
-
                 update_state = {
                     "state": state,
-                    "icon": new_state.get("icon"),
                     "attributes": new_state.get("attributes", {}),
                 }
 
                 for action_entity_updated in actions:
-                    action_entity_updated(entity_id, update_state, icon)
+                    action_entity_updated(entity_id, update_state)
 
         self._websocket.close()
         self._connection_state = NOT_CONNECTED
-
-    def get_icon(self, entity_id: str, service: str = "", state: str = "") -> str:
-        if not self.connect():
-            return ""
-
-        if not entity_id:
-            return ""
-
-        if not self._domains:
-            self._load_domains_and_entities()
-
-        domain = entity_id.split(".")[0]
-
-        if "media_player" == domain:
-            # use icons for service instead of entity
-            if "media_play_pause" == service:
-                if not state:
-                    state = self.get_state(entity_id)
-
-                if "playing" == state:
-                    icon_name = "pause"
-                else:
-                    icon_name = "play"
-            elif "media_stop" == service:
-                icon_name = "stop"
-            elif "volume_up" == service:
-                icon_name = "volume-plus"
-            elif "volume_down" == service:
-                icon_name = "entity_id, volume-minus"
-            elif "media_next_track" == service:
-                icon_name = "skip-next"
-            elif "media_previous_track" == service:
-                icon_name = "skip-previous"
-            else:
-                log.warning(f"Icon not found for domain {domain} and service {service}")
-                icon_name = "alert-circle"
-
-            icon = self._get_icon_svg(icon_name)
-
-            color = COLOR_ON
-        else:
-            # use icon of entity
-            domain = entity_id.split(".")[0]
-
-            entity = self._entities[domain].get(entity_id)
-
-            icon_text = entity.get("icon", "None")
-            icon = self._get_icon_svg(icon_text)
-
-            if not state:
-                state = self.get_state(entity_id)
-
-            color = COLOR_ON if "on" == state else COLOR_OFF
-
-        return (
-            icon.replace("<path", f"<path {MDI_TRANSFORM}")
-            .replace("<scale>", str(ICON_SCALE))
-            .replace("<color>", color)
-        )
 
     def get_state(self, entity_id: str) -> str:
         if not self.connect() or "." not in entity_id:
@@ -352,7 +277,6 @@ class HomeAssistantBackend:
 
             entities[domain][entity_id] = {
                 "state": entity.get("state", "off"),
-                "icon": entity.get("attributes", {}).get("icon", ""),
                 "attributes": entity.get("attributes", {}),
                 "keys": {},
                 "subscription_id": -1,
@@ -476,28 +400,6 @@ class HomeAssistantBackend:
 
     def is_connected(self) -> bool:
         return self._websocket and self._websocket.connected
-        # if not self._websocket or not self._websocket.connected or not self._changes_websocket or not self._changes_websocket.connected:
-        #     return False
-        #
-        # try:
-        #     message = self.create_message("ping")
-        #     response = self._send_and_wait_for_response(message)
-        #
-        #     return _get_field_from_message(response, FIELD_TYPE) == "pong"
-        # except TimeoutError:
-        #     # The connection is closed or the ping wasn't answered in time
-        #     return False
-
-    def _get_icon_svg(self, name: str) -> str:
-        if "mdi:" in name:
-            name = name.replace("mdi:", "")
-
-        path = self._mdi_icons.get(name, "")
-
-        if not path:
-            path = MDI_DEFAULT_PATH
-
-        return f'<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 24 24"><title>{name}</title><path d="{path}" /></svg>'
 
     def _send_and_wait_for_response(self, message: Dict[str, str | int]) -> str:
         WEBSOCKET_SEMAPHORE.acquire()

@@ -18,6 +18,8 @@
     "actions.home_assistant.service.call_on_key_up.label": "Call on key up:",
 
     "actions.home_assistant.icon.show_icon.label": "Show entity icon:",
+    "actions.home_assistant.icon.opacity.label": "Opacity:",
+    "actions.home_assistant.icon.scale.label": "Scale:",
 
     "actions.home_assistant.text.show_text.label": "Show entity state:",
     "actions.home_assistant.text.position.label": "Position:",

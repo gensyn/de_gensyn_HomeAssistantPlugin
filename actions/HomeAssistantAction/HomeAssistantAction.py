@@ -1,7 +1,9 @@
 # Import python modules
 import io
+import json
 import logging
-from typing import Any
+import os
+from typing import Any, Dict
 
 import cairosvg
 # Import gtk modules - used for the config rows
@@ -17,7 +19,12 @@ from plugins.de_gensyn_HomeAssistantPlugin.const import CONNECT_BIND, SETTING_EN
     CONNECT_NOTIFY_ACTIVE, SETTING_ENTITY_DOMAIN, EMPTY_STRING, ATTRIBUTE_FRIENDLY_NAME, LABEL_TEXT_SHOW_TEXT, \
     LABEL_TEXT_SIZE, LABEL_TEXT_SHOW_UNIT, SETTING_TEXT_SHOW_UNIT, LABEL_TEXT_UNIT_LINE_BREAK, \
     SETTING_TEXT_UNIT_LINE_BREAK, LABEL_TEXT_ATTRIBUTE, CONNECT_CHANGED, ATTRIBUTES, SETTING_TEXT_ATTRIBUTE, \
-    LABEL_TEXT_ADAPTIVE_SIZE, SETTING_TEXT_ADAPTIVE_SIZE, ATTRIBUTE_UNIT_OF_MEASUREMENT, STATE
+    LABEL_TEXT_ADAPTIVE_SIZE, SETTING_TEXT_ADAPTIVE_SIZE, ATTRIBUTE_UNIT_OF_MEASUREMENT, STATE, LABEL_ICON_OPACITY, \
+    SETTING_ICON_OPACITY, ATTRIBUTE_ICON, ICON_COLOR_ON, ICON_COLOR_OFF, MDI_SVG_JSON, LABEL_ICON_SCALE, \
+    SETTING_ICON_SCALE, DEFAULT_ICON_SCALE, DEFAULT_ICON_SHOW_ICON, DEFAULT_ICON_OPACITY, \
+    DEFAULT_SERVICE_SERVICE_ON_KEY_DOWN, DEFAULT_SERVICE_SERVICE_ON_KEY_UP, DEFAULT_TEXT_SHOW_TEXT, \
+    DEFAULT_TEXT_POSITION, DEFAULT_TEXT_ADAPTIVE_SIZE, DEFAULT_TEXT_SIZE, DEFAULT_TEXT_SHOW_UNIT, \
+    DEFAULT_TEXT_UNIT_LINE_BREAK
 
 from locales.LegacyLocaleManager import LegacyLocaleManager
 from src.backend.DeckManagement.DeckController import DeckController
@@ -31,6 +38,8 @@ from gi.repository.Adw import ComboRow, PreferencesGroup, SpinRow, SwitchRow
 
 
 class HomeAssistantAction(HomeAssistantActionBase):
+    mdi_icons: Dict[str, str]
+
     lm: LegacyLocaleManager
     combo_factory: SignalListItemFactory
 
@@ -47,6 +56,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
     service_call_on_key_up: SwitchRow
 
     icon_show_icon: SwitchRow
+    icon_opacity: SpinRow
 
     text_show_text: SwitchRow
     text_position_combo: ComboRow
@@ -64,6 +74,9 @@ class HomeAssistantAction(HomeAssistantActionBase):
                          deck_controller=deck_controller, page=page, coords=coords, plugin_base=plugin_base,
                          state=state)
 
+        filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../..", MDI_SVG_JSON)
+        self.mdi_icons = json.loads(open(filename, "r").read())
+
     def on_ready(self) -> None:
         entity = self.get_setting(SETTING_ENTITY_ENTITY)
 
@@ -74,11 +87,11 @@ class HomeAssistantAction(HomeAssistantActionBase):
         self.entity_updated(entity)
 
     def on_key_down(self) -> None:
-        if self.get_setting(SETTING_SERVICE_SERVICE_ON_KEY_DOWN, True):
+        if self.get_setting(SETTING_SERVICE_SERVICE_ON_KEY_DOWN, DEFAULT_SERVICE_SERVICE_ON_KEY_DOWN):
             self.call_service()
 
     def on_key_up(self) -> None:
-        if self.get_setting(SETTING_SERVICE_SERVICE_ON_KEY_UP, False):
+        if self.get_setting(SETTING_SERVICE_SERVICE_ON_KEY_UP, DEFAULT_SERVICE_SERVICE_ON_KEY_UP):
             self.call_service()
 
     def call_service(self) -> None:
@@ -138,10 +151,12 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
         self.service_call_on_key_down = SwitchRow(
             title=self.lm.get(LABEL_SERVICE_CALL_ON_KEY_DOWN))
-        self.service_call_on_key_down.set_active(self.get_setting(SETTING_SERVICE_SERVICE_ON_KEY_DOWN, True))
+        self.service_call_on_key_down.set_active(
+            self.get_setting(SETTING_SERVICE_SERVICE_ON_KEY_DOWN, DEFAULT_SERVICE_SERVICE_ON_KEY_DOWN))
 
         self.service_call_on_key_up = SwitchRow(title=self.lm.get(LABEL_SERVICE_CALL_ON_KEY_UP))
-        self.service_call_on_key_up.set_active(self.get_setting(SETTING_SERVICE_SERVICE_ON_KEY_UP, False))
+        self.service_call_on_key_up.set_active(
+            self.get_setting(SETTING_SERVICE_SERVICE_ON_KEY_UP, DEFAULT_SERVICE_SERVICE_ON_KEY_UP))
 
         group = PreferencesGroup()
         group.set_title(self.lm.get(LABEL_SETTINGS_SERVICE))
@@ -154,18 +169,28 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
     def _get_icon_group(self) -> PreferencesGroup:
         self.icon_show_icon = SwitchRow(title=self.lm.get(LABEL_ICON_SHOW_ICON))
-        self.icon_show_icon.set_active(self.get_setting(SETTING_ICON_SHOW_ICON, False))
+        self.icon_show_icon.set_active(self.get_setting(SETTING_ICON_SHOW_ICON, DEFAULT_ICON_SHOW_ICON))
+
+        self.icon_scale = SpinRow.new_with_range(1, 100, 1)
+        self.icon_scale.set_title(self.lm.get(LABEL_ICON_SCALE))
+        self.icon_scale.set_value(self.get_setting(SETTING_ICON_SCALE, DEFAULT_ICON_SCALE))
+
+        self.icon_opacity = SpinRow.new_with_range(1, 100, 1)
+        self.icon_opacity.set_title(self.lm.get(LABEL_ICON_OPACITY))
+        self.icon_opacity.set_value(self.get_setting(SETTING_ICON_OPACITY, DEFAULT_ICON_OPACITY))
 
         group = PreferencesGroup()
         group.set_title(self.lm.get(LABEL_SETTINGS_ICON))
         group.set_margin_top(20)
         group.add(self.icon_show_icon)
+        group.add(self.icon_scale)
+        group.add(self.icon_opacity)
 
         return group
 
     def _get_text_group(self) -> PreferencesGroup:
         self.text_show_text = SwitchRow(title=self.lm.get(LABEL_TEXT_SHOW_TEXT))
-        self.text_show_text.set_active(self.get_setting(SETTING_TEXT_SHOW_TEXT, False))
+        self.text_show_text.set_active(self.get_setting(SETTING_TEXT_SHOW_TEXT, DEFAULT_TEXT_SHOW_TEXT))
 
         self.text_position_model = StringList.new([TEXT_POSITION_TOP, TEXT_POSITION_CENTER, TEXT_POSITION_BOTTOM])
 
@@ -174,20 +199,21 @@ class HomeAssistantAction(HomeAssistantActionBase):
         self.text_position_combo.set_model(self.text_position_model)
 
         set_value_in_combo(self.text_position_combo, self.text_position_model,
-                           self.get_setting(SETTING_TEXT_POSITION, TEXT_POSITION_TOP))
+                           self.get_setting(SETTING_TEXT_POSITION, DEFAULT_TEXT_POSITION))
 
         self.text_adaptive_size = SwitchRow(title=self.lm.get(LABEL_TEXT_ADAPTIVE_SIZE))
-        self.text_adaptive_size.set_active(self.get_setting(SETTING_TEXT_ADAPTIVE_SIZE, True))
+        self.text_adaptive_size.set_active(self.get_setting(SETTING_TEXT_ADAPTIVE_SIZE, DEFAULT_TEXT_ADAPTIVE_SIZE))
 
         self.text_size = SpinRow.new_with_range(0, 100, 1)
         self.text_size.set_title(self.lm.get(LABEL_TEXT_SIZE))
-        self.text_size.set_value(self.get_setting(SETTING_TEXT_SIZE, 20))
+        self.text_size.set_value(self.get_setting(SETTING_TEXT_SIZE, DEFAULT_TEXT_SIZE))
 
         self.text_show_unit = SwitchRow(title=self.lm.get(LABEL_TEXT_SHOW_UNIT))
-        self.text_show_unit.set_active(self.get_setting(SETTING_TEXT_SHOW_UNIT, False))
+        self.text_show_unit.set_active(self.get_setting(SETTING_TEXT_SHOW_UNIT, DEFAULT_TEXT_SHOW_UNIT))
 
         self.text_unit_line_break = SwitchRow(title=self.lm.get(LABEL_TEXT_UNIT_LINE_BREAK))
-        self.text_unit_line_break.set_active(self.get_setting(SETTING_TEXT_UNIT_LINE_BREAK, False))
+        self.text_unit_line_break.set_active(
+            self.get_setting(SETTING_TEXT_UNIT_LINE_BREAK, DEFAULT_TEXT_UNIT_LINE_BREAK))
 
         self.text_attribute_combo = ComboRow(title=self.lm.get(LABEL_TEXT_ATTRIBUTE))
         self.text_attribute_combo.set_factory(self.combo_factory)
@@ -210,16 +236,21 @@ class HomeAssistantAction(HomeAssistantActionBase):
     def _connect_rows(self) -> None:
         self.entity_domain_combo.connect(CONNECT_NOTIFY_SELECTED, self.on_change_domain)
         self.entity_entity_combo.connect(CONNECT_NOTIFY_SELECTED, self.on_change_entity)
+
         self.service_service_combo.connect(CONNECT_NOTIFY_SELECTED, self.on_change_combo, SETTING_SERVICE_SERVICE)
         self.service_call_on_key_down.connect(CONNECT_NOTIFY_ACTIVE, self.on_change_switch,
                                               SETTING_SERVICE_SERVICE_ON_KEY_DOWN)
         self.service_call_on_key_up.connect(CONNECT_NOTIFY_ACTIVE, self.on_change_switch,
                                             SETTING_SERVICE_SERVICE_ON_KEY_UP)
+
         self.icon_show_icon.connect(CONNECT_NOTIFY_ACTIVE, self.on_change_switch, SETTING_ICON_SHOW_ICON)
+        self.icon_scale.connect(CONNECT_CHANGED, self.on_change_spin, SETTING_ICON_SCALE)
+        self.icon_opacity.connect(CONNECT_CHANGED, self.on_change_spin, SETTING_ICON_OPACITY)
+
         self.text_show_text.connect(CONNECT_NOTIFY_ACTIVE, self.on_change_switch, SETTING_TEXT_SHOW_TEXT)
         self.text_position_combo.connect(CONNECT_NOTIFY_SELECTED, self.on_change_combo, SETTING_TEXT_POSITION)
         self.text_adaptive_size.connect(CONNECT_NOTIFY_ACTIVE, self.on_change_switch, SETTING_TEXT_ADAPTIVE_SIZE)
-        self.text_size.connect(CONNECT_CHANGED, self.on_change_size)
+        self.text_size.connect(CONNECT_CHANGED, self.on_change_spin, SETTING_TEXT_SIZE)
         self.text_show_unit.connect(CONNECT_NOTIFY_ACTIVE, self.on_change_switch, SETTING_TEXT_SHOW_UNIT)
         self.text_unit_line_break.connect(CONNECT_NOTIFY_ACTIVE, self.on_change_switch, SETTING_TEXT_UNIT_LINE_BREAK)
         self.text_attribute_combo.connect(CONNECT_NOTIFY_SELECTED, self.on_change_combo, SETTING_TEXT_ATTRIBUTE)
@@ -240,13 +271,13 @@ class HomeAssistantAction(HomeAssistantActionBase):
         label = Label(halign=Align.END)
         item.set_child(label)
 
-        entity_id = item.get_item().get_string()
+        text = item.get_item().get_string()
 
-        friendly_name = self.plugin_base.backend.get_entity(entity_id).get(ATTRIBUTES, {}).get(ATTRIBUTE_FRIENDLY_NAME,
-                                                                                               EMPTY_STRING)
+        friendly_name = self.plugin_base.backend.get_entity(text).get(ATTRIBUTES, {}).get(ATTRIBUTE_FRIENDLY_NAME,
+                                                                                          EMPTY_STRING)
 
-        label.set_text(entity_id)
-        label.set_tooltip_text(friendly_name if friendly_name else entity_id)
+        label.set_text(text)
+        label.set_tooltip_text(friendly_name if friendly_name else text)
 
     def on_change_domain(self, combo, _):
         settings = self.get_settings()
@@ -305,15 +336,15 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
         self.entity_updated(settings.get(SETTING_ENTITY_ENTITY))
 
-    def on_change_size(self, spin):
+    def on_change_spin(self, spin, *args):
         size = spin.get_value()
         settings = self.get_settings()
-        settings[SETTING_TEXT_SIZE] = size
+        settings[args[0]] = size
         self.set_settings(settings)
 
         self.entity_updated(settings.get(SETTING_ENTITY_ENTITY))
 
-    def entity_updated(self, entity: str, state: dict = None, icon_svg: str = EMPTY_STRING) -> None:
+    def entity_updated(self, entity: str, state: dict = None) -> None:
         settings = self.get_settings()
 
         show_icon = settings.get(SETTING_ICON_SHOW_ICON)
@@ -333,18 +364,20 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
             return
 
-        service = self.get_setting(SETTING_SERVICE_SERVICE)
-
         if show_icon:
-            if not icon_svg:
-                icon_svg = self.plugin_base.backend.get_icon(entity)
+            if not state:
+                state = self.plugin_base.backend.get_entity(entity)
 
-            if icon_svg:
-                png_data = cairosvg.svg2png(bytestring=icon_svg, dpi=600)
+            icon = self._get_icon(state)
+
+            if icon:
+                png_data = cairosvg.svg2png(bytestring=icon, dpi=600)
 
                 image = Image.open(io.BytesIO(png_data))
 
-                self.set_media(image=image)
+                scale = round(settings.get(SETTING_ICON_SCALE, DEFAULT_ICON_SCALE) / 100, 2)
+
+                self.set_media(image=image, size=scale)
         else:
             self.set_media(image=None)
 
@@ -387,7 +420,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
                 elif text_length == 2:
                     font_size = 40
                 else:
-                    font_size = 30 - 3*(text_length-3)
+                    font_size = 30 - 3 * (text_length - 3)
 
                 if text_height > 1:
                     # account for text with line break
@@ -521,9 +554,66 @@ class HomeAssistantAction(HomeAssistantActionBase):
             self.text_position_combo.set_sensitive(False)
             self.text_adaptive_size.set_sensitive(False)
             self.text_size.set_sensitive(False)
-            self.text_attribute_combo.set_sensitive(False)
             self.text_show_unit.set_sensitive(False)
             self.text_unit_line_break.set_sensitive(False)
+            self.text_attribute_combo.set_sensitive(False)
+
+    def _get_icon(self, state: dict) -> str:
+        settings = self.get_settings()
+
+        domain = settings.get(SETTING_ENTITY_DOMAIN)
+
+        if "media_player" == domain:
+            service = settings.get(SETTING_SERVICE_SERVICE)
+            # use icons for service instead of entity
+            if "media_play_pause" == service:
+                if "playing" == state.get(STATE):
+                    icon_name = "pause"
+                else:
+                    icon_name = "play"
+            elif "media_stop" == service:
+                icon_name = "stop"
+            elif "volume_up" == service:
+                icon_name = "volume-plus"
+            elif "volume_down" == service:
+                icon_name = "entity_id, volume-minus"
+            elif "media_next_track" == service:
+                icon_name = "skip-next"
+            elif "media_previous_track" == service:
+                icon_name = "skip-previous"
+            else:
+                logging.warning(f"Icon not found for domain {domain} and service {service}")
+                icon_name = "alert-circle"
+
+            color = ICON_COLOR_ON
+        else:
+            icon_name = state.get(ATTRIBUTES, {}).get(ATTRIBUTE_ICON, EMPTY_STRING)
+
+            color = ICON_COLOR_ON if "on" == state.get(STATE) else ICON_COLOR_OFF
+
+        icon_path = self._get_icon_path(icon_name)
+
+        opacity = str(round(settings.get(SETTING_ICON_OPACITY, DEFAULT_ICON_OPACITY) / 100, 2))
+
+        icon = self._get_icon_svg(icon_name, icon_path)
+
+        return (
+            icon
+            .replace("<color>", color)
+            .replace("<opacity>", opacity)
+        )
+
+    def _get_icon_path(self, name: str) -> str:
+        if "mdi:" in name:
+            name = name.replace("mdi:", EMPTY_STRING)
+
+        return self.mdi_icons.get(name, EMPTY_STRING)
+
+    def _get_icon_svg(self, name: str, path: str) -> str:
+        if not path:
+            return EMPTY_STRING
+
+        return f'<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 24 24"><title>{name}</title><path d="{path}" fill="<color>" opacity="<opacity>" /></svg>'
 
 
 def set_value_in_combo(combo: ComboRow, model: StringList, value: str):

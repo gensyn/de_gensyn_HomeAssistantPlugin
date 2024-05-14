@@ -18,6 +18,8 @@
     "actions.home_assistant.service.call_on_key_up.label": "Aufrufen bei Loslassen:",
 
     "actions.home_assistant.icon.show_icon.label": "Bild der Entität anzeigen:",
+    "actions.home_assistant.icon.opacity.label": "Deckkraft:",
+    "actions.home_assistant.icon.scale.label": "Größe:",
 
     "actions.home_assistant.text.show_text.label": "Status der Entität anzeigen:",
     "actions.home_assistant.text.position.label": "Ausrichtung:",
