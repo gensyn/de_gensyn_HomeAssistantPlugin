@@ -7,7 +7,8 @@
 
     "actions.home_assistant.settings.entity.label": "Entität",
     "actions.home_assistant.settings.service.label": "Service",
-    "actions.home_assistant.settings.icon.label": "Bild:",
+    "actions.home_assistant.settings.icon.label": "Bild",
+    "actions.home_assistant.settings.text.label": "Text",
 
     "actions.home_assistant.entity.domain.label": "Domäne:",
     "actions.home_assistant.entity.entity.label": "Entität:",
@@ -16,5 +17,13 @@
     "actions.home_assistant.service.call_on_key_down.label": "Aufrufen bei Drücken:",
     "actions.home_assistant.service.call_on_key_up.label": "Aufrufen bei Loslassen:",
 
-    "actions.home_assistant.icon.show_icon.label": "Bild der Entität anzeigen:"
+    "actions.home_assistant.icon.show_icon.label": "Bild der Entität anzeigen:",
+
+    "actions.home_assistant.text.show_text.label": "Status der Entität anzeigen:",
+    "actions.home_assistant.text.position.label": "Ausrichtung:",
+    "actions.home_assistant.text.adaptive_size.label": "Größe automatisch anpassen:",
+    "actions.home_assistant.text.size.label": "Größe:",
+    "actions.home_assistant.text.show_unit.label": "Einheit anzeigen:",
+    "actions.home_assistant.text.unit_line_break.label": "Neue Zeile zwischen Wert und Einheit:",
+    "actions.home_assistant.text.attribute.label": "Attribut statt Status anzeigen:"
 }

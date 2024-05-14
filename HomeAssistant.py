@@ -2,7 +2,7 @@ import json
 import os
 from threading import Thread, Semaphore
 from time import sleep
-from typing import Dict, Callable, Any, List
+from typing import Dict, Callable, Any
 
 from loguru import logger as log
 from websocket import create_connection, WebSocket
@@ -41,6 +41,7 @@ WEBSOCKET_SEMAPHORE = Semaphore(1)
 ENTITIES_UPDATE_SEMAPHORE = Semaphore(1)
 
 PING_INTERVAL = 30
+
 
 class HomeAssistantBackend:
     _websocket: WebSocket = None
@@ -218,8 +219,14 @@ class HomeAssistantBackend:
 
                 icon = self.get_icon(entity_id, state=state)
 
+                update_state = {
+                    "state": state,
+                    "icon": new_state.get("icon"),
+                    "attributes": new_state.get("attributes", {}),
+                }
+
                 for action_entity_updated in actions:
-                    action_entity_updated(entity_id, icon)
+                    action_entity_updated(entity_id, update_state, icon)
 
         self._websocket.close()
         self._connection_state = NOT_CONNECTED
@@ -302,7 +309,7 @@ class HomeAssistantBackend:
 
         return self._domains
 
-    def get_entity(self, entity_id: str):
+    def get_entity(self, entity_id: str) -> dict:
         if not entity_id or not "." in entity_id:
             return {}
 
@@ -346,7 +353,7 @@ class HomeAssistantBackend:
             entities[domain][entity_id] = {
                 "state": entity.get("state", "off"),
                 "icon": entity.get("attributes", {}).get("icon", ""),
-                "friendly_name": entity.get("attributes", {}).get("friendly_name", ""),
+                "attributes": entity.get("attributes", {}),
                 "keys": {},
                 "subscription_id": -1,
             }
@@ -357,7 +364,8 @@ class HomeAssistantBackend:
                 for entity_id, entity_settings in self._entities[domain].items():
                     if entities.get(domain, {}).get(entity_id):
                         entities[domain][entity_id]["keys"] = self._entities[domain][entity_id].get("keys", {})
-                        entities[domain][entity_id]["subscription_id"] = self._entities[domain][entity_id].get("subscription_id", -1)
+                        entities[domain][entity_id]["subscription_id"] = self._entities[domain][entity_id].get(
+                            "subscription_id", -1)
 
         self._domains = domains
         self._entities = entities

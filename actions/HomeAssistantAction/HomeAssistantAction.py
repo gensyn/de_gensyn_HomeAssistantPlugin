@@ -7,41 +7,56 @@ import cairosvg
 # Import gtk modules - used for the config rows
 import gi
 from PIL import Image
+from plugins.de_gensyn_HomeAssistantPlugin.HomeAssistantActionBase import HomeAssistantActionBase
+from plugins.de_gensyn_HomeAssistantPlugin.const import CONNECT_BIND, SETTING_ENTITY_ENTITY, \
+    SETTING_SERVICE_SERVICE_ON_KEY_DOWN, SETTING_TEXT_SHOW_TEXT, TEXT_POSITION_TOP, TEXT_POSITION_CENTER, \
+    TEXT_POSITION_BOTTOM, LABEL_TEXT_POSITION, LABEL_SETTINGS_TEXT, SETTING_TEXT_POSITION, SETTING_TEXT_SIZE, \
+    SETTING_SERVICE_SERVICE_ON_KEY_UP, SETTING_SERVICE_SERVICE, LABEL_ENTITY_DOMAIN, LABEL_ENTITY_ENTITY, \
+    LABEL_SERVICE_SERVICE, LABEL_SERVICE_CALL_ON_KEY_DOWN, LABEL_SETTINGS_ENTITY, LABEL_SERVICE_CALL_ON_KEY_UP, \
+    LABEL_SETTINGS_SERVICE, LABEL_ICON_SHOW_ICON, LABEL_SETTINGS_ICON, SETTING_ICON_SHOW_ICON, CONNECT_NOTIFY_SELECTED, \
+    CONNECT_NOTIFY_ACTIVE, SETTING_ENTITY_DOMAIN, EMPTY_STRING, ATTRIBUTE_FRIENDLY_NAME, LABEL_TEXT_SHOW_TEXT, \
+    LABEL_TEXT_SIZE, LABEL_TEXT_SHOW_UNIT, SETTING_TEXT_SHOW_UNIT, LABEL_TEXT_UNIT_LINE_BREAK, \
+    SETTING_TEXT_UNIT_LINE_BREAK, LABEL_TEXT_ATTRIBUTE, CONNECT_CHANGED, ATTRIBUTES, SETTING_TEXT_ATTRIBUTE, \
+    LABEL_TEXT_ADAPTIVE_SIZE, SETTING_TEXT_ADAPTIVE_SIZE, ATTRIBUTE_UNIT_OF_MEASUREMENT, STATE
 
 from locales.LegacyLocaleManager import LegacyLocaleManager
 from src.backend.DeckManagement.DeckController import DeckController
 from src.backend.PageManagement.Page import Page
 from src.backend.PluginManager.PluginBase import PluginBase
-from plugins.de_gensyn_HomeAssistantPlugin.HomeAssistantActionBase import HomeAssistantActionBase
-from plugins.de_gensyn_HomeAssistantPlugin.const import CONNECT_BIND, SETTING_ENTITY_ENTITY, SETTING_SERVICE_SERVICE_ON_KEY_DOWN, \
-    SETTING_SERVICE_SERVICE_ON_KEY_UP, SETTING_SERVICE_SERVICE, LABEL_ENTITY_DOMAIN, LABEL_ENTITY_ENTITY, \
-    LABEL_SERVICE_SERVICE, LABEL_SERVICE_CALL_ON_KEY_DOWN, LABEL_SETTINGS_ENTITY, LABEL_SERVICE_CALL_ON_KEY_UP, \
-    LABEL_SETTINGS_SERVICE, LABEL_ICON_SHOW_ICON, LABEL_SETTINGS_ICON, SETTING_ICON_SHOW_ICON, CONNECT_NOTIFY_SELECTED, \
-    CONNECT_NOTIFY_ACTIVE, SETTING_ENTITY_DOMAIN, EMPTY_STRING, ATTRIBUTE_FRIENDLY_NAME
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository.Gtk import Align, Label, SignalListItemFactory, StringList
-from gi.repository.Adw import ComboRow, PreferencesGroup, SwitchRow
+from gi.repository.Adw import ComboRow, PreferencesGroup, SpinRow, SwitchRow
 
 
 class HomeAssistantAction(HomeAssistantActionBase):
     lm: LegacyLocaleManager
     combo_factory: SignalListItemFactory
 
-    domain_combo: ComboRow
-    domain_model: StringList
+    entity_domain_combo: ComboRow
+    entity_domain_model: StringList
 
-    entity_combo: ComboRow
-    entity_model: StringList
+    entity_entity_combo: ComboRow
+    entity_entity_model: StringList
 
-    service_combo: ComboRow
-    service_model: StringList
+    service_service_combo: ComboRow
+    service_service_model: StringList
 
-    service_on_key_down: SwitchRow
-    service_on_key_up: SwitchRow
+    service_call_on_key_down: SwitchRow
+    service_call_on_key_up: SwitchRow
 
-    show_icon: SwitchRow
+    icon_show_icon: SwitchRow
+
+    text_show_text: SwitchRow
+    text_position_combo: ComboRow
+    text_position_model: StringList
+    text_adaptive_size: SwitchRow
+    text_size: SpinRow
+    text_show_unit: SwitchRow
+    text_unit_line_break: SwitchRow
+    text_attribute_combo: ComboRow
+    text_attribute_model: StringList
 
     def __init__(self, action_id: str, action_name: str,
                  deck_controller: DeckController, page: Page, coords: str, plugin_base: PluginBase, state: int):
@@ -87,6 +102,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
         entity_group = self._get_entity_group()
         service_group = self._get_service_group()
         icon_group = self._get_icon_group()
+        text_group = self._get_text_group()
 
         self.load_domains()
 
@@ -97,64 +113,116 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
         if self.plugin_base.backend.is_connected():
             # already connected to home assistant -> put global settings at the bottom
-            return [entity_group, service_group, icon_group, *rows]
+            return [entity_group, service_group, icon_group, text_group, *rows]
 
-        return [*rows, entity_group, service_group, icon_group]
+        return [*rows, entity_group, service_group, icon_group, text_group]
 
     def _get_entity_group(self) -> PreferencesGroup:
-        self.domain_combo = ComboRow(title=self.lm.get(LABEL_ENTITY_DOMAIN))
-        self.domain_combo.set_factory(self.combo_factory)
+        self.entity_domain_combo = ComboRow(title=self.lm.get(LABEL_ENTITY_DOMAIN))
+        self.entity_domain_combo.set_factory(self.combo_factory)
 
-        self.entity_combo = ComboRow(title=self.lm.get(LABEL_ENTITY_ENTITY))
-        self.entity_combo.set_factory(self.combo_factory)
+        self.entity_entity_combo = ComboRow(title=self.lm.get(LABEL_ENTITY_ENTITY))
+        self.entity_entity_combo.set_factory(self.combo_factory)
 
         group = PreferencesGroup()
         group.set_title(self.lm.get(LABEL_SETTINGS_ENTITY))
         group.set_margin_top(20)
-        group.add(self.domain_combo)
-        group.add(self.entity_combo)
+        group.add(self.entity_domain_combo)
+        group.add(self.entity_entity_combo)
 
         return group
 
     def _get_service_group(self) -> PreferencesGroup:
-        self.service_combo = ComboRow(title=self.lm.get(LABEL_SERVICE_SERVICE))
-        self.service_combo.set_factory(self.combo_factory)
+        self.service_service_combo = ComboRow(title=self.lm.get(LABEL_SERVICE_SERVICE))
+        self.service_service_combo.set_factory(self.combo_factory)
 
-        self.service_on_key_down = SwitchRow(
+        self.service_call_on_key_down = SwitchRow(
             title=self.lm.get(LABEL_SERVICE_CALL_ON_KEY_DOWN))
-        self.service_on_key_down.set_active(self.get_setting(SETTING_SERVICE_SERVICE_ON_KEY_DOWN, True))
+        self.service_call_on_key_down.set_active(self.get_setting(SETTING_SERVICE_SERVICE_ON_KEY_DOWN, True))
 
-        self.service_on_key_up = SwitchRow(title=self.lm.get(LABEL_SERVICE_CALL_ON_KEY_UP))
-        self.service_on_key_up.set_active(self.get_setting(SETTING_SERVICE_SERVICE_ON_KEY_UP, False))
+        self.service_call_on_key_up = SwitchRow(title=self.lm.get(LABEL_SERVICE_CALL_ON_KEY_UP))
+        self.service_call_on_key_up.set_active(self.get_setting(SETTING_SERVICE_SERVICE_ON_KEY_UP, False))
 
         group = PreferencesGroup()
         group.set_title(self.lm.get(LABEL_SETTINGS_SERVICE))
         group.set_margin_top(20)
-        group.add(self.service_combo)
-        group.add(self.service_on_key_down)
-        group.add(self.service_on_key_up)
+        group.add(self.service_service_combo)
+        group.add(self.service_call_on_key_down)
+        group.add(self.service_call_on_key_up)
 
         return group
 
     def _get_icon_group(self) -> PreferencesGroup:
-        self.show_icon = SwitchRow(title=self.lm.get(LABEL_ICON_SHOW_ICON))
-        self.show_icon.set_active(self.get_setting(SETTING_ICON_SHOW_ICON, True))
+        self.icon_show_icon = SwitchRow(title=self.lm.get(LABEL_ICON_SHOW_ICON))
+        self.icon_show_icon.set_active(self.get_setting(SETTING_ICON_SHOW_ICON, False))
 
         group = PreferencesGroup()
         group.set_title(self.lm.get(LABEL_SETTINGS_ICON))
         group.set_margin_top(20)
-        group.add(self.show_icon)
+        group.add(self.icon_show_icon)
+
+        return group
+
+    def _get_text_group(self) -> PreferencesGroup:
+        self.text_show_text = SwitchRow(title=self.lm.get(LABEL_TEXT_SHOW_TEXT))
+        self.text_show_text.set_active(self.get_setting(SETTING_TEXT_SHOW_TEXT, False))
+
+        self.text_position_model = StringList.new([TEXT_POSITION_TOP, TEXT_POSITION_CENTER, TEXT_POSITION_BOTTOM])
+
+        self.text_position_combo = ComboRow(title=self.lm.get(LABEL_TEXT_POSITION))
+        self.text_position_combo.set_factory(self.combo_factory)
+        self.text_position_combo.set_model(self.text_position_model)
+
+        set_value_in_combo(self.text_position_combo, self.text_position_model,
+                           self.get_setting(SETTING_TEXT_POSITION, TEXT_POSITION_TOP))
+
+        self.text_adaptive_size = SwitchRow(title=self.lm.get(LABEL_TEXT_ADAPTIVE_SIZE))
+        self.text_adaptive_size.set_active(self.get_setting(SETTING_TEXT_ADAPTIVE_SIZE, True))
+
+        self.text_size = SpinRow.new_with_range(0, 100, 1)
+        self.text_size.set_title(self.lm.get(LABEL_TEXT_SIZE))
+        self.text_size.set_value(self.get_setting(SETTING_TEXT_SIZE, 20))
+
+        self.text_show_unit = SwitchRow(title=self.lm.get(LABEL_TEXT_SHOW_UNIT))
+        self.text_show_unit.set_active(self.get_setting(SETTING_TEXT_SHOW_UNIT, False))
+
+        self.text_unit_line_break = SwitchRow(title=self.lm.get(LABEL_TEXT_UNIT_LINE_BREAK))
+        self.text_unit_line_break.set_active(self.get_setting(SETTING_TEXT_UNIT_LINE_BREAK, False))
+
+        self.text_attribute_combo = ComboRow(title=self.lm.get(LABEL_TEXT_ATTRIBUTE))
+        self.text_attribute_combo.set_factory(self.combo_factory)
+
+        self.load_attributes()
+
+        group = PreferencesGroup()
+        group.set_title(self.lm.get(LABEL_SETTINGS_TEXT))
+        group.set_margin_top(20)
+        group.add(self.text_show_text)
+        group.add(self.text_position_combo)
+        group.add(self.text_adaptive_size)
+        group.add(self.text_size)
+        group.add(self.text_show_unit)
+        group.add(self.text_unit_line_break)
+        group.add(self.text_attribute_combo)
 
         return group
 
     def _connect_rows(self) -> None:
-        self.domain_combo.connect(CONNECT_NOTIFY_SELECTED, self.on_change_domain)
-        self.entity_combo.connect(CONNECT_NOTIFY_SELECTED, self.on_change_entity)
-        self.service_combo.connect(CONNECT_NOTIFY_SELECTED, self.on_change_service)
-        self.service_on_key_down.connect(CONNECT_NOTIFY_ACTIVE, self.on_change_switch,
-                                         SETTING_SERVICE_SERVICE_ON_KEY_DOWN)
-        self.service_on_key_up.connect(CONNECT_NOTIFY_ACTIVE, self.on_change_switch, SETTING_SERVICE_SERVICE_ON_KEY_UP)
-        self.show_icon.connect(CONNECT_NOTIFY_ACTIVE, self.on_change_switch, SETTING_ICON_SHOW_ICON)
+        self.entity_domain_combo.connect(CONNECT_NOTIFY_SELECTED, self.on_change_domain)
+        self.entity_entity_combo.connect(CONNECT_NOTIFY_SELECTED, self.on_change_entity)
+        self.service_service_combo.connect(CONNECT_NOTIFY_SELECTED, self.on_change_combo, SETTING_SERVICE_SERVICE)
+        self.service_call_on_key_down.connect(CONNECT_NOTIFY_ACTIVE, self.on_change_switch,
+                                              SETTING_SERVICE_SERVICE_ON_KEY_DOWN)
+        self.service_call_on_key_up.connect(CONNECT_NOTIFY_ACTIVE, self.on_change_switch,
+                                            SETTING_SERVICE_SERVICE_ON_KEY_UP)
+        self.icon_show_icon.connect(CONNECT_NOTIFY_ACTIVE, self.on_change_switch, SETTING_ICON_SHOW_ICON)
+        self.text_show_text.connect(CONNECT_NOTIFY_ACTIVE, self.on_change_switch, SETTING_TEXT_SHOW_TEXT)
+        self.text_position_combo.connect(CONNECT_NOTIFY_SELECTED, self.on_change_combo, SETTING_TEXT_POSITION)
+        self.text_adaptive_size.connect(CONNECT_NOTIFY_ACTIVE, self.on_change_switch, SETTING_TEXT_ADAPTIVE_SIZE)
+        self.text_size.connect(CONNECT_CHANGED, self.on_change_size)
+        self.text_show_unit.connect(CONNECT_NOTIFY_ACTIVE, self.on_change_switch, SETTING_TEXT_SHOW_UNIT)
+        self.text_unit_line_break.connect(CONNECT_NOTIFY_ACTIVE, self.on_change_switch, SETTING_TEXT_UNIT_LINE_BREAK)
+        self.text_attribute_combo.connect(CONNECT_NOTIFY_SELECTED, self.on_change_combo, SETTING_TEXT_ATTRIBUTE)
 
     def on_change_switch(self, switch, *args):
         settings = self.get_settings()
@@ -166,13 +234,16 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
         self.set_enabled_disabled()
 
+        self.entity_updated(settings.get(SETTING_ENTITY_ENTITY))
+
     def _factory_bind(self, _, item):
         label = Label(halign=Align.END)
         item.set_child(label)
 
         entity_id = item.get_item().get_string()
 
-        friendly_name = self.plugin_base.backend.get_entity(entity_id).get(ATTRIBUTE_FRIENDLY_NAME, EMPTY_STRING)
+        friendly_name = self.plugin_base.backend.get_entity(entity_id).get(ATTRIBUTES, {}).get(ATTRIBUTE_FRIENDLY_NAME,
+                                                                                               EMPTY_STRING)
 
         label.set_text(entity_id)
         label.set_tooltip_text(friendly_name if friendly_name else entity_id)
@@ -190,8 +261,8 @@ class HomeAssistantAction(HomeAssistantActionBase):
             settings[SETTING_SERVICE_SERVICE] = EMPTY_STRING
             self.set_settings(settings)
 
-            self.entity_combo.set_model(None)
-            self.service_combo.set_model(None)
+            self.entity_entity_combo.set_model(None)
+            self.service_service_combo.set_model(None)
             self.set_media(image=None)
 
         if domain:
@@ -218,23 +289,41 @@ class HomeAssistantAction(HomeAssistantActionBase):
             self.plugin_base.backend.add_tracked_entity(entity, f"{self.page.json_path}{self.page_coords}",
                                                         self.entity_updated)
 
+            self.load_attributes()
+
         self.entity_updated(entity)
 
         self.set_enabled_disabled()
 
-    def on_change_service(self, combo, _):
-        service = combo.get_selected_item().get_string()
+    def on_change_combo(self, combo, *args):
+        value = combo.get_selected_item().get_string()
         settings = self.get_settings()
-        settings[SETTING_SERVICE_SERVICE] = service
+        settings[args[1]] = value
         self.set_settings(settings)
 
         self.set_enabled_disabled()
 
-    def entity_updated(self, entity: str, icon_svg: str = EMPTY_STRING) -> None:
+        self.entity_updated(settings.get(SETTING_ENTITY_ENTITY))
+
+    def on_change_size(self, spin):
+        size = spin.get_value()
+        settings = self.get_settings()
+        settings[SETTING_TEXT_SIZE] = size
+        self.set_settings(settings)
+
+        self.entity_updated(settings.get(SETTING_ENTITY_ENTITY))
+
+    def entity_updated(self, entity: str, state: dict = None, icon_svg: str = EMPTY_STRING) -> None:
         settings = self.get_settings()
 
-        if not entity or not settings.get(SETTING_ICON_SHOW_ICON):
+        show_icon = settings.get(SETTING_ICON_SHOW_ICON)
+        show_text = settings.get(SETTING_TEXT_SHOW_TEXT)
+
+        if not entity or (not show_icon and not show_text):
             self.set_media(image=None)
+            self.set_top_label(None)
+            self.set_center_label(None)
+            self.set_bottom_label(None)
             return
 
         settings_entity = settings.get(SETTING_ENTITY_ENTITY)
@@ -246,59 +335,140 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
         service = self.get_setting(SETTING_SERVICE_SERVICE)
 
-        if not icon_svg:
-            icon_svg = self.plugin_base.backend.get_icon(entity)
-
+        if show_icon:
             if not icon_svg:
+                icon_svg = self.plugin_base.backend.get_icon(entity)
+
+            if icon_svg:
+                png_data = cairosvg.svg2png(bytestring=icon_svg, dpi=600)
+
+                image = Image.open(io.BytesIO(png_data))
+
+                self.set_media(image=image)
+        else:
+            self.set_media(image=None)
+
+        if show_text:
+            if not state:
+                state = self.plugin_base.backend.get_entity(entity)
+
+            if not state:
+                self.set_top_label(None)
+                self.set_center_label(None)
+                self.set_bottom_label(None)
                 return
 
-        png_data = cairosvg.svg2png(bytestring=icon_svg, dpi=600)
+            text = state.get(STATE)
+            text_length = len(text)
+            text_height = 1
+            attribute = settings.get(SETTING_TEXT_ATTRIBUTE)
 
-        image = Image.open(io.BytesIO(png_data))
+            if attribute:
+                text = state.get(ATTRIBUTES, {}).get(attribute, EMPTY_STRING)
+                text_length = len(text)
+            else:
+                if settings.get(SETTING_TEXT_SHOW_UNIT):
+                    unit = state.get(ATTRIBUTES, {}).get(ATTRIBUTE_UNIT_OF_MEASUREMENT, EMPTY_STRING)
 
-        self.set_media(image=image)
+                    if settings.get(SETTING_TEXT_UNIT_LINE_BREAK):
+                        text_length = max(len(text), len(unit))
+                        text = f"{text}\n{unit}"
+                        text_height = 2
+                    else:
+                        text = f"{text} {unit}"
+                        text_length = len(text)
+
+            position = settings.get(SETTING_TEXT_POSITION)
+            font_size = settings.get(SETTING_TEXT_SIZE)
+
+            if settings.get(SETTING_TEXT_ADAPTIVE_SIZE):
+                if text_length == 1:
+                    font_size = 50
+                elif text_length == 2:
+                    font_size = 40
+                else:
+                    font_size = 30 - 3*(text_length-3)
+
+                if text_height > 1:
+                    # account for text with line break
+                    font_size = min(font_size, 35)
+
+                # set minimal font size, smaller is not readable
+                font_size = max(font_size, 10)
+
+            if position == TEXT_POSITION_TOP:
+                self.set_top_label(text, font_size=font_size)
+                self.set_center_label(None)
+                self.set_bottom_label(None)
+            elif position == TEXT_POSITION_CENTER:
+                self.set_top_label(None)
+                self.set_center_label(text, font_size=font_size)
+                self.set_bottom_label(None)
+            elif position == TEXT_POSITION_BOTTOM:
+                self.set_top_label(None)
+                self.set_center_label(None)
+                self.set_bottom_label(text, font_size=font_size)
+        else:
+            self.set_top_label(None)
+            self.set_center_label(None)
+            self.set_bottom_label(None)
 
     def load_domains(self):
         old_domain = self.get_settings().get(SETTING_ENTITY_DOMAIN, EMPTY_STRING)
 
-        self.domain_model = StringList.new([EMPTY_STRING])
-        self.domain_combo.set_model(self.domain_model)
+        self.entity_domain_model = StringList.new([EMPTY_STRING])
+        self.entity_domain_combo.set_model(self.entity_domain_model)
 
         domains = sorted(self.plugin_base.backend.get_domains())
 
         for domain in domains:
-            self.domain_model.append(domain)
+            self.entity_domain_model.append(domain)
 
         if old_domain in domains:
-            set_value_in_combo(self.domain_combo, self.domain_model, old_domain)
+            set_value_in_combo(self.entity_domain_combo, self.entity_domain_model, old_domain)
             self.load_entities()
             self.load_services()
 
     def load_entities(self):
         old_entity = self.get_settings().get(SETTING_ENTITY_ENTITY, EMPTY_STRING)
 
-        self.entity_model = StringList.new([EMPTY_STRING])
-        self.entity_combo.set_model(self.entity_model)
+        self.entity_entity_model = StringList.new([EMPTY_STRING])
+        self.entity_entity_combo.set_model(self.entity_entity_model)
 
-        entities = sorted(self.plugin_base.backend.get_entities(self.domain_combo.get_selected_item().get_string()))
+        entities = sorted(
+            self.plugin_base.backend.get_entities(self.entity_domain_combo.get_selected_item().get_string()))
 
         for entity in entities:
-            self.entity_model.append(entity)
+            self.entity_entity_model.append(entity)
 
-        set_value_in_combo(self.entity_combo, self.entity_model, old_entity)
+        set_value_in_combo(self.entity_entity_combo, self.entity_entity_model, old_entity)
 
     def load_services(self):
         old_service = self.get_settings().get(SETTING_SERVICE_SERVICE, EMPTY_STRING)
 
-        self.service_model = StringList.new([EMPTY_STRING])
-        self.service_combo.set_model(self.service_model)
+        self.service_service_model = StringList.new([EMPTY_STRING])
+        self.service_service_combo.set_model(self.service_service_model)
 
-        services = self.plugin_base.backend.get_services(self.domain_combo.get_selected_item().get_string())
+        services = self.plugin_base.backend.get_services(self.entity_domain_combo.get_selected_item().get_string())
 
         for service in services:
-            self.service_model.append(service)
+            self.service_service_model.append(service)
 
-        set_value_in_combo(self.service_combo, self.service_model, old_service)
+        set_value_in_combo(self.service_service_combo, self.service_service_model, old_service)
+
+    def load_attributes(self):
+        old_attribute = self.get_settings().get(SETTING_TEXT_ATTRIBUTE, EMPTY_STRING)
+
+        ha_entity = self.plugin_base.backend.get_entity(self.get_setting(SETTING_ENTITY_ENTITY))
+
+        self.text_attribute_model = StringList.new([EMPTY_STRING])
+
+        for attribute in ha_entity.get(ATTRIBUTES, {}).keys():
+            self.text_attribute_model.append(attribute)
+
+        self.text_attribute_combo.set_model(self.text_attribute_model)
+
+        set_value_in_combo(self.text_attribute_combo, self.text_attribute_model, old_attribute)
 
     def get_setting(self, setting: str, default: Any = None) -> Any:
         settings = self.get_settings()
@@ -307,19 +477,53 @@ class HomeAssistantAction(HomeAssistantActionBase):
         return value
 
     def set_enabled_disabled(self) -> None:
-        domain = self.domain_combo.get_selected_item().get_string() if self.domain_combo.get_selected_item() else False
-        domain_enabled = bool(domain)
-        self.entity_combo.set_sensitive(domain_enabled)
-        self.service_combo.set_sensitive(domain_enabled)
+        domain = self.entity_domain_combo.get_selected_item().get_string() if self.entity_domain_combo.get_selected_item() else False
+        domain_selected = bool(domain)
+        self.entity_entity_combo.set_sensitive(domain_selected and len(self.entity_entity_model) > 1)
+        self.service_service_combo.set_sensitive(domain_selected and len(self.service_service_model) > 1)
 
-        service = self.service_combo.get_selected_item().get_string() if self.service_combo.get_selected_item() else False
-        service_enabled = bool(service)
-        self.service_on_key_down.set_sensitive(service_enabled)
-        self.service_on_key_up.set_sensitive(service_enabled)
+        service = self.service_service_combo.get_selected_item().get_string() if self.service_service_combo.get_selected_item() else False
+        service_selected = bool(service)
+        self.service_call_on_key_down.set_sensitive(service_selected)
+        self.service_call_on_key_up.set_sensitive(service_selected)
 
-        entity = self.entity_combo.get_selected_item().get_string() if self.entity_combo.get_selected_item() else False
+        entity = self.entity_entity_combo.get_selected_item().get_string() if self.entity_entity_combo.get_selected_item() else False
         entity_enabled = bool(entity)
-        self.show_icon.set_sensitive(entity_enabled)
+        self.icon_show_icon.set_sensitive(entity_enabled)
+        self.text_show_text.set_sensitive(entity_enabled)
+
+        if entity and self.text_show_text.get_active():
+            ha_entity = self.plugin_base.backend.get_entity(self.get_setting(SETTING_ENTITY_ENTITY))
+
+            self.text_position_combo.set_sensitive(True)
+            self.text_adaptive_size.set_sensitive(True)
+            self.text_size.set_sensitive(not self.text_adaptive_size.get_active())
+            self.text_attribute_combo.set_sensitive(len(self.text_attribute_model) > 1)
+
+            has_unit = bool(ha_entity.get(ATTRIBUTES, {}).get(ATTRIBUTE_UNIT_OF_MEASUREMENT, False))
+
+            if not has_unit:
+                self.text_show_unit.set_active(False)
+                self.text_unit_line_break.set_active(False)
+
+            attribute = self.text_attribute_combo.get_selected_item().get_string() if self.text_attribute_combo.get_selected_item() else False
+            no_attribute_selected = not bool(attribute)
+
+            unit_rows_active = has_unit and no_attribute_selected
+
+            self.text_show_unit.set_sensitive(unit_rows_active)
+            self.text_unit_line_break.set_sensitive(unit_rows_active)
+
+            if not self.text_show_unit.get_active():
+                self.text_unit_line_break.set_active(False)
+                self.text_unit_line_break.set_sensitive(False)
+        else:
+            self.text_position_combo.set_sensitive(False)
+            self.text_adaptive_size.set_sensitive(False)
+            self.text_size.set_sensitive(False)
+            self.text_attribute_combo.set_sensitive(False)
+            self.text_show_unit.set_sensitive(False)
+            self.text_unit_line_break.set_sensitive(False)
 
 
 def set_value_in_combo(combo: ComboRow, model: StringList, value: str):
