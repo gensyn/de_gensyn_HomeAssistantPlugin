@@ -1,13 +1,31 @@
 {
-    "actions.base.global_settings.label": "Home Assistant Einstellungen",
+    "actions.base.settings.label": "Home Assistant Einstellungen",
     "actions.base.host.label": "Host:",
     "actions.base.port.label": "Port:",
     "actions.base.ssl.label": "SSL:",
     "actions.base.token.label": "Token:",
-    "actions.home_assistant.button_settings.label": "Button Einstellungen",
-    "actions.home_assistant.domain.label": "Domäne:",
-    "actions.home_assistant.entity.label": "Entität:",
-    "actions.home_assistant.service.label": "Service:",
-    "actions.home_assistant.execute_on_key_down.label": "Ausführen bei Drücken:",
-    "actions.home_assistant.execute_on_key_up.label": "Ausführen bei Loslassen:"
+
+    "actions.home_assistant.settings.entity.label": "Entität",
+    "actions.home_assistant.settings.service.label": "Service",
+    "actions.home_assistant.settings.icon.label": "Bild",
+    "actions.home_assistant.settings.text.label": "Text",
+
+    "actions.home_assistant.entity.domain.label": "Domäne:",
+    "actions.home_assistant.entity.entity.label": "Entität:",
+
+    "actions.home_assistant.service.service.label": "Service:",
+    "actions.home_assistant.service.call_on_key_down.label": "Aufrufen bei Drücken:",
+    "actions.home_assistant.service.call_on_key_up.label": "Aufrufen bei Loslassen:",
+
+    "actions.home_assistant.icon.show_icon.label": "Bild der Entität anzeigen:",
+    "actions.home_assistant.icon.opacity.label": "Deckkraft:",
+    "actions.home_assistant.icon.scale.label": "Größe:",
+
+    "actions.home_assistant.text.show_text.label": "Status der Entität anzeigen:",
+    "actions.home_assistant.text.position.label": "Ausrichtung:",
+    "actions.home_assistant.text.adaptive_size.label": "Größe automatisch anpassen:",
+    "actions.home_assistant.text.size.label": "Größe:",
+    "actions.home_assistant.text.show_unit.label": "Einheit anzeigen:",
+    "actions.home_assistant.text.unit_line_break.label": "Neue Zeile zwischen Wert und Einheit:",
+    "actions.home_assistant.text.attribute.label": "Attribut statt Status anzeigen:"
 }

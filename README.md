@@ -11,18 +11,20 @@ __This is no official plugin - I have no affiliation with Home Assistant or Stre
 ## Features
 * Connect to your Home Assistant instance
 * Select a domain, entity and service to call that service for the entity either on key down or key up (or both, if you wish to)
-* If the entity has an icon, this icon is set as the image for the key
+* Option to show the entity icon
   * If the entity's state is _on_, the icon is shown in yellow
-    * If the entity's state changes, the color is updated on the StreamDeck 
+    * If the entity's state changes, the color is updated on the StreamDeck
+  * Scale and opacity of the icon are adjustable
+* Option to entity state or attribute text
+  * If the entity's state changes, the text is updated on the StreamDeck
+  * Position and size of the text are adjustable
+  * Option to show unit of measurement (with or without line break)
+  * Option to show attribute value instead of entity state
 
 ![Streamdeck UI Usage Example](/assets/action.png)
 
 ## Known bugs
 * Reconnect on lost connection to Home Assistant is only triggered when you try to interact with Home Assistant (i.e. send service calls)
-  * Automatic reconnects are planned
-* Entity IDs are truncated in the drop-down menu
-* Icons don't update when Home Assistant settings are changed (they should update on connect)
 
 ## Planned features
-* Make showing the icon optional
-* Option to show entity state/attribute text
+* Automatic reconnect

@@ -1,13 +1,31 @@
 {
-    "actions.base.global_settings.label": "Home Assistant settings",
+    "actions.base.settings.label": "Home Assistant settings",
     "actions.base.host.label": "Host:",
     "actions.base.port.label": "Port:",
     "actions.base.ssl.label": "SSL:",
     "actions.base.token.label": "Token:",
-    "actions.home_assistant.button_settings.label": "Button settings",
-    "actions.home_assistant.domain.label": "Domain:",
-    "actions.home_assistant.entity.label": "Entity:",
-    "actions.home_assistant.service.label": "Service:",
-    "actions.home_assistant.execute_on_key_down.label": "Execute on key down:",
-    "actions.home_assistant.execute_on_key_up.label": "Execute on key up:"
+
+    "actions.home_assistant.settings.entity.label": "Entity",
+    "actions.home_assistant.settings.service.label": "Service",
+    "actions.home_assistant.settings.icon.label": "Icon",
+    "actions.home_assistant.settings.text.label": "Text",
+
+    "actions.home_assistant.entity.domain.label": "Domain:",
+    "actions.home_assistant.entity.entity.label": "Entity:",
+
+    "actions.home_assistant.service.service.label": "Service:",
+    "actions.home_assistant.service.call_on_key_down.label": "Call on key down:",
+    "actions.home_assistant.service.call_on_key_up.label": "Call on key up:",
+
+    "actions.home_assistant.icon.show_icon.label": "Show entity icon:",
+    "actions.home_assistant.icon.opacity.label": "Opacity:",
+    "actions.home_assistant.icon.scale.label": "Scale:",
+
+    "actions.home_assistant.text.show_text.label": "Show entity state:",
+    "actions.home_assistant.text.position.label": "Position:",
+    "actions.home_assistant.text.adaptive_size.label": "Adapt size automatically:",
+    "actions.home_assistant.text.size.label": "Size:",
+    "actions.home_assistant.text.show_unit.label": "Show unit of measurement:",
+    "actions.home_assistant.text.unit_line_break.label": "Line break between value and unit:",
+    "actions.home_assistant.text.attribute.label": "Show attribute value instead:"
 }
