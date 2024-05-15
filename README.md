@@ -10,7 +10,8 @@ __This is no official plugin - I have no affiliation with Home Assistant, Stream
 
 ## Features
 * Connect to your Home Assistant instance
-* Select a domain, entity and service to call that service for the entity either on key down or key up (or both, if you wish to)
+* Select a domain and entity
+* Option to call a service for the entity either on key down or key up (or both, if you wish to)
 * Option to show the entity icon
   * If the entity's state is _on_, the icon is shown in yellow
     * If the entity's state changes, the color is updated on the StreamDeck
