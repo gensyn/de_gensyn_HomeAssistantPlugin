@@ -7,6 +7,9 @@ from typing import Dict, Callable, Any
 from loguru import logger as log
 from websocket import create_connection, WebSocket
 
+from plugins.de_gensyn_HomeAssistantPlugin.const import CONNECTED, CONNECTING, DISCONNECTING, NOT_CONNECTED, \
+    AUTHENTICATING, WAITING_FOR_RETRY
+
 HASS_WEBSOCKET_API = "/api/websocket?latest"
 
 FIELD_EVENT = "event"
@@ -23,9 +26,6 @@ BUTTON_ENCODE_SYMBOL = "-"
 RECV_LOOP_TIMEOUT = 300
 
 BUTTON_ENTITIES: Dict[str, str] = {}
-
-CONNECTED = "connected"
-NOT_CONNECTED = "not connected"
 
 WEBSOCKET_SEMAPHORE = Semaphore(1)
 ENTITIES_UPDATE_SEMAPHORE = Semaphore(1)
@@ -44,7 +44,8 @@ class HomeAssistantBackend:
     _port: str = ""
     _ssl: bool = True
     _token: str = ""
-    _connection_state = NOT_CONNECTED
+    _connection_status_callback: Callable = lambda _1, _2: None
+    _reconnect_thread: Thread = None
 
     def __init__(self):
         super().__init__()
@@ -69,16 +70,29 @@ class HomeAssistantBackend:
         self._token = token
         self.reconnect()
 
+    def set_connection_status_callback(self, callback: Callable):
+        self._connection_status_callback = callback
+
     def reconnect(self) -> bool:
         self.disconnect()
-        return self.connect()
+        success = self.connect()
+
+        if not success:
+            if not self._reconnect_thread or not self._reconnect_thread.is_alive():
+                self._reconnect_thread = Thread(target=self.retry_connect, daemon=True)
+                self._reconnect_thread.start()
+
+        return success
 
     def connect(self) -> bool:
         if self.is_connected():
             # already connected
             return True
 
+        self._connection_status_callback(CONNECTING)
+
         if not self._host or not self._token or not self._port:
+            self._connection_status_callback(NOT_CONNECTED)
             return False
 
         if self._websocket and self._websocket.connected:
@@ -89,24 +103,38 @@ class HomeAssistantBackend:
             # close existing websocket
             self._changes_websocket.close()
 
+        self._connection_status_callback(AUTHENTICATING)
+
         self._websocket = self._auth()
 
         if not self._websocket:
+            self._connection_status_callback(NOT_CONNECTED)
             return False
 
         self._changes_websocket = self._auth()
 
         if not self._changes_websocket:
+            self._websocket.close()
+            self._connection_status_callback(NOT_CONNECTED)
+            return False
+
+        message = self.create_message("get_config")
+        config = self._send_and_wait_for_response(message)
+
+        result: Dict[str, dict] = _get_field_from_message(config, FIELD_RESULT)
+
+        if not result or result.get("state", "") != "RUNNING":
+            self._websocket.close()
+            self._changes_websocket.close()
+            self._connection_status_callback(NOT_CONNECTED)
             return False
 
         log.info("Connected to Home Assistant")
-        self._connection_state = CONNECTED
+        self._connection_status_callback(CONNECTED)
 
-        recv_thread = Thread(target=self._async_run_recv_loop, daemon=True)
-        recv_thread.start()
+        Thread(target=self._async_run_recv_loop, daemon=True).start()
 
-        keep_alive_thread = Thread(target=self._keep_alive, daemon=True)
-        keep_alive_thread.start()
+        Thread(target=self._keep_alive, daemon=True).start()
 
         ENTITIES_UPDATE_SEMAPHORE.acquire()
         self._load_domains_and_entities()
@@ -115,13 +143,15 @@ class HomeAssistantBackend:
         return True
 
     def disconnect(self) -> None:
+        self._connection_status_callback(DISCONNECTING)
+
         if self._websocket and self._websocket.connected:
             self._websocket.close()
 
         if self._changes_websocket and self._changes_websocket.connected:
             self._changes_websocket.close()
 
-        self._connection_state = NOT_CONNECTED
+        self._connection_status_callback(NOT_CONNECTED)
 
     def _auth(self):
         websocket_host = f'{"wss://" if self._ssl else "ws://"}{self._host}:{self._port}{HASS_WEBSOCKET_API}'
@@ -213,7 +243,11 @@ class HomeAssistantBackend:
                     action_entity_updated(entity_id, update_state)
 
         self._websocket.close()
-        self._connection_state = NOT_CONNECTED
+        self._connection_status_callback(NOT_CONNECTED)
+
+        if not self._reconnect_thread or not self._reconnect_thread.is_alive():
+            self._reconnect_thread = Thread(target=self.retry_connect, daemon=True)
+            self._reconnect_thread.start()
 
     def get_state(self, entity_id: str) -> str:
         if not self.connect() or "." not in entity_id:
@@ -418,11 +452,28 @@ class HomeAssistantBackend:
             try:
                 self._websocket.ping()
             except Exception as e:
-                log.error("Ping error: ", e)
+                self._connection_status_callback(NOT_CONNECTED)
                 return
+
+    def retry_connect(self):
+        sleep(10)
+
+        count = 1
+
+        while not self.connect() and count < 3600:
+            self._connection_status_callback(WAITING_FOR_RETRY)
+            if count < 13:
+                sleep(10)
+            else:
+                sleep(60)
+
+            count = count + 1
 
 
 def _get_field_from_message(message: str, field: str) -> Any:
+    if not message:
+        return ""
+
     try:
         parsed = json.loads(message)
 

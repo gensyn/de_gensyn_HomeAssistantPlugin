@@ -27,9 +27,6 @@ from plugins.de_gensyn_HomeAssistantPlugin.const import CONNECT_BIND, SETTING_EN
     DEFAULT_TEXT_UNIT_LINE_BREAK
 
 from locales.LegacyLocaleManager import LegacyLocaleManager
-from src.backend.DeckManagement.DeckController import DeckController
-from src.backend.PageManagement.Page import Page
-from src.backend.PluginManager.PluginBase import PluginBase
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")

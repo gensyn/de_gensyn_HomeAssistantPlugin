@@ -21,14 +21,13 @@ __This is no official plugin - I have no affiliation with Home Assistant, Stream
   * If the entity's state changes, the text is updated on the StreamDeck
   * Position and size of the text are customizable
   * Option to show unit of measurement (with or without line break)
+* Automatic connection retries when the connection is lost for up to one hour
 
 ![Streamdeck UI Usage Example](/assets/action.png)
 
 ## Known bugs
-* Reconnect on lost connection to Home Assistant is only triggered when you try to interact with Home Assistant (i.e. send service calls)
+* You tell me
 
 ## Planned features
-* Automatic reconnect
-* Connection status label
 * Option to change icon color
 * Possibly further custom icons based on domains and services
