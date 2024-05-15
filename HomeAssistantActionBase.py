@@ -20,11 +20,8 @@ class HomeAssistantActionBase(ActionBase):
     ssl_switch: SwitchRow
     token_entry: PasswordEntryRow
 
-    def __init__(self, action_id: str, action_name: str,
-                 deck_controller: "DeckController", page: Page, coords: str, plugin_base: PluginBase, state: int):
-        super().__init__(action_id=action_id, action_name=action_name,
-                         deck_controller=deck_controller, page=page, coords=coords, plugin_base=plugin_base,
-                         state=state)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     def get_config_rows(self) -> list:
         lm = self.plugin_base.locale_manager

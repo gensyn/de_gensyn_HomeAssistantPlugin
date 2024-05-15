@@ -68,11 +68,8 @@ class HomeAssistantAction(HomeAssistantActionBase):
     text_attribute_combo: ComboRow
     text_attribute_model: StringList
 
-    def __init__(self, action_id: str, action_name: str,
-                 deck_controller: DeckController, page: Page, coords: str, plugin_base: PluginBase, state: int):
-        super().__init__(action_id=action_id, action_name=action_name,
-                         deck_controller=deck_controller, page=page, coords=coords, plugin_base=plugin_base,
-                         state=state)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
         filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../..", MDI_SVG_JSON)
         self.mdi_icons = json.loads(open(filename, "r").read())
