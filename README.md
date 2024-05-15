@@ -1,7 +1,7 @@
 # HomeAssistantPlugin for [StreamController](https://github.com/StreamController/StreamController)
 Control your Home Assistant instance from your StreamDeck
 
-__This is no official plugin - I have no affiliation with Home Assistant or StreamController.__
+__This is no official plugin - I have no affiliation with Home Assistant, StreamDeck or StreamController.__
 
 ## Prerequisites
 * `websocket_api` must be present in your `configuration.yaml`. Remember to restart Home Assistant after updating your configuration.
@@ -16,11 +16,10 @@ __This is no official plugin - I have no affiliation with Home Assistant or Stre
     * If the entity's state changes, the color is updated on the StreamDeck
   * Scale and opacity of the icon are adjustable
   * If the entity is a media player, the icon is instead reflecting the selected service
-* Option to entity state or attribute text
+* Option to show entity state or attribute text
   * If the entity's state changes, the text is updated on the StreamDeck
-  * Position and size of the text are adjustable
+  * Position and size of the text are customizable
   * Option to show unit of measurement (with or without line break)
-  * Option to show attribute value instead of entity state
 
 ![Streamdeck UI Usage Example](/assets/action.png)
 
