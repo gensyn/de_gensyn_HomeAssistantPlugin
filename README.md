@@ -15,6 +15,7 @@ __This is no official plugin - I have no affiliation with Home Assistant or Stre
   * If the entity's state is _on_, the icon is shown in yellow
     * If the entity's state changes, the color is updated on the StreamDeck
   * Scale and opacity of the icon are adjustable
+  * If the entity is a media player, the icon is instead reflecting the selected service
 * Option to entity state or attribute text
   * If the entity's state changes, the text is updated on the StreamDeck
   * Position and size of the text are adjustable
@@ -28,3 +29,6 @@ __This is no official plugin - I have no affiliation with Home Assistant or Stre
 
 ## Planned features
 * Automatic reconnect
+* Connection status label
+* Option to change icon color
+* Possibly further custom icons based on domains and services
