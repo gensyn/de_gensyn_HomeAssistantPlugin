@@ -15,7 +15,7 @@ __This is no official plugin - I have no affiliation with Home Assistant, Stream
 * Option to show the entity icon
   * If the entity's state is _on_, the icon is shown in yellow
     * If the entity's state changes, the color is updated on the StreamDeck
-  * Scale and opacity of the icon are adjustable
+  * Scale and opacity of the icon are customizable
   * If the entity is a media player, the icon is instead reflecting the selected service
 * Option to show entity state or attribute text
   * If the entity's state changes, the text is updated on the StreamDeck
