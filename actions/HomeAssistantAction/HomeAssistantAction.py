@@ -72,6 +72,10 @@ class HomeAssistantAction(HomeAssistantActionBase):
         self.mdi_icons = json.loads(open(filename, "r").read())
 
     def on_ready(self) -> None:
+        if not self.plugin_base.backend.is_connected():
+            self.plugin_base.backend.register_action(self.on_ready)
+            return
+
         entity = self.get_setting(SETTING_ENTITY_ENTITY)
 
         if entity:
@@ -79,6 +83,11 @@ class HomeAssistantAction(HomeAssistantActionBase):
                                                         self.entity_updated)
 
         self.entity_updated(entity)
+
+    def on_removed_from_cache(self) -> None:
+        self.plugin_base.backend.remove_action(self.on_ready)
+        self.plugin_base.backend.remove_tracked_entity(self.get_setting(SETTING_ENTITY_ENTITY),
+                                                       f"{self.page.json_path}{self.page_coords}")
 
     def on_key_down(self) -> None:
         if self.get_setting(SETTING_SERVICE_SERVICE_ON_KEY_DOWN, DEFAULT_SERVICE_SERVICE_ON_KEY_DOWN):
@@ -281,6 +290,11 @@ class HomeAssistantAction(HomeAssistantActionBase):
         domain = combo.get_selected_item().get_string()
 
         if old_domain != domain:
+            old_entity = settings[SETTING_ENTITY_ENTITY]
+
+            if old_entity:
+                self.plugin_base.backend.remove_tracked_entity(old_entity, f"{self.page.json_path}{self.page_coords}")
+
             settings[SETTING_ENTITY_DOMAIN] = domain
             settings[SETTING_ENTITY_ENTITY] = EMPTY_STRING
             settings[SETTING_SERVICE_SERVICE] = EMPTY_STRING
@@ -385,13 +399,13 @@ class HomeAssistantAction(HomeAssistantActionBase):
                 self.set_bottom_label(None)
                 return
 
-            text = state.get(STATE)
+            text = str(state.get(STATE))
             text_length = len(text)
             text_height = 1
             attribute = settings.get(SETTING_TEXT_ATTRIBUTE)
 
             if attribute:
-                text = state.get(ATTRIBUTES, {}).get(attribute, EMPTY_STRING)
+                text = str(state.get(ATTRIBUTES, {}).get(attribute, EMPTY_STRING))
                 text_length = len(text)
             else:
                 if settings.get(SETTING_TEXT_SHOW_UNIT):
