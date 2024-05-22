@@ -37,7 +37,11 @@ Actions:
 ## Features
 * Connect to your Home Assistant instance
 * Select a domain and entity
-* Option to call a service for the entity either on key down or key up (or both, if you wish to)
+* Option to call a service
+  * _on key down_: immediately when the button is pressed
+  * _on key hold_: when a button is held
+  * _on key up after short press_: when releasing a button **before** it was registered as being held
+  * _on key up after hold_: when releasing a button **after** it was registered as being held
 * Option to show the entity icon
   * If the entity's state is _on_, the icon is shown in yellow
     * If the entity's state changes, the color is updated on the StreamDeck
