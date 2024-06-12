@@ -3,8 +3,8 @@ from plugins.de_gensyn_HomeAssistantPlugin.const import EMPTY_STRING, HOME_ASSIS
 
 from src.backend.PluginManager.ActionHolder import ActionHolder
 from src.backend.PluginManager.PluginBase import PluginBase
-from .HomeAssistant import HomeAssistantBackend
 from .actions.HomeAssistantAction.HomeAssistantAction import HomeAssistantAction
+from .backend.HomeAssistant import HomeAssistantBackend
 
 
 class HomeAssistant(PluginBase):

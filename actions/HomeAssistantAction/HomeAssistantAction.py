@@ -3,6 +3,7 @@ import io
 import json
 import logging
 import os
+import uuid
 from typing import Any, Dict
 
 import cairosvg
@@ -24,7 +25,9 @@ from plugins.de_gensyn_HomeAssistantPlugin.const import CONNECT_BIND, SETTING_EN
     SETTING_ICON_SCALE, DEFAULT_ICON_SCALE, DEFAULT_ICON_SHOW_ICON, DEFAULT_ICON_OPACITY, \
     DEFAULT_SERVICE_SERVICE_ON_KEY_DOWN, DEFAULT_SERVICE_SERVICE_ON_KEY_UP, DEFAULT_TEXT_SHOW_TEXT, \
     DEFAULT_TEXT_POSITION, DEFAULT_TEXT_ADAPTIVE_SIZE, DEFAULT_TEXT_SIZE, DEFAULT_TEXT_SHOW_UNIT, \
-    DEFAULT_TEXT_UNIT_LINE_BREAK
+    DEFAULT_TEXT_UNIT_LINE_BREAK, SETTING_SERVICE_SERVICE_ON_KEY_HOLD_START, SETTING_SERVICE_SERVICE_ON_KEY_HOLD_STOP, \
+    DEFAULT_SERVICE_SERVICE_ON_KEY_HOLD_START, DEFAULT_SERVICE_SERVICE_ON_KEY_HOLD_STOP, \
+    LABEL_SERVICE_CALL_ON_KEY_HOLD_START, LABEL_SERVICE_CALL_ON_KEY_HOLD_STOP
 
 from locales.LegacyLocaleManager import LegacyLocaleManager
 
@@ -35,6 +38,8 @@ from gi.repository.Adw import ComboRow, PreferencesGroup, SpinRow, SwitchRow
 
 
 class HomeAssistantAction(HomeAssistantActionBase):
+    uuid: uuid.UUID
+
     mdi_icons: Dict[str, str]
 
     lm: LegacyLocaleManager
@@ -51,6 +56,8 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
     service_call_on_key_down: SwitchRow
     service_call_on_key_up: SwitchRow
+    service_call_on_key_hold_start: SwitchRow
+    service_call_on_key_hold_stop: SwitchRow
 
     icon_show_icon: SwitchRow
     icon_opacity: SpinRow
@@ -68,6 +75,8 @@ class HomeAssistantAction(HomeAssistantActionBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.uuid = uuid.uuid4()
+
         filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../..", MDI_SVG_JSON)
         self.mdi_icons = json.loads(open(filename, "r").read())
 
@@ -79,12 +88,11 @@ class HomeAssistantAction(HomeAssistantActionBase):
         entity = self.get_setting(SETTING_ENTITY_ENTITY)
 
         if entity:
-            self.plugin_base.backend.add_tracked_entity(entity, f"{self.page.json_path}{self.page_coords}",
-                                                        self.entity_updated)
+            self.plugin_base.backend.add_tracked_entity(entity, self.uuid, self.entity_updated)
 
         self.entity_updated(entity)
 
-    def on_removed_from_cache(self) -> None:
+    def on_remove(self) -> None:
         self.plugin_base.backend.remove_action(self.on_ready)
         self.plugin_base.backend.remove_tracked_entity(self.get_setting(SETTING_ENTITY_ENTITY),
                                                        f"{self.page.json_path}{self.page_coords}")
@@ -95,6 +103,14 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
     def on_key_up(self) -> None:
         if self.get_setting(SETTING_SERVICE_SERVICE_ON_KEY_UP, DEFAULT_SERVICE_SERVICE_ON_KEY_UP):
+            self.call_service()
+
+    def on_key_hold_start(self):
+        if self.get_setting(SETTING_SERVICE_SERVICE_ON_KEY_HOLD_START, DEFAULT_SERVICE_SERVICE_ON_KEY_HOLD_START):
+            self.call_service()
+
+    def on_key_hold_stop(self):
+        if self.get_setting(SETTING_SERVICE_SERVICE_ON_KEY_HOLD_STOP, DEFAULT_SERVICE_SERVICE_ON_KEY_HOLD_STOP):
             self.call_service()
 
     def call_service(self) -> None:
@@ -161,12 +177,22 @@ class HomeAssistantAction(HomeAssistantActionBase):
         self.service_call_on_key_up.set_active(
             self.get_setting(SETTING_SERVICE_SERVICE_ON_KEY_UP, DEFAULT_SERVICE_SERVICE_ON_KEY_UP))
 
+        self.service_call_on_key_hold_start = SwitchRow(title=self.lm.get(LABEL_SERVICE_CALL_ON_KEY_HOLD_START))
+        self.service_call_on_key_hold_start.set_active(
+            self.get_setting(SETTING_SERVICE_SERVICE_ON_KEY_HOLD_START, DEFAULT_SERVICE_SERVICE_ON_KEY_HOLD_START))
+
+        self.service_call_on_key_hold_stop = SwitchRow(title=self.lm.get(LABEL_SERVICE_CALL_ON_KEY_HOLD_STOP))
+        self.service_call_on_key_hold_stop.set_active(
+            self.get_setting(SETTING_SERVICE_SERVICE_ON_KEY_HOLD_STOP, DEFAULT_SERVICE_SERVICE_ON_KEY_HOLD_STOP))
+
         group = PreferencesGroup()
         group.set_title(self.lm.get(LABEL_SETTINGS_SERVICE))
         group.set_margin_top(20)
         group.add(self.service_service_combo)
         group.add(self.service_call_on_key_down)
         group.add(self.service_call_on_key_up)
+        group.add(self.service_call_on_key_hold_start)
+        group.add(self.service_call_on_key_hold_stop)
 
         return group
 
@@ -245,6 +271,10 @@ class HomeAssistantAction(HomeAssistantActionBase):
                                               SETTING_SERVICE_SERVICE_ON_KEY_DOWN)
         self.service_call_on_key_up.connect(CONNECT_NOTIFY_ACTIVE, self.on_change_switch,
                                             SETTING_SERVICE_SERVICE_ON_KEY_UP)
+        self.service_call_on_key_hold_start.connect(CONNECT_NOTIFY_ACTIVE, self.on_change_switch,
+                                                    SETTING_SERVICE_SERVICE_ON_KEY_HOLD_START)
+        self.service_call_on_key_hold_stop.connect(CONNECT_NOTIFY_ACTIVE, self.on_change_switch,
+                                                   SETTING_SERVICE_SERVICE_ON_KEY_HOLD_STOP)
 
         self.icon_show_icon.connect(CONNECT_NOTIFY_ACTIVE, self.on_change_switch, SETTING_ICON_SHOW_ICON)
         self.icon_scale.connect(CONNECT_CHANGED, self.on_change_spin, SETTING_ICON_SCALE)
@@ -584,7 +614,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
             elif "volume_up" == service:
                 icon_name = "volume-plus"
             elif "volume_down" == service:
-                icon_name = "entity_id, volume-minus"
+                icon_name = "volume-minus"
             elif "media_next_track" == service:
                 icon_name = "skip-next"
             elif "media_previous_track" == service:

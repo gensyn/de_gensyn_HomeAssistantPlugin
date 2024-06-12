@@ -4,9 +4,10 @@ from time import sleep
 from typing import Dict, Callable, Any, List
 
 from loguru import logger as log
-from plugins.de_gensyn_HomeAssistantPlugin.const import CONNECTED, CONNECTING, DISCONNECTING, NOT_CONNECTED, \
-    AUTHENTICATING, WAITING_FOR_RETRY
+from streamcontroller_plugin_tools import BackendBase
 from websocket import create_connection, WebSocket
+
+from plugins.de_gensyn_HomeAssistantPlugin.backend.const import CONNECTED, CONNECTING, DISCONNECTING, NOT_CONNECTED, AUTHENTICATING, WAITING_FOR_RETRY
 
 HASS_WEBSOCKET_API = "/api/websocket?latest"
 
@@ -45,6 +46,7 @@ class HomeAssistantBackend:
     _ssl: bool = True
     _token: str = ""
     _connection_status_callback: Callable = lambda _1, _2: None
+    _keep_alive_thread: Thread = None
     _reconnect_thread: Thread = None
     _action_list: List[Callable] = []
 
@@ -96,7 +98,7 @@ class HomeAssistantBackend:
         self.disconnect()
         success = self.connect()
 
-        if not success:
+        if not success and self._host and self._token and self._port:
             if not self._reconnect_thread or not self._reconnect_thread.is_alive():
                 self._reconnect_thread = Thread(target=self.retry_connect, daemon=True)
                 self._reconnect_thread.start()
@@ -156,7 +158,9 @@ class HomeAssistantBackend:
 
         Thread(target=self._async_run_recv_loop, daemon=True).start()
 
-        Thread(target=self._keep_alive, daemon=True).start()
+        if not self._keep_alive_thread or not self._keep_alive_thread.is_alive():
+            self._keep_alive_thread = Thread(target=self._keep_alive, daemon=True)
+            self._keep_alive_thread.start()
 
         ENTITIES_UPDATE_SEMAPHORE.acquire()
         self._load_domains_and_entities()
@@ -263,13 +267,21 @@ class HomeAssistantBackend:
 
                 state = new_state.get("state")
 
+                attributes = new_state.get("attributes", {})
+
+                self._entities[domain][entity_id]["state"] = state
+                self._entities[domain][entity_id]["attributes"] = attributes
+
                 update_state = {
                     "state": state,
-                    "attributes": new_state.get("attributes", {}),
+                    "attributes": attributes,
                 }
 
                 for action_entity_updated in actions:
-                    action_entity_updated(entity_id, update_state)
+                    try:
+                        action_entity_updated(entity_id, update_state)
+                    except Exception as e:
+                        log.exception(f"Ex: {e}")
 
         self._websocket.close()
         self._connection_status_callback(NOT_CONNECTED)
@@ -499,7 +511,7 @@ class HomeAssistantBackend:
             else:
                 sleep(60)
 
-            count = count + 1
+            count += 1
 
     def register_action(self, action: Callable):
         if action not in self._action_list:

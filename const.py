@@ -1,3 +1,5 @@
+import plugins.de_gensyn_HomeAssistantPlugin.backend.const as backend
+
 EMPTY_STRING = ""
 HOME_ASSISTANT = "Home Assistant"
 
@@ -27,6 +29,8 @@ LABEL_ENTITY_ENTITY = "actions.home_assistant.entity.entity.label"
 LABEL_SERVICE_SERVICE = "actions.home_assistant.service.service.label"
 LABEL_SERVICE_CALL_ON_KEY_DOWN = "actions.home_assistant.service.call_on_key_down.label"
 LABEL_SERVICE_CALL_ON_KEY_UP = "actions.home_assistant.service.call_on_key_up.label"
+LABEL_SERVICE_CALL_ON_KEY_HOLD_START = "actions.home_assistant.service.call_on_key_hold_start.label"
+LABEL_SERVICE_CALL_ON_KEY_HOLD_STOP = "actions.home_assistant.service.call_on_key_hold_stop.label"
 
 LABEL_ICON_SHOW_ICON = "actions.home_assistant.icon.show_icon.label"
 LABEL_ICON_OPACITY = "actions.home_assistant.icon.opacity.label"
@@ -51,6 +55,8 @@ SETTING_ENTITY_ENTITY = "entity.entity"
 SETTING_SERVICE_SERVICE = "service.service"
 SETTING_SERVICE_SERVICE_ON_KEY_DOWN = "service.service_on_key_down"
 SETTING_SERVICE_SERVICE_ON_KEY_UP = "service.service_on_key_up"
+SETTING_SERVICE_SERVICE_ON_KEY_HOLD_START = "service.service_on_key_hold_start"
+SETTING_SERVICE_SERVICE_ON_KEY_HOLD_STOP = "service.service_on_key_hold_stop"
 
 SETTING_ICON_SHOW_ICON = "icon.show_icon"
 SETTING_ICON_OPACITY = "icon.opacity"
@@ -82,6 +88,8 @@ MDI_SVG_JSON = "assets/mdi-svg.json"
 
 DEFAULT_SERVICE_SERVICE_ON_KEY_DOWN = True
 DEFAULT_SERVICE_SERVICE_ON_KEY_UP = False
+DEFAULT_SERVICE_SERVICE_ON_KEY_HOLD_START = False
+DEFAULT_SERVICE_SERVICE_ON_KEY_HOLD_STOP = False
 
 DEFAULT_ICON_SHOW_ICON = False
 DEFAULT_ICON_SCALE = 80
@@ -94,9 +102,9 @@ DEFAULT_TEXT_SIZE = 20
 DEFAULT_TEXT_SHOW_UNIT = False
 DEFAULT_TEXT_UNIT_LINE_BREAK = False
 
-CONNECTED = "Connected"
-CONNECTING = "Connecting"
-DISCONNECTING = "Disconnecting"
-NOT_CONNECTED = "Not connected"
-AUTHENTICATING = "Authenticating"
-WAITING_FOR_RETRY = "Waiting for retry"
+CONNECTED = backend.CONNECTED
+CONNECTING = backend.CONNECTING
+DISCONNECTING = backend.DISCONNECTING
+NOT_CONNECTED = backend.NOT_CONNECTED
+AUTHENTICATING = backend.AUTHENTICATING
+WAITING_FOR_RETRY = backend.WAITING_FOR_RETRY
