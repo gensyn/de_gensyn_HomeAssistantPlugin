@@ -15,7 +15,9 @@
 
     "actions.home_assistant.service.service.label": "Service:",
     "actions.home_assistant.service.call_on_key_down.label": "Aufrufen bei Drücken:",
-    "actions.home_assistant.service.call_on_key_up.label": "Aufrufen bei Loslassen:",
+    "actions.home_assistant.service.call_on_key_up.label": "Aufrufen bei Loslassen nach kurz Drücken:",
+    "actions.home_assistant.service.call_on_key_hold_start.label": "Aufrufen bei Halten:",
+    "actions.home_assistant.service.call_on_key_hold_stop.label": "Aufrufen bei Loslassen nach Halten:",
 
     "actions.home_assistant.icon.show_icon.label": "Bild der Entität anzeigen:",
     "actions.home_assistant.icon.opacity.label": "Deckkraft:",

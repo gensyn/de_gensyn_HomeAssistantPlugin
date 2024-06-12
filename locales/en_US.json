@@ -15,7 +15,9 @@
 
     "actions.home_assistant.service.service.label": "Service:",
     "actions.home_assistant.service.call_on_key_down.label": "Call on key down:",
-    "actions.home_assistant.service.call_on_key_up.label": "Call on key up:",
+    "actions.home_assistant.service.call_on_key_up.label": "Call on key up after short press:",
+    "actions.home_assistant.service.call_on_key_hold_start.label": "Call on key hold:",
+    "actions.home_assistant.service.call_on_key_hold_stop.label": "Call on key up after hold:",
 
     "actions.home_assistant.icon.show_icon.label": "Show entity icon:",
     "actions.home_assistant.icon.opacity.label": "Opacity:",
