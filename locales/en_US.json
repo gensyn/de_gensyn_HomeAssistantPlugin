@@ -14,14 +14,17 @@
     "actions.home_assistant.entity.entity.label": "Entity:",
 
     "actions.home_assistant.service.service.label": "Service:",
-    "actions.home_assistant.service.call_on_key_down.label": "Call on key down:",
-    "actions.home_assistant.service.call_on_key_up.label": "Call on key up after short press:",
-    "actions.home_assistant.service.call_on_key_hold_start.label": "Call on key hold:",
-    "actions.home_assistant.service.call_on_key_hold_stop.label": "Call on key up after hold:",
+    "actions.home_assistant.service.call_on_key_down.label": "key down:",
+    "actions.home_assistant.service.call_on_key_up.label": "key up after short press:",
+    "actions.home_assistant.service.call_on_key_hold_start.label": "key hold:",
+    "actions.home_assistant.service.call_on_key_hold_stop.label": "key up after hold:",
+    "actions.home_assistant.service.call_on.label": "Call on",
+    "actions.home_assistant.service.parameters.label": "Parameters:",
 
     "actions.home_assistant.icon.show_icon.label": "Show entity icon:",
     "actions.home_assistant.icon.opacity.label": "Opacity:",
     "actions.home_assistant.icon.scale.label": "Scale:",
+    "actions.home_assistant.icon.options.label": "Options",
 
     "actions.home_assistant.text.show_text.label": "Show entity state:",
     "actions.home_assistant.text.position.label": "Position:",
@@ -29,5 +32,6 @@
     "actions.home_assistant.text.size.label": "Size:",
     "actions.home_assistant.text.show_unit.label": "Show unit of measurement:",
     "actions.home_assistant.text.unit_line_break.label": "Line break between value and unit:",
-    "actions.home_assistant.text.attribute.label": "Show attribute value instead:"
+    "actions.home_assistant.text.attribute.label": "Show attribute value instead:",
+    "actions.home_assistant.text.options.label": "Options"
 }

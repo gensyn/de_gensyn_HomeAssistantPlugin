@@ -31,10 +31,13 @@ LABEL_SERVICE_CALL_ON_KEY_DOWN = "actions.home_assistant.service.call_on_key_dow
 LABEL_SERVICE_CALL_ON_KEY_UP = "actions.home_assistant.service.call_on_key_up.label"
 LABEL_SERVICE_CALL_ON_KEY_HOLD_START = "actions.home_assistant.service.call_on_key_hold_start.label"
 LABEL_SERVICE_CALL_ON_KEY_HOLD_STOP = "actions.home_assistant.service.call_on_key_hold_stop.label"
+LABEL_SERVICE_CALL_ON = "actions.home_assistant.service.call_on.label"
+LABEL_SERVICE_PARAMETERS = "actions.home_assistant.service.parameters.label"
 
 LABEL_ICON_SHOW_ICON = "actions.home_assistant.icon.show_icon.label"
 LABEL_ICON_OPACITY = "actions.home_assistant.icon.opacity.label"
 LABEL_ICON_SCALE = "actions.home_assistant.icon.scale.label"
+LABEL_ICON_OPTIONS = "actions.home_assistant.text.options.label"
 
 LABEL_TEXT_SHOW_TEXT = "actions.home_assistant.text.show_text.label"
 LABEL_TEXT_POSITION = "actions.home_assistant.text.position.label"
@@ -43,6 +46,7 @@ LABEL_TEXT_ADAPTIVE_SIZE = "actions.home_assistant.text.adaptive_size.label"
 LABEL_TEXT_SHOW_UNIT = "actions.home_assistant.text.show_unit.label"
 LABEL_TEXT_UNIT_LINE_BREAK = "actions.home_assistant.text.unit_line_break.label"
 LABEL_TEXT_ATTRIBUTE = "actions.home_assistant.text.attribute.label"
+LABEL_TEXT_OPTIONS = "actions.home_assistant.text.options.label"
 
 LABEL_SETTINGS_ENTITY = "actions.home_assistant.settings.entity.label"
 LABEL_SETTINGS_SERVICE = "actions.home_assistant.settings.service.label"

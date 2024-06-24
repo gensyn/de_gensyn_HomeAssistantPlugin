@@ -27,14 +27,14 @@ from plugins.de_gensyn_HomeAssistantPlugin.const import CONNECT_BIND, SETTING_EN
     DEFAULT_TEXT_POSITION, DEFAULT_TEXT_ADAPTIVE_SIZE, DEFAULT_TEXT_SIZE, DEFAULT_TEXT_SHOW_UNIT, \
     DEFAULT_TEXT_UNIT_LINE_BREAK, SETTING_SERVICE_SERVICE_ON_KEY_HOLD_START, SETTING_SERVICE_SERVICE_ON_KEY_HOLD_STOP, \
     DEFAULT_SERVICE_SERVICE_ON_KEY_HOLD_START, DEFAULT_SERVICE_SERVICE_ON_KEY_HOLD_STOP, \
-    LABEL_SERVICE_CALL_ON_KEY_HOLD_START, LABEL_SERVICE_CALL_ON_KEY_HOLD_STOP
+    LABEL_SERVICE_CALL_ON_KEY_HOLD_START, LABEL_SERVICE_CALL_ON_KEY_HOLD_STOP, LABEL_SERVICE_CALL_ON, LABEL_SERVICE_PARAMETERS, LABEL_TEXT_OPTIONS, LABEL_ICON_OPTIONS
 
 from locales.LegacyLocaleManager import LegacyLocaleManager
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository.Gtk import Align, Label, SignalListItemFactory, StringList
-from gi.repository.Adw import ComboRow, PreferencesGroup, SpinRow, SwitchRow
+from gi.repository.Adw import ComboRow, ExpanderRow, PreferencesGroup, SpinRow, SwitchRow
 
 
 class HomeAssistantAction(HomeAssistantActionBase):
@@ -58,6 +58,8 @@ class HomeAssistantAction(HomeAssistantActionBase):
     service_call_on_key_up: SwitchRow
     service_call_on_key_hold_start: SwitchRow
     service_call_on_key_hold_stop: SwitchRow
+
+    service_parameters: ExpanderRow
 
     icon_show_icon: SwitchRow
     icon_opacity: SpinRow
@@ -185,14 +187,20 @@ class HomeAssistantAction(HomeAssistantActionBase):
         self.service_call_on_key_hold_stop.set_active(
             self.get_setting(SETTING_SERVICE_SERVICE_ON_KEY_HOLD_STOP, DEFAULT_SERVICE_SERVICE_ON_KEY_HOLD_STOP))
 
+        events_expander = ExpanderRow(title=self.lm.get(LABEL_SERVICE_CALL_ON))
+        events_expander.add_row(self.service_call_on_key_down)
+        events_expander.add_row(self.service_call_on_key_up)
+        events_expander.add_row(self.service_call_on_key_hold_start)
+        events_expander.add_row(self.service_call_on_key_hold_stop)
+
+        self.service_parameters = ExpanderRow(title=self.lm.get(LABEL_SERVICE_PARAMETERS))
+
         group = PreferencesGroup()
         group.set_title(self.lm.get(LABEL_SETTINGS_SERVICE))
         group.set_margin_top(20)
         group.add(self.service_service_combo)
-        group.add(self.service_call_on_key_down)
-        group.add(self.service_call_on_key_up)
-        group.add(self.service_call_on_key_hold_start)
-        group.add(self.service_call_on_key_hold_stop)
+        group.add(events_expander)
+        group.add(self.service_parameters)
 
         return group
 
@@ -208,12 +216,15 @@ class HomeAssistantAction(HomeAssistantActionBase):
         self.icon_opacity.set_title(self.lm.get(LABEL_ICON_OPACITY))
         self.icon_opacity.set_value(self.get_setting(SETTING_ICON_OPACITY, DEFAULT_ICON_OPACITY))
 
+        options_expander = ExpanderRow(title=self.lm.get(LABEL_ICON_OPTIONS))
+        options_expander.add_row(self.icon_scale)
+        options_expander.add_row(self.icon_opacity)
+
         group = PreferencesGroup()
         group.set_title(self.lm.get(LABEL_SETTINGS_ICON))
         group.set_margin_top(20)
         group.add(self.icon_show_icon)
-        group.add(self.icon_scale)
-        group.add(self.icon_opacity)
+        group.add(options_expander)
 
         return group
 
@@ -249,16 +260,19 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
         self.load_attributes()
 
+        options_expander = ExpanderRow(title=self.lm.get(LABEL_TEXT_OPTIONS))
+        options_expander.add_row(self.text_position_combo)
+        options_expander.add_row(self.text_adaptive_size)
+        options_expander.add_row(self.text_size)
+        options_expander.add_row(self.text_show_unit)
+        options_expander.add_row(self.text_unit_line_break)
+
         group = PreferencesGroup()
         group.set_title(self.lm.get(LABEL_SETTINGS_TEXT))
         group.set_margin_top(20)
         group.add(self.text_show_text)
-        group.add(self.text_position_combo)
-        group.add(self.text_adaptive_size)
-        group.add(self.text_size)
-        group.add(self.text_show_unit)
-        group.add(self.text_unit_line_break)
         group.add(self.text_attribute_combo)
+        group.add(options_expander)
 
         return group
 

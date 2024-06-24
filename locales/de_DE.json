@@ -14,14 +14,17 @@
     "actions.home_assistant.entity.entity.label": "Entität:",
 
     "actions.home_assistant.service.service.label": "Service:",
-    "actions.home_assistant.service.call_on_key_down.label": "Aufrufen bei Drücken:",
-    "actions.home_assistant.service.call_on_key_up.label": "Aufrufen bei Loslassen nach kurz Drücken:",
-    "actions.home_assistant.service.call_on_key_hold_start.label": "Aufrufen bei Halten:",
-    "actions.home_assistant.service.call_on_key_hold_stop.label": "Aufrufen bei Loslassen nach Halten:",
+    "actions.home_assistant.service.call_on_key_down.label": "Drücken:",
+    "actions.home_assistant.service.call_on_key_up.label": "Loslassen nach kurz Drücken:",
+    "actions.home_assistant.service.call_on_key_hold_start.label": "Halten:",
+    "actions.home_assistant.service.call_on_key_hold_stop.label": "Loslassen nach Halten:",
+    "actions.home_assistant.service.call_on.label": "Aufrufen bei",
+    "actions.home_assistant.service.parameters.label": "Parameter:",
 
     "actions.home_assistant.icon.show_icon.label": "Bild der Entität anzeigen:",
     "actions.home_assistant.icon.opacity.label": "Deckkraft:",
     "actions.home_assistant.icon.scale.label": "Größe:",
+    "actions.home_assistant.icon.options.label": "Optionen",
 
     "actions.home_assistant.text.show_text.label": "Status der Entität anzeigen:",
     "actions.home_assistant.text.position.label": "Ausrichtung:",
@@ -29,5 +32,6 @@
     "actions.home_assistant.text.size.label": "Größe:",
     "actions.home_assistant.text.show_unit.label": "Einheit anzeigen:",
     "actions.home_assistant.text.unit_line_break.label": "Neue Zeile zwischen Wert und Einheit:",
-    "actions.home_assistant.text.attribute.label": "Attribut statt Status anzeigen:"
+    "actions.home_assistant.text.attribute.label": "Attribut statt Status anzeigen:",
+    "actions.home_assistant.text.options.label": "Optionen"
 }
