@@ -4,10 +4,9 @@ from time import sleep
 from typing import Dict, Callable, Any, List
 
 from loguru import logger as log
-from streamcontroller_plugin_tools import BackendBase
+from plugins.de_gensyn_HomeAssistantPlugin.backend.const import CONNECTED, CONNECTING, DISCONNECTING, NOT_CONNECTED, \
+    AUTHENTICATING, WAITING_FOR_RETRY
 from websocket import create_connection, WebSocket
-
-from plugins.de_gensyn_HomeAssistantPlugin.backend.const import CONNECTED, CONNECTING, DISCONNECTING, NOT_CONNECTED, AUTHENTICATING, WAITING_FOR_RETRY
 
 HASS_WEBSOCKET_API = "/api/websocket?latest"
 
@@ -54,20 +53,13 @@ class HomeAssistantBackend:
         super().__init__()
 
     def set_host(self, host: str) -> None:
-
         if "//" in host:
-            new_host = host.split("//")[1]
+            host = host.split("//")[1]
 
-            if self._host == new_host:
-                return
+        if self._host == host:
+            return
 
-            self._host = new_host
-        else:
-            if self._host == host:
-                return
-
-            self._host = host
-
+        self._host = host
         self.reconnect()
 
     def set_port(self, port: str) -> None:
@@ -148,6 +140,8 @@ class HomeAssistantBackend:
         result: Dict[str, dict] = _get_field_from_message(config, FIELD_RESULT)
 
         if not result or result.get("state", "") != "RUNNING":
+            # Home Assistant hasn't finished starting yet so not all entities
+            # might have been initialized - try again later
             self._websocket.close()
             self._changes_websocket.close()
             self._connection_status_callback(NOT_CONNECTED)

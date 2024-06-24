@@ -557,6 +557,8 @@ class HomeAssistantAction(HomeAssistantActionBase):
         service_selected = bool(service)
         self.service_call_on_key_down.set_sensitive(service_selected)
         self.service_call_on_key_up.set_sensitive(service_selected)
+        self.service_call_on_key_hold_start.set_sensitive(service_selected)
+        self.service_call_on_key_hold_stop.set_sensitive(service_selected)
 
         entity = self.entity_entity_combo.get_selected_item().get_string() if self.entity_entity_combo.get_selected_item() else False
         entity_enabled = bool(entity)
