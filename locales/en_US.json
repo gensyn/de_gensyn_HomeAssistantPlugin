@@ -19,7 +19,7 @@
     "actions.home_assistant.service.call_on_key_hold_start.label": "key hold:",
     "actions.home_assistant.service.call_on_key_hold_stop.label": "key up after hold:",
     "actions.home_assistant.service.call_on.label": "Call on",
-    "actions.home_assistant.service.parameters.label": "Parameters:",
+    "actions.home_assistant.service.parameters.label": "Parameters",
 
     "actions.home_assistant.icon.show_icon.label": "Show entity icon:",
     "actions.home_assistant.icon.opacity.label": "Opacity:",
