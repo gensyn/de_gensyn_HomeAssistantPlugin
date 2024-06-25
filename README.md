@@ -53,7 +53,7 @@ A button to show and control air quality.
   * The service is always called on `key_down`, i.e. immediately when the button is pressed
     * To change this behavior, the built-in `Event Assigner` can be used
       * to map other events to `key_down`, if you want to call the service on a different event (multiple events are possible)
-      * to map `key_down` to a different event, if you don't want to call the service on `key_down`
+      * to map `key_down` to `None`, if you don't want to call the service on `key_down`
 * Option to show the entity icon
   * If the entity's state is _on_, the icon is shown in yellow
     * If the entity's state changes, the color is updated on the StreamDeck

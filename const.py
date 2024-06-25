@@ -3,9 +3,6 @@ import plugins.de_gensyn_HomeAssistantPlugin.backend.const as backend
 EMPTY_STRING = ""
 HOME_ASSISTANT = "Home Assistant"
 
-CONNECT_NOTIFY_ACTIVE = "notify::active"
-CONNECT_NOTIFY_TEXT = "notify::text"
-
 # BASE
 LABEL_HOST_KEY = "actions.base.host.label"
 LABEL_PORT_KEY = "actions.base.port.label"
@@ -22,16 +19,13 @@ SETTING_TOKEN = "token"
 CONNECT_BIND = "bind"
 CONNECT_CHANGED = "changed"
 CONNECT_NOTIFY_SELECTED = "notify::selected"
+CONNECT_NOTIFY_ACTIVE = "notify::active"
+CONNECT_NOTIFY_TEXT = "notify::text"
 
 LABEL_ENTITY_DOMAIN = "actions.home_assistant.entity.domain.label"
 LABEL_ENTITY_ENTITY = "actions.home_assistant.entity.entity.label"
 
 LABEL_SERVICE_SERVICE = "actions.home_assistant.service.service.label"
-LABEL_SERVICE_CALL_ON_KEY_DOWN = "actions.home_assistant.service.call_on_key_down.label"
-LABEL_SERVICE_CALL_ON_KEY_UP = "actions.home_assistant.service.call_on_key_up.label"
-LABEL_SERVICE_CALL_ON_KEY_HOLD_START = "actions.home_assistant.service.call_on_key_hold_start.label"
-LABEL_SERVICE_CALL_ON_KEY_HOLD_STOP = "actions.home_assistant.service.call_on_key_hold_stop.label"
-LABEL_SERVICE_CALL_ON = "actions.home_assistant.service.call_on.label"
 LABEL_SERVICE_PARAMETERS = "actions.home_assistant.service.parameters.label"
 
 LABEL_ICON_SHOW_ICON = "actions.home_assistant.icon.show_icon.label"
@@ -57,10 +51,7 @@ SETTING_ENTITY_DOMAIN = "entity.domain"
 SETTING_ENTITY_ENTITY = "entity.entity"
 
 SETTING_SERVICE_SERVICE = "service.service"
-SETTING_SERVICE_SERVICE_ON_KEY_DOWN = "service.service_on_key_down"
-SETTING_SERVICE_SERVICE_ON_KEY_UP = "service.service_on_key_up"
-SETTING_SERVICE_SERVICE_ON_KEY_HOLD_START = "service.service_on_key_hold_start"
-SETTING_SERVICE_SERVICE_ON_KEY_HOLD_STOP = "service.service_on_key_hold_stop"
+SETTING_SERVICE_PARAMETERS = "service.service_parameters"
 
 SETTING_ICON_SHOW_ICON = "icon.show_icon"
 SETTING_ICON_OPACITY = "icon.opacity"
@@ -80,6 +71,7 @@ ATTRIBUTES = "attributes"
 ATTRIBUTE_FRIENDLY_NAME = "friendly_name"
 ATTRIBUTE_ICON = "icon"
 ATTRIBUTE_UNIT_OF_MEASUREMENT = "unit_of_measurement"
+ATTRIBUTE_FIELDS = "fields"
 
 TEXT_POSITION_TOP = "top"
 TEXT_POSITION_CENTER = "center"
@@ -89,11 +81,6 @@ ICON_COLOR_ON = "#eeff1b"
 ICON_COLOR_OFF = "#bebebe"
 
 MDI_SVG_JSON = "assets/mdi-svg.json"
-
-DEFAULT_SERVICE_SERVICE_ON_KEY_DOWN = True
-DEFAULT_SERVICE_SERVICE_ON_KEY_UP = False
-DEFAULT_SERVICE_SERVICE_ON_KEY_HOLD_START = False
-DEFAULT_SERVICE_SERVICE_ON_KEY_HOLD_STOP = False
 
 DEFAULT_ICON_SHOW_ICON = False
 DEFAULT_ICON_SCALE = 80
