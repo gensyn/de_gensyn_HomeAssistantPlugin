@@ -366,12 +366,12 @@ class HomeAssistantBackend:
         self._domains = domains
         self._entities = entities
 
-    def get_services(self, domain: str) -> list:
+    def get_services(self, domain: str) -> Dict[str, dict]:
         if not self.connect() or not domain:
-            return []
+            return {}
 
         if self._services:
-            return self._services.get(domain, [])
+            return self._services.get(domain, {})
 
         message = self.create_message("get_services")
 
@@ -383,18 +383,13 @@ class HomeAssistantBackend:
 
         if not success:
             log.error("Error retrieving services.")
-            return []
+            return {}
 
-        result: Dict[str, dict] = _get_field_from_message(response, FIELD_RESULT)
+        self._services = _get_field_from_message(response, FIELD_RESULT)
 
-        for remote_domain in result:
-            self._services[remote_domain] = list(
-                result.get(remote_domain, {}).keys()
-            )
+        return self._services.get(domain, {})
 
-        return self._services.get(domain, [])
-
-    def call_service(self, entity_id: str, service: str) -> None:
+    def call_service(self, entity_id: str, service: str, data: Dict[str, Any] = {}) -> None:
         if not self.connect():
             return
 
@@ -404,6 +399,7 @@ class HomeAssistantBackend:
         message["domain"] = domain
         message["service"] = service
         message["target"] = {ENTITY_ID: entity_id}
+        message["service_data"] = data
 
         response = self._send_and_wait_for_response(message)
 
@@ -451,7 +447,7 @@ class HomeAssistantBackend:
         entity_settings["subscription_id"] = message_id
 
     def remove_tracked_entity(self, entity_id: str, action_uid: str) -> None:
-        if not self.connect():
+        if not entity_id or not self.connect():
             return
 
         domain = entity_id.split(".")[0]

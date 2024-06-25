@@ -48,10 +48,12 @@ A button to show and control air quality.
 * Connect to your Home Assistant instance
 * Select a domain and entity
 * Option to call a service
-  * _on key down_: immediately when the button is pressed
-  * _on key hold_: when a button is held
-  * _on key up after short press_: when releasing a button **before** it was registered as being held
-  * _on key up after hold_: when releasing a button **after** it was registered as being held
+  * Supported parameters for the service can be provided for the service call
+    * Whether the entity supports the provided parameters is up to you
+  * The service is always called on `key_down`, i.e. immediately when the button is pressed
+    * To change this behavior, the built-in `Event Assigner` can be used
+      * to map other events to `key_down`, if you want to call the service on a different event (multiple events are possible)
+      * to map `key_down` to `None`, if you don't want to call the service on `key_down`
 * Option to show the entity icon
   * If the entity's state is _on_, the icon is shown in yellow
     * If the entity's state changes, the color is updated on the StreamDeck
