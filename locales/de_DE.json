@@ -14,11 +14,6 @@
     "actions.home_assistant.entity.entity.label": "Entität:",
 
     "actions.home_assistant.service.service.label": "Service:",
-    "actions.home_assistant.service.call_on_key_down.label": "Drücken:",
-    "actions.home_assistant.service.call_on_key_up.label": "Loslassen nach kurz Drücken:",
-    "actions.home_assistant.service.call_on_key_hold_start.label": "Halten:",
-    "actions.home_assistant.service.call_on_key_hold_stop.label": "Loslassen nach Halten:",
-    "actions.home_assistant.service.call_on.label": "Aufrufen bei",
     "actions.home_assistant.service.parameters.label": "Parameter",
 
     "actions.home_assistant.icon.show_icon.label": "Bild der Entität anzeigen:",

@@ -9,28 +9,24 @@ from typing import Any, Dict
 import cairosvg
 # Import gtk modules - used for the config rows
 import gi
+from GtkHelper.GtkHelper import BetterExpander
 from PIL import Image
+from locales.LegacyLocaleManager import LegacyLocaleManager
 from plugins.de_gensyn_HomeAssistantPlugin.HomeAssistantActionBase import HomeAssistantActionBase
 from plugins.de_gensyn_HomeAssistantPlugin.const import CONNECT_BIND, SETTING_ENTITY_ENTITY, \
-    SETTING_SERVICE_SERVICE_ON_KEY_DOWN, SETTING_TEXT_SHOW_TEXT, TEXT_POSITION_TOP, TEXT_POSITION_CENTER, \
+    SETTING_TEXT_SHOW_TEXT, TEXT_POSITION_TOP, TEXT_POSITION_CENTER, \
     TEXT_POSITION_BOTTOM, LABEL_TEXT_POSITION, LABEL_SETTINGS_TEXT, SETTING_TEXT_POSITION, SETTING_TEXT_SIZE, \
-    SETTING_SERVICE_SERVICE_ON_KEY_UP, SETTING_SERVICE_SERVICE, LABEL_ENTITY_DOMAIN, LABEL_ENTITY_ENTITY, \
-    LABEL_SERVICE_SERVICE, LABEL_SERVICE_CALL_ON_KEY_DOWN, LABEL_SETTINGS_ENTITY, LABEL_SERVICE_CALL_ON_KEY_UP, \
+    SETTING_SERVICE_SERVICE, LABEL_ENTITY_DOMAIN, LABEL_ENTITY_ENTITY, LABEL_SERVICE_SERVICE, LABEL_SETTINGS_ENTITY, \
     LABEL_SETTINGS_SERVICE, LABEL_ICON_SHOW_ICON, LABEL_SETTINGS_ICON, SETTING_ICON_SHOW_ICON, CONNECT_NOTIFY_SELECTED, \
     CONNECT_NOTIFY_ACTIVE, SETTING_ENTITY_DOMAIN, EMPTY_STRING, ATTRIBUTE_FRIENDLY_NAME, LABEL_TEXT_SHOW_TEXT, \
     LABEL_TEXT_SIZE, LABEL_TEXT_SHOW_UNIT, SETTING_TEXT_SHOW_UNIT, LABEL_TEXT_UNIT_LINE_BREAK, \
     SETTING_TEXT_UNIT_LINE_BREAK, LABEL_TEXT_ATTRIBUTE, CONNECT_CHANGED, ATTRIBUTES, SETTING_TEXT_ATTRIBUTE, \
     LABEL_TEXT_ADAPTIVE_SIZE, SETTING_TEXT_ADAPTIVE_SIZE, ATTRIBUTE_UNIT_OF_MEASUREMENT, STATE, LABEL_ICON_OPACITY, \
     SETTING_ICON_OPACITY, ATTRIBUTE_ICON, ICON_COLOR_ON, ICON_COLOR_OFF, MDI_SVG_JSON, LABEL_ICON_SCALE, \
-    SETTING_ICON_SCALE, DEFAULT_ICON_SCALE, DEFAULT_ICON_SHOW_ICON, DEFAULT_ICON_OPACITY, \
-    DEFAULT_SERVICE_SERVICE_ON_KEY_DOWN, DEFAULT_SERVICE_SERVICE_ON_KEY_UP, DEFAULT_TEXT_SHOW_TEXT, \
+    SETTING_ICON_SCALE, DEFAULT_ICON_SCALE, DEFAULT_ICON_SHOW_ICON, DEFAULT_ICON_OPACITY, DEFAULT_TEXT_SHOW_TEXT, \
     DEFAULT_TEXT_POSITION, DEFAULT_TEXT_ADAPTIVE_SIZE, DEFAULT_TEXT_SIZE, DEFAULT_TEXT_SHOW_UNIT, \
-    DEFAULT_TEXT_UNIT_LINE_BREAK, SETTING_SERVICE_SERVICE_ON_KEY_HOLD_START, SETTING_SERVICE_SERVICE_ON_KEY_HOLD_STOP, \
-    DEFAULT_SERVICE_SERVICE_ON_KEY_HOLD_START, DEFAULT_SERVICE_SERVICE_ON_KEY_HOLD_STOP, \
-    LABEL_SERVICE_CALL_ON_KEY_HOLD_START, LABEL_SERVICE_CALL_ON_KEY_HOLD_STOP, LABEL_SERVICE_CALL_ON, LABEL_SERVICE_PARAMETERS, LABEL_TEXT_OPTIONS, LABEL_ICON_OPTIONS, ATTRIBUTE_FIELDS, SETTING_SERVICE_PARAMETERS, CONNECT_NOTIFY_TEXT
-
-from GtkHelper.GtkHelper import BetterExpander
-from locales.LegacyLocaleManager import LegacyLocaleManager
+    DEFAULT_TEXT_UNIT_LINE_BREAK, LABEL_SERVICE_PARAMETERS, LABEL_TEXT_OPTIONS, LABEL_ICON_OPTIONS, ATTRIBUTE_FIELDS, \
+    SETTING_SERVICE_PARAMETERS, CONNECT_NOTIFY_TEXT
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
@@ -54,11 +50,6 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
     service_service_combo: ComboRow
     service_service_model: StringList
-
-    service_call_on_key_down: SwitchRow
-    service_call_on_key_up: SwitchRow
-    service_call_on_key_hold_start: SwitchRow
-    service_call_on_key_hold_stop: SwitchRow
 
     service_parameters: BetterExpander
 
@@ -103,20 +94,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
         self.plugin_base.backend.remove_tracked_entity(self.get_setting(SETTING_ENTITY_ENTITY), self.uuid)
 
     def on_key_down(self) -> None:
-        if self.get_setting(SETTING_SERVICE_SERVICE_ON_KEY_DOWN, DEFAULT_SERVICE_SERVICE_ON_KEY_DOWN):
-            self.call_service()
-
-    def on_key_up(self) -> None:
-        if self.get_setting(SETTING_SERVICE_SERVICE_ON_KEY_UP, DEFAULT_SERVICE_SERVICE_ON_KEY_UP):
-            self.call_service()
-
-    def on_key_hold_start(self):
-        if self.get_setting(SETTING_SERVICE_SERVICE_ON_KEY_HOLD_START, DEFAULT_SERVICE_SERVICE_ON_KEY_HOLD_START):
-            self.call_service()
-
-    def on_key_hold_stop(self):
-        if self.get_setting(SETTING_SERVICE_SERVICE_ON_KEY_HOLD_STOP, DEFAULT_SERVICE_SERVICE_ON_KEY_HOLD_STOP):
-            self.call_service()
+        self.call_service()
 
     def call_service(self) -> None:
         settings = self.get_settings()
@@ -177,37 +155,12 @@ class HomeAssistantAction(HomeAssistantActionBase):
     def _get_service_group(self) -> PreferencesGroup:
         self.service_service_combo = ComboRow(title=self.lm.get(LABEL_SERVICE_SERVICE))
         self.service_service_combo.set_factory(self.combo_factory)
-
-        self.service_call_on_key_down = SwitchRow(
-            title=self.lm.get(LABEL_SERVICE_CALL_ON_KEY_DOWN))
-        self.service_call_on_key_down.set_active(
-            self.get_setting(SETTING_SERVICE_SERVICE_ON_KEY_DOWN, DEFAULT_SERVICE_SERVICE_ON_KEY_DOWN))
-
-        self.service_call_on_key_up = SwitchRow(title=self.lm.get(LABEL_SERVICE_CALL_ON_KEY_UP))
-        self.service_call_on_key_up.set_active(
-            self.get_setting(SETTING_SERVICE_SERVICE_ON_KEY_UP, DEFAULT_SERVICE_SERVICE_ON_KEY_UP))
-
-        self.service_call_on_key_hold_start = SwitchRow(title=self.lm.get(LABEL_SERVICE_CALL_ON_KEY_HOLD_START))
-        self.service_call_on_key_hold_start.set_active(
-            self.get_setting(SETTING_SERVICE_SERVICE_ON_KEY_HOLD_START, DEFAULT_SERVICE_SERVICE_ON_KEY_HOLD_START))
-
-        self.service_call_on_key_hold_stop = SwitchRow(title=self.lm.get(LABEL_SERVICE_CALL_ON_KEY_HOLD_STOP))
-        self.service_call_on_key_hold_stop.set_active(
-            self.get_setting(SETTING_SERVICE_SERVICE_ON_KEY_HOLD_STOP, DEFAULT_SERVICE_SERVICE_ON_KEY_HOLD_STOP))
-
-        events_expander = ExpanderRow(title=self.lm.get(LABEL_SERVICE_CALL_ON))
-        events_expander.add_row(self.service_call_on_key_down)
-        events_expander.add_row(self.service_call_on_key_up)
-        events_expander.add_row(self.service_call_on_key_hold_start)
-        events_expander.add_row(self.service_call_on_key_hold_stop)
-
         self.service_parameters = BetterExpander(title=self.lm.get(LABEL_SERVICE_PARAMETERS))
 
         group = PreferencesGroup()
         group.set_title(self.lm.get(LABEL_SETTINGS_SERVICE))
         group.set_margin_top(20)
         group.add(self.service_service_combo)
-        group.add(events_expander)
         group.add(self.service_parameters)
 
         return group
@@ -289,14 +242,6 @@ class HomeAssistantAction(HomeAssistantActionBase):
         self.entity_entity_combo.connect(CONNECT_NOTIFY_SELECTED, self.on_change_entity)
 
         self.service_service_combo.connect(CONNECT_NOTIFY_SELECTED, self.on_change_service)
-        self.service_call_on_key_down.connect(CONNECT_NOTIFY_ACTIVE, self.on_change_switch,
-                                              SETTING_SERVICE_SERVICE_ON_KEY_DOWN)
-        self.service_call_on_key_up.connect(CONNECT_NOTIFY_ACTIVE, self.on_change_switch,
-                                            SETTING_SERVICE_SERVICE_ON_KEY_UP)
-        self.service_call_on_key_hold_start.connect(CONNECT_NOTIFY_ACTIVE, self.on_change_switch,
-                                                    SETTING_SERVICE_SERVICE_ON_KEY_HOLD_START)
-        self.service_call_on_key_hold_stop.connect(CONNECT_NOTIFY_ACTIVE, self.on_change_switch,
-                                                   SETTING_SERVICE_SERVICE_ON_KEY_HOLD_STOP)
 
         self.icon_show_icon.connect(CONNECT_NOTIFY_ACTIVE, self.on_change_switch, SETTING_ICON_SHOW_ICON)
         self.icon_scale.connect(CONNECT_CHANGED, self.on_change_spin, SETTING_ICON_SCALE)
@@ -603,7 +548,8 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
         service = settings[SETTING_SERVICE_SERVICE]
 
-        fields = self.plugin_base.backend.get_services(self.entity_domain_combo.get_selected_item().get_string()).get(service, {}).get(ATTRIBUTE_FIELDS, {})
+        fields = self.plugin_base.backend.get_services(self.entity_domain_combo.get_selected_item().get_string()).get(
+            service, {}).get(ATTRIBUTE_FIELDS, {})
 
         for field in fields:
             # if field not in supported_parameters:
@@ -684,13 +630,6 @@ class HomeAssistantAction(HomeAssistantActionBase):
         self.service_service_combo.set_sensitive(domain_selected and len(self.service_service_model) > 1)
 
         # Service section
-        service = self.service_service_combo.get_selected_item().get_string() if self.service_service_combo.get_selected_item() else False
-        service_selected = bool(service)
-        self.service_call_on_key_down.set_sensitive(service_selected)
-        self.service_call_on_key_up.set_sensitive(service_selected)
-        self.service_call_on_key_hold_start.set_sensitive(service_selected)
-        self.service_call_on_key_hold_stop.set_sensitive(service_selected)
-
         if len(self.service_parameters.get_rows()) > 0:
             self.service_parameters.set_sensitive(True)
         else:
