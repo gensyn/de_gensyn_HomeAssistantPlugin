@@ -1,5 +1,6 @@
 {
-    "actions.base.settings.label": "Home Assistant settings",
+    "actions.base.settings_header.label": "Home Assistant",
+    "actions.base.settings.label": "Settings",
     "actions.base.host.label": "Host:",
     "actions.base.port.label": "Port:",
     "actions.base.ssl.label": "SSL:",
