@@ -1,3 +1,7 @@
+"""
+Constants for the Home Assistant plugin.
+"""
+
 import plugins.de_gensyn_HomeAssistantPlugin.backend.const as backend
 
 EMPTY_STRING = ""

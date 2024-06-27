@@ -1,13 +1,24 @@
-from plugins.de_gensyn_HomeAssistantPlugin.const import EMPTY_STRING, HOME_ASSISTANT, SETTING_HOST, SETTING_PORT, \
-    SETTING_SSL, SETTING_TOKEN
+"""
+Entry point for StreamController to load the plugin.
+"""
+from typing import Dict, Any
 
+from plugins.de_gensyn_HomeAssistantPlugin.const import (EMPTY_STRING, HOME_ASSISTANT,
+                                                         SETTING_HOST, \
+                                                         SETTING_PORT, \
+                                                         SETTING_SSL, SETTING_TOKEN)
 from src.backend.PluginManager.ActionHolder import ActionHolder
 from src.backend.PluginManager.PluginBase import PluginBase
-from .actions.HomeAssistantAction.HomeAssistantAction import HomeAssistantAction
-from .backend.HomeAssistant import HomeAssistantBackend
+
+from .actions.HomeAssistantAction.home_asistant_action import HomeAssistantAction
+from .backend.home_assistant import HomeAssistantBackend
 
 
 class HomeAssistant(PluginBase):
+    """
+    The plugin class to be loaded by Stream Controller.
+    """
+
     def __init__(self):
         super().__init__()
 
@@ -38,7 +49,10 @@ class HomeAssistant(PluginBase):
         self.backend.set_ssl(ssl)
         self.backend.set_token(token)
 
-    def set_settings(self, settings):
+    def set_settings(self, settings: Dict[str, Any]):
+        """
+        Saves the settings to the disk.
+        """
         super().set_settings(settings)
 
         host = settings.setdefault(SETTING_HOST, EMPTY_STRING)

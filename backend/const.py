@@ -1,3 +1,7 @@
+"""
+Constants for the Home Assistant backend.
+"""
+
 CONNECTED = "Connected"
 CONNECTING = "Connecting"
 DISCONNECTING = "Disconnecting"

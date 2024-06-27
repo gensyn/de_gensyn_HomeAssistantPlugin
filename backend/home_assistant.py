@@ -1,12 +1,16 @@
+"""
+Module for the Home Assistant backend.
+"""
+
 import json
 from threading import Thread, Semaphore
 from time import sleep
 from typing import Dict, Callable, Any, List
 
 from loguru import logger as log
-from plugins.de_gensyn_HomeAssistantPlugin.backend.const import CONNECTED, CONNECTING, DISCONNECTING, NOT_CONNECTED, \
-    AUTHENTICATING, WAITING_FOR_RETRY
-from websocket import create_connection, WebSocket
+from plugins.de_gensyn_HomeAssistantPlugin.backend.const import CONNECTED, CONNECTING, \
+    DISCONNECTING, NOT_CONNECTED, AUTHENTICATING, WAITING_FOR_RETRY
+from websocket import create_connection, WebSocket, WebSocketException
 
 HASS_WEBSOCKET_API = "/api/websocket?latest"
 
@@ -23,17 +27,13 @@ BUTTON_ENCODE_SYMBOL = "-"
 
 RECV_LOOP_TIMEOUT = 300
 
-BUTTON_ENTITIES: Dict[str, str] = {}
-
-WEBSOCKET_SEMAPHORE = Semaphore(1)
-ENTITIES_UPDATE_SEMAPHORE = Semaphore(1)
-
 PING_INTERVAL = 30
-
-RETRY_CONNECTION = False
 
 
 class HomeAssistantBackend:
+    """
+    Defines the Home Assistant backend.
+    """
     _websocket: WebSocket = None
     _changes_websocket: WebSocket = None
     _message_id: int = 0
@@ -47,12 +47,15 @@ class HomeAssistantBackend:
     _connection_status_callback: Callable = lambda _1, _2: None
     _keep_alive_thread: Thread = None
     _reconnect_thread: Thread = None
-    _action_list: List[Callable] = []
-
-    def __init__(self):
-        super().__init__()
+    _pending_actions: List[Callable] = []
+    _entities_update_semaphore = Semaphore(1)
+    _websocket_semaphore = Semaphore(1)
+    _retry_connection = False
 
     def set_host(self, host: str) -> None:
+        """
+        Set the Home Assistant host.
+        """
         if "//" in host:
             host = host.split("//")[1]
 
@@ -60,47 +63,64 @@ class HomeAssistantBackend:
             return
 
         self._host = host
-        self.reconnect()
+        self._reconnect()
 
     def set_port(self, port: str) -> None:
+        """
+        Set the Home Assistant port.
+        """
         if self._port == port:
             return
 
         self._port = port
-        self.reconnect()
+        self._reconnect()
 
     def set_ssl(self, ssl: bool) -> None:
+        """
+        Set whether Home Assistant uses SSL.
+        """
         if self._ssl == ssl:
             return
 
         self._ssl = ssl
-        self.reconnect()
+        self._reconnect()
 
     def set_token(self, token: str) -> None:
+        """
+        Set the Home Assistant token.
+        """
         if self._token == token:
             return
 
         self._token = token
-        self.reconnect()
+        self._reconnect()
 
     def set_connection_status_callback(self, callback: Callable) -> None:
+        """
+        Set a callback to be called when the connection state changes
+        """
         self._connection_status_callback = callback
 
-    def reconnect(self) -> bool:
-        self.disconnect()
-        success = self.connect()
+    def _reconnect(self) -> bool:
+        """
+        Disconnect from Home Assistant and then connect again.
+        """
+        self._disconnect()
+        success = self._connect()
 
         if not success and self._host and self._token and self._port:
             if not self._reconnect_thread or not self._reconnect_thread.is_alive():
-                self._reconnect_thread = Thread(target=self.retry_connect, daemon=True)
+                self._reconnect_thread = Thread(target=self._retry_connect, daemon=True)
                 self._reconnect_thread.start()
             else:
-                global RETRY_CONNECTION
-                RETRY_CONNECTION = True
+                self._retry_connection = True
 
         return success
 
-    def connect(self) -> bool:
+    def _connect(self) -> bool:
+        """
+        Connect to Home Assistant.
+        """
         if self.is_connected():
             # already connected
             return True
@@ -134,7 +154,7 @@ class HomeAssistantBackend:
             self._connection_status_callback(NOT_CONNECTED)
             return False
 
-        message = self.create_message("get_config")
+        message = self._create_message("get_config")
         config = self._send_and_wait_for_response(message)
 
         result: Dict[str, dict] = _get_field_from_message(config, FIELD_RESULT)
@@ -156,21 +176,22 @@ class HomeAssistantBackend:
             self._keep_alive_thread = Thread(target=self._keep_alive, daemon=True)
             self._keep_alive_thread.start()
 
-        ENTITIES_UPDATE_SEMAPHORE.acquire()
-        self._load_domains_and_entities()
-        ENTITIES_UPDATE_SEMAPHORE.release()
+        with self._entities_update_semaphore:
+            self._load_domains_and_entities()
 
         # tell actions that we are connected
-        for action in self._action_list:
+        for action in self._pending_actions:
             action()
 
         return True
 
-    def disconnect(self) -> None:
+    def _disconnect(self) -> None:
+        """
+        Disconnect from Home Assistant.
+        """
         self._connection_status_callback(DISCONNECTING)
 
-        global RETRY_CONNECTION
-        RETRY_CONNECTION = False
+        self._retry_connection = False
 
         if self._websocket and self._websocket.connected:
             self._websocket.close()
@@ -181,7 +202,8 @@ class HomeAssistantBackend:
         self._connection_status_callback(NOT_CONNECTED)
 
     def _auth(self):
-        websocket_host = f'{"wss://" if self._ssl else "ws://"}{self._host}:{self._port}{HASS_WEBSOCKET_API}'
+        websocket_host = (f'{"wss://" if self._ssl else "ws://"}{self._host}:{self._port}'
+                          f'{HASS_WEBSOCKET_API}')
 
         try:
             new_websocket = create_connection(websocket_host)
@@ -207,9 +229,9 @@ class HomeAssistantBackend:
                 f" 'websocket_api' is enabled in your Home Assistant configuration."
             )
             return None
-        except Exception as e:
+        except WebSocketException as e:
             log.error(
-                f"Could not connect to {websocket_host}: {e}"
+                "Could not connect to %s: %s", websocket_host, e
             )
             return None
 
@@ -217,13 +239,13 @@ class HomeAssistantBackend:
 
     def _async_run_recv_loop(self):
         # wait for entities update finishing
-        ENTITIES_UPDATE_SEMAPHORE.acquire()
-        ENTITIES_UPDATE_SEMAPHORE.release()
+        with self._entities_update_semaphore:
+            pass
 
         if self._entities:
             # if the collection was lost we might need to resubscribe to entity events
-            for domain in self._entities.keys():
-                for entity, entity_settings in self._entities[domain].items():
+            for domain, domain_entry in self._entities.items():
+                for entity, entity_settings in domain_entry.items():
                     if entity_settings.get("keys"):
                         action_items = entity_settings["keys"].items()
 
@@ -236,8 +258,8 @@ class HomeAssistantBackend:
         while self._changes_websocket.connected:
             try:
                 message = self._changes_websocket.recv()
-            except Exception as e:
-                log.info(f"Connection closed; quitting recv() loop: {e}")
+            except WebSocketException as e:
+                log.info("Connection closed; quitting recv() loop: %s", e)
                 break
 
             if not message:
@@ -248,7 +270,9 @@ class HomeAssistantBackend:
 
             if FIELD_EVENT == message_type:
                 new_state = (
-                    json.loads(message).get(FIELD_EVENT, {}).get("variables", {}).get("trigger", {}).get("to_state", {})
+                    json.loads(message).get(FIELD_EVENT, {}).get("variables", {}).get("trigger",
+                                                                                      {}).get(
+                        "to_state", {})
                 )
 
                 entity_id = new_state.get(ENTITY_ID)
@@ -272,33 +296,22 @@ class HomeAssistantBackend:
                 }
 
                 for action_entity_updated in actions:
-                    try:
-                        action_entity_updated(entity_id, update_state)
-                    except Exception as e:
-                        log.exception(f"Ex: {e}")
+                    action_entity_updated(entity_id, update_state)
 
         self._websocket.close()
         self._connection_status_callback(NOT_CONNECTED)
 
         if not self._reconnect_thread or not self._reconnect_thread.is_alive():
-            self._reconnect_thread = Thread(target=self.retry_connect, daemon=True)
+            self._reconnect_thread = Thread(target=self._retry_connect, daemon=True)
             self._reconnect_thread.start()
         else:
-            global RETRY_CONNECTION
-            RETRY_CONNECTION = True
-
-    def get_state(self, entity_id: str) -> str:
-        if not self.connect() or "." not in entity_id:
-            return "off"
-
-        self._load_domains_and_entities()
-
-        domain = entity_id.split(".")[0]
-
-        return self._entities[domain][entity_id]["state"]
+            self._retry_connection = True
 
     def get_domains(self) -> list:
-        if not self.connect():
+        """
+        Get a list of all domains known to Home Assistant.
+        """
+        if not self._connect():
             return []
 
         if not self._domains:
@@ -307,6 +320,9 @@ class HomeAssistantBackend:
         return self._domains
 
     def get_entity(self, entity_id: str) -> dict:
+        """
+        Return the entity state with the requested name.
+        """
         if not entity_id or "." not in entity_id:
             return {}
 
@@ -314,7 +330,10 @@ class HomeAssistantBackend:
         return self._entities.get(domain, {}).get(entity_id, {})
 
     def get_entities(self, domain: str) -> list:
-        if not self.connect() or not domain:
+        """
+        Return a list of all entities known to Home Assistant.
+        """
+        if not self._connect() or not domain:
             return []
 
         if not self._entities:
@@ -323,7 +342,10 @@ class HomeAssistantBackend:
         return list(self._entities.get(domain, {}).keys())
 
     def _load_domains_and_entities(self) -> None:
-        message = self.create_message("get_states")
+        """
+        Loads the domains and entities from Home Assistant.
+        """
+        message = self._create_message("get_states")
 
         response = self._send_and_wait_for_response(message)
 
@@ -356,24 +378,29 @@ class HomeAssistantBackend:
 
         if self._entities:
             # entities were already loaded; keep keys and subscription ids
-            for domain in self._entities.keys():
-                for entity_id, entity_settings in self._entities[domain].items():
+            for domain, domain_entry in self._entities.items():
+                for entity_id in domain_entry.keys():
                     if entities.get(domain, {}).get(entity_id):
-                        entities[domain][entity_id]["keys"] = self._entities[domain][entity_id].get("keys", {})
-                        entities[domain][entity_id]["subscription_id"] = self._entities[domain][entity_id].get(
+                        entities[domain][entity_id]["keys"] = domain_entry[entity_id].get(
+                            "keys", {})
+                        entities[domain][entity_id]["subscription_id"] = domain_entry[
+                            entity_id].get(
                             "subscription_id", -1)
 
         self._domains = domains
         self._entities = entities
 
     def get_services(self, domain: str) -> Dict[str, dict]:
-        if not self.connect() or not domain:
+        """
+        Return all services known to Home Assistant.
+        """
+        if not self._connect() or not domain:
             return {}
 
         if self._services:
             return self._services.get(domain, {})
 
-        message = self.create_message("get_services")
+        message = self._create_message("get_services")
 
         response = self._send_and_wait_for_response(message)
 
@@ -389,17 +416,20 @@ class HomeAssistantBackend:
 
         return self._services.get(domain, {})
 
-    def call_service(self, entity_id: str, service: str, data: Dict[str, Any] = {}) -> None:
-        if not self.connect():
+    def call_service(self, entity_id: str, service: str, data: Dict[str, Any] = None) -> None:
+        """
+        Calls a Home Assistant service.
+        """
+        if not self._connect():
             return
 
         domain = entity_id.split(".")[0]
 
-        message = self.create_message("call_service")
+        message = self._create_message("call_service")
         message["domain"] = domain
         message["service"] = service
         message["target"] = {ENTITY_ID: entity_id}
-        message["service_data"] = data
+        message["service_data"] = data if data else {}
 
         response = self._send_and_wait_for_response(message)
 
@@ -408,12 +438,20 @@ class HomeAssistantBackend:
         if not success:
             log.error(f"Error calling service {service} for entity {entity_id}.")
 
-    def create_message(self, message_type: str) -> Dict[str, Any]:
+    def _create_message(self, message_type: str) -> Dict[str, Any]:
+        """
+        Create a message that can be sent to the Home Assistant websocket.
+        """
         self._message_id += 1
         return {ID: self._message_id, FIELD_TYPE: message_type}
 
-    def add_tracked_entity(self, entity_id: str, action_uid: str, action_entity_updated: Callable) -> None:
-        if not entity_id or not self.connect():
+    def add_tracked_entity(self, entity_id: str, action_uid: str,
+                           action_entity_updated: Callable) -> None:
+        """
+        Register an entity with the Home Assistant websocket to be notified when the entity is
+        updated.
+        """
+        if not entity_id or not self._connect():
             return
 
         domain = entity_id.split(".")[0]
@@ -437,7 +475,7 @@ class HomeAssistantBackend:
             # already subscribed to entity events
             return
 
-        message = self.create_message("subscribe_trigger")
+        message = self._create_message("subscribe_trigger")
         message["trigger"] = {"platform": "state", ENTITY_ID: entity_id}
 
         message_id = message.get(ID)
@@ -447,7 +485,10 @@ class HomeAssistantBackend:
         entity_settings["subscription_id"] = message_id
 
     def remove_tracked_entity(self, entity_id: str, action_uid: str) -> None:
-        if not entity_id or not self.connect():
+        """
+        Deregister a previously registered entity.
+        """
+        if not entity_id or not self._connect():
             return
 
         domain = entity_id.split(".")[0]
@@ -459,7 +500,7 @@ class HomeAssistantBackend:
             # the entity is still attached to another key, so keep the trigger subscription
             return
 
-        message = self.create_message("unsubscribe_events")
+        message = self._create_message("unsubscribe_events")
         message["subscription_id"] = entity_settings["subscription_id"]
 
         self._changes_websocket.send(json.dumps(message))
@@ -467,34 +508,41 @@ class HomeAssistantBackend:
         entity_settings["subscription_id"] = -1
 
     def is_connected(self) -> bool:
+        """
+        Return whether a connection to Home Assistant is established.
+        """
         return self._websocket and self._websocket.connected
 
     def _send_and_wait_for_response(self, message: Dict[str, str | int]) -> str:
-        WEBSOCKET_SEMAPHORE.acquire()
-
-        self._websocket.send(json.dumps(message))
-
-        response = self._websocket.recv()
-
-        WEBSOCKET_SEMAPHORE.release()
-
-        return response
+        """
+        Send a websocket message to Home Assistant and return the response.
+        """
+        with self._websocket_semaphore:
+            self._websocket.send(json.dumps(message))
+            return self._websocket.recv()
 
     def _keep_alive(self):
+        """
+        Periodically ping the Home Assistant server to keep the websocket connection alive.
+        """
         while True:
             sleep(PING_INTERVAL)
             try:
                 self._websocket.ping()
-            except Exception as e:
+            except WebSocketException as e:
                 self._connection_status_callback(NOT_CONNECTED)
+                log.info("Disconnected from Home Assistant: %s", e)
                 return
 
-    def retry_connect(self):
+    def _retry_connect(self):
+        """
+        Periodically try to connect to the Home Assistant server.
+        """
         sleep(10)
 
         count = 1
 
-        while not self.connect() and count < 3600 and RETRY_CONNECTION:
+        while not self._connect() and count < 3600 and self._retry_connection:
             self._connection_status_callback(WAITING_FOR_RETRY)
             if count < 13:
                 sleep(10)
@@ -504,15 +552,24 @@ class HomeAssistantBackend:
             count += 1
 
     def register_action(self, action: Callable):
-        if action not in self._action_list:
-            self._action_list.append(action)
+        """
+        Register an action to be called when a connection to Home Assistant has been established.
+        """
+        if action not in self._pending_actions:
+            self._pending_actions.append(action)
 
     def remove_action(self, action: Callable):
-        if action in self._action_list:
-            self._action_list.remove(action)
+        """
+        Remove a previously registered action.
+        """
+        if action in self._pending_actions:
+            self._pending_actions.remove(action)
 
 
 def _get_field_from_message(message: str, field: str) -> Any:
+    """
+    Extracts the specified field from the message.
+    """
     if not message:
         return ""
 
