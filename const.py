@@ -8,11 +8,12 @@ EMPTY_STRING = ""
 HOME_ASSISTANT = "Home Assistant"
 
 # BASE
-LABEL_HOST_KEY = "actions.base.host.label"
-LABEL_PORT_KEY = "actions.base.port.label"
-LABEL_SSL_KEY = "actions.base.ssl.label"
-LABEL_TOKEN_KEY = "actions.base.token.label"
-LABEL_SETTINGS_KEY = "actions.base.settings.label"
+LABEL_BASE_HOST = "actions.base.host.label"
+LABEL_BASE_PORT = "actions.base.port.label"
+LABEL_BASE_SSL = "actions.base.ssl.label"
+LABEL_BASE_TOKEN = "actions.base.token.label"
+LABEL_BASE_SETTINGS_HEADER = "actions.base.settings_header.label"
+LABEL_BASE_SETTINGS = "actions.base.settings.label"
 
 SETTING_HOST = "host"
 SETTING_PORT = "port"

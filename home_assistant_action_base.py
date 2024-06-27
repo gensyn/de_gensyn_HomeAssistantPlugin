@@ -5,18 +5,18 @@ Module for the Home Assistant action base class.
 import gi
 from plugins.de_gensyn_HomeAssistantPlugin.const import (CONNECT_NOTIFY_TEXT,
                                                          CONNECT_NOTIFY_ACTIVE,
-                                                         LABEL_HOST_KEY,
-                                                         LABEL_PORT_KEY, LABEL_SSL_KEY,
-                                                         LABEL_TOKEN_KEY, SETTING_HOST,
+                                                         LABEL_BASE_HOST,
+                                                         LABEL_BASE_PORT, LABEL_BASE_SSL,
+                                                         LABEL_BASE_TOKEN, SETTING_HOST,
                                                          SETTING_PORT, SETTING_TOKEN,
-                                                         LABEL_SETTINGS_KEY,
-                                                         SETTING_SSL, CONNECTED, NOT_CONNECTED)
+                                                         SETTING_SSL, CONNECTED, NOT_CONNECTED,
+                                                         LABEL_BASE_SETTINGS,
+                                                         LABEL_BASE_SETTINGS_HEADER)
 
 from src.backend.PluginManager.ActionBase import ActionBase
 
-gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository.Adw import EntryRow, PasswordEntryRow, PreferencesGroup, SwitchRow
+from gi.repository.Adw import EntryRow, ExpanderRow, PasswordEntryRow, PreferencesGroup, SwitchRow
 
 
 class HomeAssistantActionBase(ActionBase):
@@ -28,6 +28,7 @@ class HomeAssistantActionBase(ActionBase):
     ssl_switch: SwitchRow
     token_entry: PasswordEntryRow
     connection_status: EntryRow
+    settings_expander: ExpanderRow
 
     def get_config_rows(self) -> list:
         """
@@ -35,10 +36,10 @@ class HomeAssistantActionBase(ActionBase):
         """
         lm = self.plugin_base.locale_manager
 
-        self.host_entry = EntryRow(title=lm.get(LABEL_HOST_KEY))
-        self.port_entry = EntryRow(title=lm.get(LABEL_PORT_KEY))
-        self.ssl_switch = SwitchRow(title=lm.get(LABEL_SSL_KEY))
-        self.token_entry = PasswordEntryRow(title=lm.get(LABEL_TOKEN_KEY))
+        self.host_entry = EntryRow(title=lm.get(LABEL_BASE_HOST))
+        self.port_entry = EntryRow(title=lm.get(LABEL_BASE_PORT))
+        self.ssl_switch = SwitchRow(title=lm.get(LABEL_BASE_SSL))
+        self.token_entry = PasswordEntryRow(title=lm.get(LABEL_BASE_TOKEN))
 
         self.connection_status = EntryRow(title="Connection status:")
         self.connection_status.set_editable(False)
@@ -54,13 +55,16 @@ class HomeAssistantActionBase(ActionBase):
         self.ssl_switch.connect(CONNECT_NOTIFY_ACTIVE, self._on_change_ssl)
         self.token_entry.connect(CONNECT_NOTIFY_TEXT, self._on_change_entry, SETTING_TOKEN)
 
+        self.settings_expander = ExpanderRow(title=lm.get(LABEL_BASE_SETTINGS))
+        self.settings_expander.add_row(self.host_entry)
+        self.settings_expander.add_row(self.port_entry)
+        self.settings_expander.add_row(self.ssl_switch)
+        self.settings_expander.add_row(self.token_entry)
+
         group = PreferencesGroup()
-        group.set_title(lm.get(LABEL_SETTINGS_KEY))
+        group.set_title(lm.get(LABEL_BASE_SETTINGS_HEADER))
         group.set_margin_top(20)
-        group.add(self.host_entry)
-        group.add(self.port_entry)
-        group.add(self.ssl_switch)
-        group.add(self.token_entry)
+        group.add(self.settings_expander)
         group.add(self.connection_status)
 
         return [group]
@@ -101,3 +105,4 @@ class HomeAssistantActionBase(ActionBase):
         Callback function to be executed when the Home Assistant connection status changes.
         """
         self.connection_status.set_text(status)
+        self.settings_expander.set_expanded(status != CONNECTED)
