@@ -19,7 +19,7 @@ gi.require_version("Adw", "1")
 from gi.repository.Gtk import Align, Label, SignalListItemFactory, StringList
 from gi.repository.Adw import ComboRow, EntryRow, ExpanderRow, PreferencesGroup, SpinRow, SwitchRow
 
-from plugins.de_gensyn_HomeAssistantPlugin.HomeAssistantActionBase import HomeAssistantActionBase
+from plugins.de_gensyn_HomeAssistantPlugin.home_assistant_action_base import HomeAssistantActionBase
 from plugins.de_gensyn_HomeAssistantPlugin.const import (CONNECT_BIND, SETTING_ENTITY_ENTITY,
                                                          SETTING_TEXT_SHOW_TEXT, TEXT_POSITION_TOP,
                                                          TEXT_POSITION_CENTER,
