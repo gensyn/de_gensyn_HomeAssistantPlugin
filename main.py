@@ -33,8 +33,8 @@ class HomeAssistant(PluginBase):
         self.register(
             plugin_name=HOME_ASSISTANT,
             github_repo="https://github.com/gensyn/de_gensyn_HomeAssistantPlugin",
-            plugin_version="0.9.2-beta",
-            app_version="1.5.1-beta"
+            plugin_version="0.9.3-beta",
+            app_version="1.5.0-beta"
         )
 
         settings = self.get_settings()
