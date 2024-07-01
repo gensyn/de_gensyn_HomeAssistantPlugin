@@ -700,8 +700,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
             # if field not in supported_parameters:
             #     continue
 
-            setting_value = settings[SETTING_SERVICE_PARAMETERS].get(field)
-            default_value = fields[field].get("default")
+            setting_value = settings.get(SETTING_SERVICE_PARAMETERS, {}).get(field)
 
             selector = list(fields[field]["selector"].keys())[0]
 
@@ -728,8 +727,10 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
                 if setting_value:
                     row.set_active(bool(setting_value))
-                elif default_value:
-                    row.set_active(bool(default_value))
+                else:
+                    default_value = fields[field].get("default")
+                    if default_value:
+                        row.set_active(bool(default_value))
             # elif selector == "number":
             #     number_min = fields[field]["selector"]["number"]["min"]
             #     number_max = fields[field]["selector"]["number"]["max"]
