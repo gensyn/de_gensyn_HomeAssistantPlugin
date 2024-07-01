@@ -21,6 +21,8 @@
     "actions.home_assistant.icon.opacity.label": "Deckkraft:",
     "actions.home_assistant.icon.scale.label": "Größe:",
     "actions.home_assistant.icon.options.label": "Optionen",
+    "actions.home_assistant.icon.no_entity.label": "Keine Entität ausgewählt",
+    "actions.home_assistant.icon.no_entity_icon.label": "Die ausgewählte Entität hat kein Icon zugewiesen",
 
     "actions.home_assistant.text.show_text.label": "Status der Entität anzeigen:",
     "actions.home_assistant.text.position.label": "Ausrichtung:",

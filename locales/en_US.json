@@ -21,6 +21,8 @@
     "actions.home_assistant.icon.opacity.label": "Opacity:",
     "actions.home_assistant.icon.scale.label": "Scale:",
     "actions.home_assistant.icon.options.label": "Options",
+    "actions.home_assistant.icon.no_entity.label": "No entity selected",
+    "actions.home_assistant.icon.no_entity_icon.label": "The selected entity has no icon set",
 
     "actions.home_assistant.text.show_text.label": "Show entity state:",
     "actions.home_assistant.text.position.label": "Position:",

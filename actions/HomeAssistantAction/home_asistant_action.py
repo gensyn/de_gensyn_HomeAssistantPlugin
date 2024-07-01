@@ -7,6 +7,7 @@ import json
 import logging
 import os
 import uuid
+from json import JSONDecodeError
 from typing import Any, Dict
 
 import cairosvg
@@ -67,7 +68,8 @@ from plugins.de_gensyn_HomeAssistantPlugin.const import (CONNECT_BIND, SETTING_E
                                                          LABEL_ICON_OPTIONS,
                                                          ATTRIBUTE_FIELDS,
                                                          SETTING_SERVICE_PARAMETERS,
-                                                         CONNECT_NOTIFY_TEXT)
+                                                         CONNECT_NOTIFY_TEXT, LABEL_ICON_NO_ENTITY,
+                                                         LABEL_ICON_NO_ENTITY_ICON)
 
 from GtkHelper.GtkHelper import BetterExpander
 from locales.LegacyLocaleManager import LegacyLocaleManager
@@ -158,6 +160,13 @@ class HomeAssistantAction(HomeAssistantActionBase):
         parameters = {}
 
         for parameter, value in settings.get(SETTING_SERVICE_PARAMETERS, {}).items():
+            try:
+                # try to create a dict or list from the value
+                value = json.loads(value)
+            except JSONDecodeError:
+                # if it doesn't work just keep it as is
+                pass
+
             parameters[parameter] = value
 
         self.plugin_base.backend.call_service(entity, service, parameters)
@@ -539,6 +548,8 @@ class HomeAssistantAction(HomeAssistantActionBase):
             self.set_center_label(None)
             self.set_bottom_label(None)
 
+        self._set_enabled_disabled()
+
     def _update_icon(self, show_icon: bool, state: dict):
         """
         Update the icon to reflect the entity state.
@@ -778,6 +789,10 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         Set the active/inactive state for all rows.
         """
+        if not hasattr(self, "entity_domain_combo") or self.entity_domain_combo is None:
+            # check any attribute to see if rows are initialized and need to be updated
+            return
+
         # Entity section
         domain = self.entity_domain_combo.get_selected_item().get_string() if (
             self.entity_domain_combo.get_selected_item()) else False
@@ -799,7 +814,22 @@ class HomeAssistantAction(HomeAssistantActionBase):
         is_entity_set = bool(entity)
 
         # Icon section
-        self.icon_show_icon.set_sensitive(is_entity_set)
+        ha_entity = self.plugin_base.backend.get_entity(
+            self._get_setting(SETTING_ENTITY_ENTITY))
+        ha_entity_icon = ha_entity.get(ATTRIBUTES, {}).get(ATTRIBUTE_ICON, None)
+        has_icon = bool(ha_entity_icon)
+
+        if not is_entity_set:
+            self.icon_show_icon.set_sensitive(False)
+            self.icon_show_icon.set_active(False)
+            self.icon_show_icon.set_subtitle(self.lm.get(LABEL_ICON_NO_ENTITY))
+        elif not has_icon:
+            self.icon_show_icon.set_sensitive(False)
+            self.icon_show_icon.set_active(False)
+            self.icon_show_icon.set_subtitle(self.lm.get(LABEL_ICON_NO_ENTITY_ICON))
+        else:
+            self.icon_show_icon.set_sensitive(True)
+            self.icon_show_icon.set_subtitle(EMPTY_STRING)
 
         icon_options_enabled = is_entity_set and self.icon_show_icon.get_active()
         self.icon_options.set_sensitive(icon_options_enabled)
