@@ -15,21 +15,20 @@
     "actions.home_assistant.entity.entity.label": "Entity:",
 
     "actions.home_assistant.service.service.label": "Service:",
-    "actions.home_assistant.service.parameters.label": "Parameters",
+    "actions.home_assistant.service.parameters.label": "Parameters:",
 
     "actions.home_assistant.icon.show_icon.label": "Show entity icon:",
     "actions.home_assistant.icon.opacity.label": "Opacity:",
     "actions.home_assistant.icon.scale.label": "Scale:",
-    "actions.home_assistant.icon.options.label": "Options",
     "actions.home_assistant.icon.no_entity.label": "No entity selected",
     "actions.home_assistant.icon.no_entity_icon.label": "The selected entity has no icon set",
 
-    "actions.home_assistant.text.show_text.label": "Show entity state:",
+    "actions.home_assistant.text.show_text.label": "Show entity text:",
     "actions.home_assistant.text.position.label": "Position:",
     "actions.home_assistant.text.adaptive_size.label": "Adapt size automatically:",
     "actions.home_assistant.text.size.label": "Size:",
     "actions.home_assistant.text.show_unit.label": "Show unit of measurement:",
     "actions.home_assistant.text.unit_line_break.label": "Line break between value and unit:",
-    "actions.home_assistant.text.attribute.label": "Show attribute value instead:",
-    "actions.home_assistant.text.options.label": "Options"
+    "actions.home_assistant.text.value.label": "Value:",
+    "actions.home_assistant.text.no_entity.label": "No entity selected"
 }

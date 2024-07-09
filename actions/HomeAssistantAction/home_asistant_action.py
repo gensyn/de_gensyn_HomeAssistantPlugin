@@ -44,7 +44,7 @@ from plugins.de_gensyn_HomeAssistantPlugin.const import (CONNECT_BIND, SETTING_E
                                                          SETTING_TEXT_SHOW_UNIT,
                                                          LABEL_TEXT_UNIT_LINE_BREAK,
                                                          SETTING_TEXT_UNIT_LINE_BREAK,
-                                                         LABEL_TEXT_ATTRIBUTE, CONNECT_CHANGED,
+                                                         LABEL_TEXT_VALUE, CONNECT_CHANGED,
                                                          ATTRIBUTES,
                                                          SETTING_TEXT_ATTRIBUTE,
                                                          LABEL_TEXT_ADAPTIVE_SIZE,
@@ -64,15 +64,20 @@ from plugins.de_gensyn_HomeAssistantPlugin.const import (CONNECT_BIND, SETTING_E
                                                          DEFAULT_TEXT_SHOW_UNIT,
                                                          DEFAULT_TEXT_UNIT_LINE_BREAK,
                                                          LABEL_SERVICE_PARAMETERS,
-                                                         LABEL_TEXT_OPTIONS,
-                                                         LABEL_ICON_OPTIONS,
                                                          ATTRIBUTE_FIELDS,
                                                          SETTING_SERVICE_PARAMETERS,
                                                          CONNECT_NOTIFY_TEXT, LABEL_ICON_NO_ENTITY,
-                                                         LABEL_ICON_NO_ENTITY_ICON)
+                                                         LABEL_ICON_NO_ENTITY_ICON,
+                                                         CONNECT_NOTIFY_ENABLE_EXPANSION,
+                                                         LABEL_TEXT_NO_ENTITY)
 
 from GtkHelper.GtkHelper import BetterExpander
 from locales.LegacyLocaleManager import LegacyLocaleManager
+
+MDI_FILENAME = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../..", MDI_SVG_JSON)
+
+with open(MDI_FILENAME, "r", encoding="utf-8") as f:
+    MDI_ICONS: Dict[str, str] = json.loads(f.read())
 
 
 class HomeAssistantAction(HomeAssistantActionBase):
@@ -80,8 +85,6 @@ class HomeAssistantAction(HomeAssistantActionBase):
     Action to be loaded by StreamController.
     """
     uuid: uuid.UUID
-
-    mdi_icons: Dict[str, str]
 
     lm: LegacyLocaleManager
     combo_factory: SignalListItemFactory
@@ -98,14 +101,12 @@ class HomeAssistantAction(HomeAssistantActionBase):
     service_parameters: BetterExpander
 
     icon_show_icon: SwitchRow
-    icon_options: ExpanderRow
     icon_scale: SpinRow
     icon_opacity: SpinRow
 
     text_show_text: SwitchRow
     text_attribute_combo: ComboRow
     text_attribute_model: StringList
-    text_options: ExpanderRow
     text_position_combo: ComboRow
     text_position_model: StringList
     text_adaptive_size: SwitchRow
@@ -116,12 +117,9 @@ class HomeAssistantAction(HomeAssistantActionBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.has_configuration = True
+
         self.uuid = uuid.uuid4()
-
-        filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../..", MDI_SVG_JSON)
-
-        with open(filename, "r", encoding="utf-8") as f:
-            self.mdi_icons = json.loads(f.read())
 
     def on_ready(self) -> None:
         """
@@ -238,8 +236,9 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         Get all icon rows.
         """
-        self.icon_show_icon = SwitchRow(title=self.lm.get(LABEL_ICON_SHOW_ICON))
-        self.icon_show_icon.set_active(
+        self.icon_show_icon = ExpanderRow(title=self.lm.get(LABEL_ICON_SHOW_ICON))
+        self.icon_show_icon.set_show_enable_switch(True)
+        self.icon_show_icon.set_enable_expansion(
             self._get_setting(SETTING_ICON_SHOW_ICON, DEFAULT_ICON_SHOW_ICON))
 
         self.icon_scale = SpinRow.new_with_range(1, 100, 1)
@@ -250,15 +249,13 @@ class HomeAssistantAction(HomeAssistantActionBase):
         self.icon_opacity.set_title(self.lm.get(LABEL_ICON_OPACITY))
         self.icon_opacity.set_value(self._get_setting(SETTING_ICON_OPACITY, DEFAULT_ICON_OPACITY))
 
-        self.icon_options = ExpanderRow(title=self.lm.get(LABEL_ICON_OPTIONS))
-        self.icon_options.add_row(self.icon_scale)
-        self.icon_options.add_row(self.icon_opacity)
+        self.icon_show_icon.add_row(self.icon_scale)
+        self.icon_show_icon.add_row(self.icon_opacity)
 
         group = PreferencesGroup()
         group.set_title(self.lm.get(LABEL_SETTINGS_ICON))
         group.set_margin_top(20)
         group.add(self.icon_show_icon)
-        group.add(self.icon_options)
 
         return group
 
@@ -266,8 +263,9 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         Get all text rows.
         """
-        self.text_show_text = SwitchRow(title=self.lm.get(LABEL_TEXT_SHOW_TEXT))
-        self.text_show_text.set_active(
+        self.text_show_text = ExpanderRow(title=self.lm.get(LABEL_TEXT_SHOW_TEXT))
+        self.text_show_text.set_show_enable_switch(True)
+        self.text_show_text.set_enable_expansion(
             self._get_setting(SETTING_TEXT_SHOW_TEXT, DEFAULT_TEXT_SHOW_TEXT))
 
         self.text_position_model = StringList.new(
@@ -296,24 +294,22 @@ class HomeAssistantAction(HomeAssistantActionBase):
         self.text_unit_line_break.set_active(
             self._get_setting(SETTING_TEXT_UNIT_LINE_BREAK, DEFAULT_TEXT_UNIT_LINE_BREAK))
 
-        self.text_attribute_combo = ComboRow(title=self.lm.get(LABEL_TEXT_ATTRIBUTE))
+        self.text_attribute_combo = ComboRow(title=self.lm.get(LABEL_TEXT_VALUE))
         self.text_attribute_combo.set_factory(self.combo_factory)
 
         self._load_attributes()
 
-        self.text_options = ExpanderRow(title=self.lm.get(LABEL_TEXT_OPTIONS))
-        self.text_options.add_row(self.text_position_combo)
-        self.text_options.add_row(self.text_adaptive_size)
-        self.text_options.add_row(self.text_size)
-        self.text_options.add_row(self.text_show_unit)
-        self.text_options.add_row(self.text_unit_line_break)
+        self.text_show_text.add_row(self.text_attribute_combo)
+        self.text_show_text.add_row(self.text_position_combo)
+        self.text_show_text.add_row(self.text_adaptive_size)
+        self.text_show_text.add_row(self.text_size)
+        self.text_show_text.add_row(self.text_show_unit)
+        self.text_show_text.add_row(self.text_unit_line_break)
 
         group = PreferencesGroup()
         group.set_title(self.lm.get(LABEL_SETTINGS_TEXT))
         group.set_margin_top(20)
         group.add(self.text_show_text)
-        group.add(self.text_attribute_combo)
-        group.add(self.text_options)
 
         return group
 
@@ -326,12 +322,14 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
         self.service_service_combo.connect(CONNECT_NOTIFY_SELECTED, self._on_change_service)
 
-        self.icon_show_icon.connect(CONNECT_NOTIFY_ACTIVE, self._on_change_switch,
+        self.icon_show_icon.connect(CONNECT_NOTIFY_ENABLE_EXPANSION,
+                                    self._on_change_expansion_switch,
                                     SETTING_ICON_SHOW_ICON)
         self.icon_scale.connect(CONNECT_CHANGED, self._on_change_spin, SETTING_ICON_SCALE)
         self.icon_opacity.connect(CONNECT_CHANGED, self._on_change_spin, SETTING_ICON_OPACITY)
 
-        self.text_show_text.connect(CONNECT_NOTIFY_ACTIVE, self._on_change_switch,
+        self.text_show_text.connect(CONNECT_NOTIFY_ENABLE_EXPANSION,
+                                    self._on_change_expansion_switch,
                                     SETTING_TEXT_SHOW_TEXT)
         self.text_position_combo.connect(CONNECT_NOTIFY_SELECTED, self._on_change_combo,
                                          SETTING_TEXT_POSITION)
@@ -351,6 +349,21 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         settings = self.get_settings()
         settings[args[1]] = switch.get_active()
+        self.set_settings(settings)
+
+        if args[1] == SETTING_ICON_SHOW_ICON:
+            self._entity_updated(settings.get(SETTING_ENTITY_ENTITY))
+
+        self._set_enabled_disabled()
+
+        self._entity_updated(settings.get(SETTING_ENTITY_ENTITY))
+
+    def _on_change_expansion_switch(self, expander, *args):
+        """
+        Execute when the switch of an ExpanderRow is changed.
+        """
+        settings = self.get_settings()
+        settings[args[1]] = expander.get_enable_expansion()
         self.set_settings(settings)
 
         if args[1] == SETTING_ICON_SHOW_ICON:
@@ -588,10 +601,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
         text_height = 1
         attribute = settings.get(SETTING_TEXT_ATTRIBUTE)
 
-        if attribute:
-            text = str(state.get(ATTRIBUTES, {}).get(attribute, EMPTY_STRING))
-            text_length = len(text)
-        else:
+        if attribute in (EMPTY_STRING, STATE):
             if settings.get(SETTING_TEXT_SHOW_UNIT):
                 unit = state.get(ATTRIBUTES, {}).get(ATTRIBUTE_UNIT_OF_MEASUREMENT,
                                                      EMPTY_STRING)
@@ -603,6 +613,9 @@ class HomeAssistantAction(HomeAssistantActionBase):
                 else:
                     text = f"{text} {unit}"
                     text_length = len(text)
+        else:
+            text = str(state.get(ATTRIBUTES, {}).get(attribute, EMPTY_STRING))
+            text_length = len(text)
 
         position = settings.get(SETTING_TEXT_POSITION)
         font_size = settings.get(SETTING_TEXT_SIZE)
@@ -707,6 +720,9 @@ class HomeAssistantAction(HomeAssistantActionBase):
             self.entity_domain_combo.get_selected_item().get_string()).get(
             service, {}).get(ATTRIBUTE_FIELDS, {})
 
+        fields.update(fields.get("advanced_fields", {}).get(ATTRIBUTE_FIELDS, {}))
+        fields.pop("advanced_fields", None)
+
         for field in fields:
             # if field not in supported_parameters:
             #     continue
@@ -767,7 +783,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
         ha_entity = self.plugin_base.backend.get_entity(self._get_setting(SETTING_ENTITY_ENTITY))
 
-        self.text_attribute_model = StringList.new([EMPTY_STRING])
+        self.text_attribute_model = StringList.new([STATE])
 
         for attribute in ha_entity.get(ATTRIBUTES, {}).keys():
             self.text_attribute_model.append(attribute)
@@ -821,40 +837,34 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
         if not is_entity_set:
             self.icon_show_icon.set_sensitive(False)
-            self.icon_show_icon.set_active(False)
+            self.icon_show_icon.set_enable_expansion(False)
             self.icon_show_icon.set_subtitle(self.lm.get(LABEL_ICON_NO_ENTITY))
         elif not has_icon:
             self.icon_show_icon.set_sensitive(False)
-            self.icon_show_icon.set_active(False)
+            self.icon_show_icon.set_enable_expansion(False)
             self.icon_show_icon.set_subtitle(self.lm.get(LABEL_ICON_NO_ENTITY_ICON))
         else:
             self.icon_show_icon.set_sensitive(True)
             self.icon_show_icon.set_subtitle(EMPTY_STRING)
 
-        icon_options_enabled = is_entity_set and self.icon_show_icon.get_active()
-        self.icon_options.set_sensitive(icon_options_enabled)
-
-        if not icon_options_enabled:
-            self.icon_options.set_expanded(False)
-
         # Text section
-        self.text_show_text.set_sensitive(is_entity_set)
+        if not is_entity_set:
+            self.text_show_text.set_sensitive(False)
+            self.text_show_text.set_enable_expansion(False)
+            self.text_show_text.set_subtitle(self.lm.get(LABEL_TEXT_NO_ENTITY))
+        else:
+            self.text_show_text.set_sensitive(True)
+            self.text_show_text.set_subtitle(EMPTY_STRING)
 
-        if entity and self.text_show_text.get_active():
             ha_entity = self.plugin_base.backend.get_entity(
                 self._get_setting(SETTING_ENTITY_ENTITY))
 
             self.text_attribute_combo.set_sensitive(len(self.text_attribute_model) > 1)
-            self.text_options.set_sensitive(True)
             self.text_position_combo.set_sensitive(True)
             self.text_adaptive_size.set_sensitive(True)
             self.text_size.set_sensitive(not self.text_adaptive_size.get_active())
 
             has_unit = bool(ha_entity.get(ATTRIBUTES, {}).get(ATTRIBUTE_UNIT_OF_MEASUREMENT, False))
-
-            if not has_unit:
-                self.text_show_unit.set_active(False)
-                self.text_unit_line_break.set_active(False)
 
             attribute = self.text_attribute_combo.get_selected_item().get_string() if (
                 self.text_attribute_combo.get_selected_item()) else False
@@ -862,21 +872,18 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
             unit_rows_active = has_unit and no_attribute_selected
 
-            self.text_show_unit.set_sensitive(unit_rows_active)
-            self.text_unit_line_break.set_sensitive(unit_rows_active)
+            if unit_rows_active:
+                self.text_show_unit.set_sensitive(True)
+                self.text_unit_line_break.set_sensitive(True)
+            else:
+                self.text_show_unit.set_active(False)
+                self.text_show_unit.set_sensitive(False)
+                self.text_unit_line_break.set_active(False)
+                self.text_unit_line_break.set_sensitive(False)
 
             if not self.text_show_unit.get_active():
                 self.text_unit_line_break.set_active(False)
                 self.text_unit_line_break.set_sensitive(False)
-        else:
-            self.text_attribute_combo.set_sensitive(False)
-            self.text_options.set_sensitive(False)
-            self.text_options.set_expanded(False)
-            self.text_position_combo.set_sensitive(False)
-            self.text_adaptive_size.set_sensitive(False)
-            self.text_size.set_sensitive(False)
-            self.text_show_unit.set_sensitive(False)
-            self.text_unit_line_break.set_sensitive(False)
 
     def _get_icon(self, state: dict) -> str:
         """
@@ -933,7 +940,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
         if "mdi:" in name:
             name = name.replace("mdi:", EMPTY_STRING)
 
-        return self.mdi_icons.get(name, EMPTY_STRING)
+        return MDI_ICONS.get(name, EMPTY_STRING)
 
 
 def _get_icon_svg(name: str, path: str) -> str:
