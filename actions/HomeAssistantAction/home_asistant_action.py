@@ -20,6 +20,7 @@ gi.require_version("Adw", "1")
 from gi.repository.Gtk import Align, Label, SignalListItemFactory, StringList
 from gi.repository.Adw import ComboRow, EntryRow, ExpanderRow, PreferencesGroup, SpinRow, SwitchRow
 
+from plugins.de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction import migration
 from plugins.de_gensyn_HomeAssistantPlugin.home_assistant_action_base import HomeAssistantActionBase
 from plugins.de_gensyn_HomeAssistantPlugin.const import (CONNECT_BIND, SETTING_ENTITY_ENTITY,
                                                          SETTING_TEXT_SHOW_TEXT, TEXT_POSITION_TOP,
@@ -84,6 +85,8 @@ class HomeAssistantAction(HomeAssistantActionBase):
     """
     Action to be loaded by StreamController.
     """
+    settings: Dict[str, Any]
+
     uuid: uuid.UUID
 
     lm: LegacyLocaleManager
@@ -125,6 +128,12 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         Set up action when StreamController has finished loading.
         """
+        settings = self.get_settings()
+        migrated_settings = migration.migrate(settings)
+        self.set_settings(migrated_settings)
+
+        self.settings = migrated_settings
+
         if not self.plugin_base.backend.is_connected():
             self.plugin_base.backend.register_action(self.on_ready)
             return
@@ -144,20 +153,21 @@ class HomeAssistantAction(HomeAssistantActionBase):
         self.plugin_base.backend.remove_tracked_entity(self._get_setting(SETTING_ENTITY_ENTITY),
                                                        self.uuid)
 
+        self._entity_updated("")
+
     def on_key_down(self) -> None:
         """
         Call the service stated in the settings.
         """
-        settings = self.get_settings()
-        entity = settings.get(SETTING_ENTITY_ENTITY)
-        service = settings.get(SETTING_SERVICE_SERVICE)
+        entity = self.settings.get(SETTING_ENTITY_ENTITY)
+        service = self.settings.get(SETTING_SERVICE_SERVICE)
 
         if not entity or not service:
             return
 
         parameters = {}
 
-        for parameter, value in settings.get(SETTING_SERVICE_PARAMETERS, {}).items():
+        for parameter, value in self.settings.get(SETTING_SERVICE_PARAMETERS, {}).items():
             try:
                 # try to create a dict or list from the value
                 value = json.loads(value)
@@ -347,31 +357,29 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         Execute when a switch is changed.
         """
-        settings = self.get_settings()
-        settings[args[1]] = switch.get_active()
-        self.set_settings(settings)
+        self.settings[args[1]] = switch.get_active()
+        self.set_settings(self.settings)
 
         if args[1] == SETTING_ICON_SHOW_ICON:
-            self._entity_updated(settings.get(SETTING_ENTITY_ENTITY))
+            self._entity_updated(self.settings.get(SETTING_ENTITY_ENTITY))
 
         self._set_enabled_disabled()
 
-        self._entity_updated(settings.get(SETTING_ENTITY_ENTITY))
+        self._entity_updated(self.settings.get(SETTING_ENTITY_ENTITY))
 
     def _on_change_expansion_switch(self, expander, *args):
         """
         Execute when the switch of an ExpanderRow is changed.
         """
-        settings = self.get_settings()
-        settings[args[1]] = expander.get_enable_expansion()
-        self.set_settings(settings)
+        self.settings[args[1]] = expander.get_enable_expansion()
+        self.set_settings(self.settings)
 
         if args[1] == SETTING_ICON_SHOW_ICON:
-            self._entity_updated(settings.get(SETTING_ENTITY_ENTITY))
+            self._entity_updated(self.settings.get(SETTING_ENTITY_ENTITY))
 
         self._set_enabled_disabled()
 
-        self._entity_updated(settings.get(SETTING_ENTITY_ENTITY))
+        self._entity_updated(self.settings.get(SETTING_ENTITY_ENTITY))
 
     def _factory_bind(self, _, item):
         """
@@ -393,22 +401,20 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         Execute when the domain is changed.
         """
-        settings = self.get_settings()
-
-        old_domain = settings.setdefault(SETTING_ENTITY_DOMAIN, EMPTY_STRING)
+        old_domain = self.settings.setdefault(SETTING_ENTITY_DOMAIN, EMPTY_STRING)
 
         domain = combo.get_selected_item().get_string()
 
         if old_domain != domain:
-            old_entity = settings[SETTING_ENTITY_ENTITY]
+            old_entity = self.settings[SETTING_ENTITY_ENTITY]
 
             if old_entity:
                 self.plugin_base.backend.remove_tracked_entity(old_entity, self.uuid)
 
-            settings[SETTING_ENTITY_DOMAIN] = domain
-            settings[SETTING_ENTITY_ENTITY] = EMPTY_STRING
-            settings[SETTING_SERVICE_SERVICE] = EMPTY_STRING
-            self.set_settings(settings)
+            self.settings[SETTING_ENTITY_DOMAIN] = domain
+            self.settings[SETTING_ENTITY_ENTITY] = EMPTY_STRING
+            self.settings[SETTING_SERVICE_SERVICE] = EMPTY_STRING
+            self.set_settings(self.settings)
 
             self.entity_entity_combo.set_model(None)
             self.service_service_combo.set_model(None)
@@ -424,15 +430,14 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         Execute when the entity is changed.
         """
-        settings = self.get_settings()
-        old_entity = settings[SETTING_ENTITY_ENTITY]
+        old_entity = self.settings[SETTING_ENTITY_ENTITY]
         entity = combo.get_selected_item().get_string()
 
         if old_entity == entity:
             return
 
-        settings[SETTING_ENTITY_ENTITY] = entity
-        self.set_settings(settings)
+        self.settings[SETTING_ENTITY_ENTITY] = entity
+        self.set_settings(self.settings)
 
         if old_entity:
             self.plugin_base.backend.remove_tracked_entity(old_entity, self.uuid)
@@ -452,88 +457,74 @@ class HomeAssistantAction(HomeAssistantActionBase):
         Execute when the service is changed.
         """
         value = combo.get_selected_item().get_string()
-        settings = self.get_settings()
-        settings[SETTING_SERVICE_SERVICE] = value
+        self.settings[SETTING_SERVICE_SERVICE] = value
+        self.settings[SETTING_SERVICE_PARAMETERS] = {}
 
-        self.get_settings()[SETTING_SERVICE_PARAMETERS] = {}
-        self.set_settings(settings)
+        self.set_settings(self.settings)
 
         self._load_service_parameters()
 
         self._set_enabled_disabled()
 
-        self._entity_updated(settings.get(SETTING_ENTITY_ENTITY))
+        self._entity_updated(self.settings.get(SETTING_ENTITY_ENTITY))
 
     def _on_change_parameters_combo(self, combo, *args):
         """
         Execute when a new selection is made in a combo row for a service parameter.
         """
         value = combo.get_selected_item().get_string()
-        settings = self.get_settings()
         if value:
-            settings[SETTING_SERVICE_PARAMETERS][args[1]] = value
+            self.settings[SETTING_SERVICE_PARAMETERS][args[1]] = value
         else:
-            settings[SETTING_SERVICE_PARAMETERS].pop(args[1])
-        self.set_settings(settings)
+            self.settings[SETTING_SERVICE_PARAMETERS].pop(args[1])
+        self.set_settings(self.settings)
 
     def _on_change_parameters_switch(self, switch, *args):
         """
         Execute when a switch is changed in a combo row for a service parameter.
         """
-        settings = self.get_settings()
-        settings[SETTING_SERVICE_PARAMETERS][args[1]] = switch.get_active()
-        self.set_settings(settings)
-
-    # def on_change_parameters_spin(self, spin, *args):
-    #     size = spin.get_value()
-    #     settings = self.get_settings()
-    #     settings[SETTING_SERVICE_PARAMETERS][args[0]] = size
-    #     self.set_settings(settings)
+        self.settings[SETTING_SERVICE_PARAMETERS][args[1]] = switch.get_active()
+        self.set_settings(self.settings)
 
     def _on_change_parameters_entry(self, entry, *args):
         """
         Execute when the text is changed in an entry row for a service parameter.
         """
         value = entry.get_text()
-        settings = self.get_settings()
         if value:
-            settings[SETTING_SERVICE_PARAMETERS][args[1]] = value
+            self.settings[SETTING_SERVICE_PARAMETERS][args[1]] = value
         else:
-            settings[SETTING_SERVICE_PARAMETERS].pop(args[1])
-        self.set_settings(settings)
+            self.settings[SETTING_SERVICE_PARAMETERS].pop(args[1])
+        self.set_settings(self.settings)
 
     def _on_change_combo(self, combo, *args):
         """
         Execute when a new selection is made in a combo row.
         """
         value = combo.get_selected_item().get_string()
-        settings = self.get_settings()
-        settings[args[1]] = value
-        self.set_settings(settings)
+        self.settings[args[1]] = value
+        self.set_settings(self.settings)
 
         self._set_enabled_disabled()
 
-        self._entity_updated(settings.get(SETTING_ENTITY_ENTITY))
+        self._entity_updated(self.settings.get(SETTING_ENTITY_ENTITY))
 
     def _on_change_spin(self, spin, *args):
         """
         Execute when the number is changed in a spin row.
         """
         size = spin.get_value()
-        settings = self.get_settings()
-        settings[args[0]] = size
-        self.set_settings(settings)
+        self.settings[args[0]] = size
+        self.set_settings(self.settings)
 
-        self._entity_updated(settings.get(SETTING_ENTITY_ENTITY))
+        self._entity_updated(self.settings.get(SETTING_ENTITY_ENTITY))
 
     def _entity_updated(self, entity: str, state: dict = None) -> None:
         """
         Executed when an entity is updated to reflect the changes on the key.
         """
-        settings = self.get_settings()
-
-        show_icon = settings.get(SETTING_ICON_SHOW_ICON)
-        show_text = settings.get(SETTING_TEXT_SHOW_TEXT)
+        show_icon = self.settings.get(SETTING_ICON_SHOW_ICON)
+        show_text = self.settings.get(SETTING_TEXT_SHOW_TEXT)
 
         if not entity or (not show_icon and not show_text):
             self.set_media(image=None)
@@ -542,14 +533,14 @@ class HomeAssistantAction(HomeAssistantActionBase):
             self.set_bottom_label(None)
             return
 
-        settings_entity = settings.get(SETTING_ENTITY_ENTITY)
+        settings_entity = self.settings.get(SETTING_ENTITY_ENTITY)
 
         if entity != settings_entity:
             logging.error("Mismatching entities; settings: %s, callback: %s", settings_entity,
                           entity)
             return
 
-        if show_icon or show_text and not state:
+        if show_icon or show_text and state is None:
             state = self.plugin_base.backend.get_entity(entity)
 
         self._update_icon(show_icon, state)
@@ -578,7 +569,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
             image = Image.open(io.BytesIO(png_data))
 
-            scale = round(self.get_settings().get(SETTING_ICON_SCALE, DEFAULT_ICON_SCALE) / 100, 2)
+            scale = round(self.settings.get(SETTING_ICON_SCALE, DEFAULT_ICON_SCALE) / 100, 2)
 
             self.set_media(image=image, size=scale)
         else:
@@ -594,19 +585,17 @@ class HomeAssistantAction(HomeAssistantActionBase):
             self.set_bottom_label(None)
             return
 
-        settings = self.get_settings()
-
         text = str(state.get(STATE))
         text_length = len(text)
         text_height = 1
-        attribute = settings.get(SETTING_TEXT_ATTRIBUTE)
+        attribute = self.settings.get(SETTING_TEXT_ATTRIBUTE)
 
-        if attribute in (EMPTY_STRING, STATE):
-            if settings.get(SETTING_TEXT_SHOW_UNIT):
+        if attribute == STATE:
+            if self.settings.get(SETTING_TEXT_SHOW_UNIT):
                 unit = state.get(ATTRIBUTES, {}).get(ATTRIBUTE_UNIT_OF_MEASUREMENT,
                                                      EMPTY_STRING)
 
-                if settings.get(SETTING_TEXT_UNIT_LINE_BREAK):
+                if self.settings.get(SETTING_TEXT_UNIT_LINE_BREAK):
                     text_length = max(len(text), len(unit))
                     text = f"{text}\n{unit}"
                     text_height = 2
@@ -617,10 +606,10 @@ class HomeAssistantAction(HomeAssistantActionBase):
             text = str(state.get(ATTRIBUTES, {}).get(attribute, EMPTY_STRING))
             text_length = len(text)
 
-        position = settings.get(SETTING_TEXT_POSITION)
-        font_size = settings.get(SETTING_TEXT_SIZE)
+        position = self.settings.get(SETTING_TEXT_POSITION)
+        font_size = self.settings.get(SETTING_TEXT_SIZE)
 
-        if settings.get(SETTING_TEXT_ADAPTIVE_SIZE):
+        if self.settings.get(SETTING_TEXT_ADAPTIVE_SIZE):
             if text_length == 1:
                 font_size = 50
             elif text_length == 2:
@@ -652,7 +641,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         Load domains from Home Assistant.
         """
-        old_domain = self.get_settings().get(SETTING_ENTITY_DOMAIN, EMPTY_STRING)
+        old_domain = self.settings.get(SETTING_ENTITY_DOMAIN, EMPTY_STRING)
 
         self.entity_domain_model = StringList.new([EMPTY_STRING])
         self.entity_domain_combo.set_model(self.entity_domain_model)
@@ -671,7 +660,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         Load entities from Home Assistant.
         """
-        old_entity = self.get_settings().get(SETTING_ENTITY_ENTITY, EMPTY_STRING)
+        old_entity = self.settings.get(SETTING_ENTITY_ENTITY, EMPTY_STRING)
 
         self.entity_entity_model = StringList.new([EMPTY_STRING])
         self.entity_entity_combo.set_model(self.entity_entity_model)
@@ -689,7 +678,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         Load services from Home Assistant.
         """
-        old_service = self.get_settings().get(SETTING_SERVICE_SERVICE, EMPTY_STRING)
+        old_service = self.settings.get(SETTING_SERVICE_SERVICE, EMPTY_STRING)
 
         self.service_service_model = StringList.new([EMPTY_STRING])
         self.service_service_combo.set_model(self.service_service_model)
@@ -707,14 +696,12 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         Load service parameters from Home Assistant.
         """
-        settings = self.get_settings()
-
-        ha_entity = self.plugin_base.backend.get_entity(settings[SETTING_ENTITY_ENTITY])
+        ha_entity = self.plugin_base.backend.get_entity(self.settings[SETTING_ENTITY_ENTITY])
         # supported_parameters = ha_entity.get(ATTRIBUTES, {}).keys()
 
         self.service_parameters.clear()
 
-        service = settings[SETTING_SERVICE_SERVICE]
+        service = self.settings[SETTING_SERVICE_SERVICE]
 
         fields = self.plugin_base.backend.get_services(
             self.entity_domain_combo.get_selected_item().get_string()).get(
@@ -727,7 +714,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
             # if field not in supported_parameters:
             #     continue
 
-            setting_value = settings.get(SETTING_SERVICE_PARAMETERS, {}).get(field)
+            setting_value = self.settings.get(SETTING_SERVICE_PARAMETERS, {}).get(field)
 
             selector = list(fields[field]["selector"].keys())[0]
 
@@ -779,7 +766,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         Load entity attributes from Home Assistant.
         """
-        old_attribute = self.get_settings().get(SETTING_TEXT_ATTRIBUTE, EMPTY_STRING)
+        old_attribute = self.settings.get(SETTING_TEXT_ATTRIBUTE, EMPTY_STRING)
 
         ha_entity = self.plugin_base.backend.get_entity(self._get_setting(SETTING_ENTITY_ENTITY))
 
@@ -796,9 +783,8 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         Get one setting from the settings with an optional default.
         """
-        settings = self.get_settings()
-        value = settings.setdefault(setting, default)
-        self.set_settings(settings)
+        value = self.settings.setdefault(setting, default)
+        self.set_settings(self.settings)
         return value
 
     def _set_enabled_disabled(self) -> None:
@@ -889,12 +875,10 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         Get the item corresponding to the given state.
         """
-        settings = self.get_settings()
-
-        domain = settings.get(SETTING_ENTITY_DOMAIN)
+        domain = self.settings.get(SETTING_ENTITY_DOMAIN)
 
         if "media_player" == domain:
-            service = settings.get(SETTING_SERVICE_SERVICE)
+            service = self.settings.get(SETTING_SERVICE_SERVICE)
             # use icons for service instead of entity
             if "media_play_pause" == service:
                 if "playing" == state.get(STATE):
@@ -923,7 +907,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
         icon_path = self._get_icon_path(icon_name)
 
-        opacity = str(round(settings.get(SETTING_ICON_OPACITY, DEFAULT_ICON_OPACITY) / 100, 2))
+        opacity = str(round(self.settings.get(SETTING_ICON_OPACITY, DEFAULT_ICON_OPACITY) / 100, 2))
 
         icon = _get_icon_svg(icon_name, icon_path)
 
