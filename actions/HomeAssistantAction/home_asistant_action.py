@@ -21,6 +21,7 @@ from gi.repository.Gtk import Align, Label, SignalListItemFactory, StringList
 from gi.repository.Adw import ComboRow, EntryRow, ExpanderRow, PreferencesGroup, SpinRow, SwitchRow
 
 from plugins.de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction import migration
+from plugins.de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.domains_with_custom_icons import DOMAINS_WITH_SERVICE_ICONS
 from plugins.de_gensyn_HomeAssistantPlugin.home_assistant_action_base import HomeAssistantActionBase
 from plugins.de_gensyn_HomeAssistantPlugin.const import (CONNECT_BIND, SETTING_ENTITY_ENTITY,
                                                          SETTING_TEXT_SHOW_TEXT, TEXT_POSITION_TOP,
@@ -70,7 +71,14 @@ from plugins.de_gensyn_HomeAssistantPlugin.const import (CONNECT_BIND, SETTING_E
                                                          CONNECT_NOTIFY_TEXT, LABEL_ICON_NO_ENTITY,
                                                          LABEL_ICON_NO_ENTITY_ICON,
                                                          CONNECT_NOTIFY_ENABLE_EXPANSION,
-                                                         LABEL_TEXT_NO_ENTITY)
+                                                         LABEL_TEXT_NO_ENTITY,
+                                                         LABEL_SERVICE_CALL_SERVICE,
+                                                         SETTING_SERVICE_CALL_SERVICE,
+                                                         DEFAULT_SERVICE_CALL_SERVICE,
+                                                         LABEL_SERVICE_NO_SERVICES,
+                                                         LABEL_SERVICE_NO_PARAMETERS,
+                                                         LABEL_SERVICE_NO_ENTITY,
+                                                         LABEL_SERVICE_NO_DOMAIN)
 
 from GtkHelper.GtkHelper import BetterExpander
 from locales.LegacyLocaleManager import LegacyLocaleManager
@@ -98,6 +106,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
     entity_entity_combo: ComboRow
     entity_entity_model: StringList
 
+    service_call_service: BetterExpander
     service_service_combo: ComboRow
     service_service_model: StringList
 
@@ -128,17 +137,16 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         Set up action when StreamController has finished loading.
         """
-        settings = self.get_settings()
-        migrated_settings = migration.migrate(settings)
-        self.set_settings(migrated_settings)
+        settings = migration.migrate(self.get_settings())
+        self.set_settings(settings)
 
-        self.settings = migrated_settings
+        self.settings = settings
 
         if not self.plugin_base.backend.is_connected():
             self.plugin_base.backend.register_action(self.on_ready)
             return
 
-        entity = self._get_setting(SETTING_ENTITY_ENTITY)
+        entity = self.settings.get(SETTING_ENTITY_ENTITY)
 
         if entity:
             self.plugin_base.backend.add_tracked_entity(entity, self.uuid, self._entity_updated)
@@ -150,7 +158,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
         Clean up after action was removed.
         """
         self.plugin_base.backend.remove_action(self.on_ready)
-        self.plugin_base.backend.remove_tracked_entity(self._get_setting(SETTING_ENTITY_ENTITY),
+        self.plugin_base.backend.remove_tracked_entity(self.settings.get(SETTING_ENTITY_ENTITY),
                                                        self.uuid)
 
         self._entity_updated("")
@@ -230,15 +238,22 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         Get all service rows.
         """
+        self.service_call_service = ExpanderRow(title=self.lm.get(LABEL_SERVICE_CALL_SERVICE))
+        self.service_call_service.set_show_enable_switch(True)
+        self.service_call_service.set_enable_expansion(
+            self.settings.get(SETTING_SERVICE_CALL_SERVICE, DEFAULT_SERVICE_CALL_SERVICE))
+
         self.service_service_combo = ComboRow(title=self.lm.get(LABEL_SERVICE_SERVICE))
         self.service_service_combo.set_factory(self.combo_factory)
         self.service_parameters = BetterExpander(title=self.lm.get(LABEL_SERVICE_PARAMETERS))
 
+        self.service_call_service.add_row(self.service_service_combo)
+        self.service_call_service.add_row(self.service_parameters)
+
         group = PreferencesGroup()
         group.set_title(self.lm.get(LABEL_SETTINGS_SERVICE))
         group.set_margin_top(20)
-        group.add(self.service_service_combo)
-        group.add(self.service_parameters)
+        group.add(self.service_call_service)
 
         return group
 
@@ -249,15 +264,15 @@ class HomeAssistantAction(HomeAssistantActionBase):
         self.icon_show_icon = ExpanderRow(title=self.lm.get(LABEL_ICON_SHOW_ICON))
         self.icon_show_icon.set_show_enable_switch(True)
         self.icon_show_icon.set_enable_expansion(
-            self._get_setting(SETTING_ICON_SHOW_ICON, DEFAULT_ICON_SHOW_ICON))
+            self.settings.get(SETTING_ICON_SHOW_ICON, DEFAULT_ICON_SHOW_ICON))
 
         self.icon_scale = SpinRow.new_with_range(1, 100, 1)
         self.icon_scale.set_title(self.lm.get(LABEL_ICON_SCALE))
-        self.icon_scale.set_value(self._get_setting(SETTING_ICON_SCALE, DEFAULT_ICON_SCALE))
+        self.icon_scale.set_value(self.settings.get(SETTING_ICON_SCALE, DEFAULT_ICON_SCALE))
 
         self.icon_opacity = SpinRow.new_with_range(1, 100, 1)
         self.icon_opacity.set_title(self.lm.get(LABEL_ICON_OPACITY))
-        self.icon_opacity.set_value(self._get_setting(SETTING_ICON_OPACITY, DEFAULT_ICON_OPACITY))
+        self.icon_opacity.set_value(self.settings.get(SETTING_ICON_OPACITY, DEFAULT_ICON_OPACITY))
 
         self.icon_show_icon.add_row(self.icon_scale)
         self.icon_show_icon.add_row(self.icon_opacity)
@@ -276,7 +291,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
         self.text_show_text = ExpanderRow(title=self.lm.get(LABEL_TEXT_SHOW_TEXT))
         self.text_show_text.set_show_enable_switch(True)
         self.text_show_text.set_enable_expansion(
-            self._get_setting(SETTING_TEXT_SHOW_TEXT, DEFAULT_TEXT_SHOW_TEXT))
+            self.settings.get(SETTING_TEXT_SHOW_TEXT, DEFAULT_TEXT_SHOW_TEXT))
 
         self.text_position_model = StringList.new(
             [TEXT_POSITION_TOP, TEXT_POSITION_CENTER, TEXT_POSITION_BOTTOM])
@@ -286,23 +301,23 @@ class HomeAssistantAction(HomeAssistantActionBase):
         self.text_position_combo.set_model(self.text_position_model)
 
         _set_value_in_combo(self.text_position_combo, self.text_position_model,
-                            self._get_setting(SETTING_TEXT_POSITION, DEFAULT_TEXT_POSITION))
+                            self.settings.get(SETTING_TEXT_POSITION, DEFAULT_TEXT_POSITION))
 
         self.text_adaptive_size = SwitchRow(title=self.lm.get(LABEL_TEXT_ADAPTIVE_SIZE))
         self.text_adaptive_size.set_active(
-            self._get_setting(SETTING_TEXT_ADAPTIVE_SIZE, DEFAULT_TEXT_ADAPTIVE_SIZE))
+            self.settings.get(SETTING_TEXT_ADAPTIVE_SIZE, DEFAULT_TEXT_ADAPTIVE_SIZE))
 
         self.text_size = SpinRow.new_with_range(0, 100, 1)
         self.text_size.set_title(self.lm.get(LABEL_TEXT_SIZE))
-        self.text_size.set_value(self._get_setting(SETTING_TEXT_SIZE, DEFAULT_TEXT_SIZE))
+        self.text_size.set_value(self.settings.get(SETTING_TEXT_SIZE, DEFAULT_TEXT_SIZE))
 
         self.text_show_unit = SwitchRow(title=self.lm.get(LABEL_TEXT_SHOW_UNIT))
         self.text_show_unit.set_active(
-            self._get_setting(SETTING_TEXT_SHOW_UNIT, DEFAULT_TEXT_SHOW_UNIT))
+            self.settings.get(SETTING_TEXT_SHOW_UNIT, DEFAULT_TEXT_SHOW_UNIT))
 
         self.text_unit_line_break = SwitchRow(title=self.lm.get(LABEL_TEXT_UNIT_LINE_BREAK))
         self.text_unit_line_break.set_active(
-            self._get_setting(SETTING_TEXT_UNIT_LINE_BREAK, DEFAULT_TEXT_UNIT_LINE_BREAK))
+            self.settings.get(SETTING_TEXT_UNIT_LINE_BREAK, DEFAULT_TEXT_UNIT_LINE_BREAK))
 
         self.text_attribute_combo = ComboRow(title=self.lm.get(LABEL_TEXT_VALUE))
         self.text_attribute_combo.set_factory(self.combo_factory)
@@ -330,6 +345,9 @@ class HomeAssistantAction(HomeAssistantActionBase):
         self.entity_domain_combo.connect(CONNECT_NOTIFY_SELECTED, self._on_change_domain)
         self.entity_entity_combo.connect(CONNECT_NOTIFY_SELECTED, self._on_change_entity)
 
+        self.service_call_service.connect(CONNECT_NOTIFY_ENABLE_EXPANSION,
+                                          self._on_change_expansion_switch,
+                                          SETTING_SERVICE_CALL_SERVICE)
         self.service_service_combo.connect(CONNECT_NOTIFY_SELECTED, self._on_change_service)
 
         self.icon_show_icon.connect(CONNECT_NOTIFY_ENABLE_EXPANSION,
@@ -413,7 +431,10 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
             self.settings[SETTING_ENTITY_DOMAIN] = domain
             self.settings[SETTING_ENTITY_ENTITY] = EMPTY_STRING
+            self.settings[SETTING_SERVICE_CALL_SERVICE] = DEFAULT_SERVICE_CALL_SERVICE
             self.settings[SETTING_SERVICE_SERVICE] = EMPTY_STRING
+            self.settings[SETTING_ICON_SHOW_ICON] = DEFAULT_ICON_SHOW_ICON
+            self.settings[SETTING_TEXT_SHOW_TEXT] = DEFAULT_TEXT_SHOW_TEXT
             self.set_settings(self.settings)
 
             self.entity_entity_combo.set_model(None)
@@ -456,7 +477,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         Execute when the service is changed.
         """
-        value = combo.get_selected_item().get_string()
+        value = combo.get_selected_item().get_string() if combo.get_selected_item() else ""
         self.settings[SETTING_SERVICE_SERVICE] = value
         self.settings[SETTING_SERVICE_PARAMETERS] = {}
 
@@ -680,7 +701,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         old_service = self.settings.get(SETTING_SERVICE_SERVICE, EMPTY_STRING)
 
-        self.service_service_model = StringList.new([EMPTY_STRING])
+        self.service_service_model = StringList.new([])
         self.service_service_combo.set_model(self.service_service_model)
 
         services = self.plugin_base.backend.get_services(
@@ -768,7 +789,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         old_attribute = self.settings.get(SETTING_TEXT_ATTRIBUTE, EMPTY_STRING)
 
-        ha_entity = self.plugin_base.backend.get_entity(self._get_setting(SETTING_ENTITY_ENTITY))
+        ha_entity = self.plugin_base.backend.get_entity(self.settings.get(SETTING_ENTITY_ENTITY))
 
         self.text_attribute_model = StringList.new([STATE])
 
@@ -778,14 +799,6 @@ class HomeAssistantAction(HomeAssistantActionBase):
         self.text_attribute_combo.set_model(self.text_attribute_model)
 
         _set_value_in_combo(self.text_attribute_combo, self.text_attribute_model, old_attribute)
-
-    def _get_setting(self, setting: str, default: Any = None) -> Any:
-        """
-        Get one setting from the settings with an optional default.
-        """
-        value = self.settings.setdefault(setting, default)
-        self.set_settings(self.settings)
-        return value
 
     def _set_enabled_disabled(self) -> None:
         """
@@ -798,28 +811,47 @@ class HomeAssistantAction(HomeAssistantActionBase):
         # Entity section
         domain = self.entity_domain_combo.get_selected_item().get_string() if (
             self.entity_domain_combo.get_selected_item()) else False
-        domain_selected = bool(domain)
+        is_domain_set = bool(domain)
         self.entity_entity_combo.set_sensitive(
-            domain_selected and len(self.entity_entity_model) > 1)
-        self.service_service_combo.set_sensitive(
-            domain_selected and len(self.service_service_model) > 1)
+            is_domain_set and self.entity_entity_model.get_n_items() > 1)
 
         # Service section
+        entity = self.settings.get(SETTING_ENTITY_ENTITY)
+        is_entity_set = bool(entity)
+
+        if not is_domain_set:
+            self.service_call_service.set_sensitive(False)
+            self.service_call_service.set_enable_expansion(False)
+            self.service_call_service.set_subtitle(self.lm.get(LABEL_SERVICE_NO_DOMAIN))
+        elif not is_entity_set:
+            self.service_call_service.set_sensitive(False)
+            self.service_call_service.set_enable_expansion(False)
+            self.service_call_service.set_subtitle(self.lm.get(LABEL_SERVICE_NO_ENTITY))
+        elif self.service_service_model.get_n_items() == 0:
+            self.service_call_service.set_sensitive(False)
+            self.service_call_service.set_enable_expansion(False)
+            self.service_call_service.set_subtitle(self.lm.get(LABEL_SERVICE_NO_SERVICES))
+        else:
+            self.service_call_service.set_sensitive(True)
+            self.service_call_service.set_subtitle(EMPTY_STRING)
+
         if len(self.service_parameters.get_rows()) > 0:
             self.service_parameters.set_sensitive(True)
+            self.service_parameters.set_subtitle(EMPTY_STRING)
         else:
             self.service_parameters.set_sensitive(False)
             self.service_parameters.set_expanded(False)
-
-        entity = self.entity_entity_combo.get_selected_item().get_string() if (
-            self.entity_entity_combo.get_selected_item()) else False
-        is_entity_set = bool(entity)
+            self.service_parameters.set_subtitle(self.lm.get(LABEL_SERVICE_NO_PARAMETERS))
 
         # Icon section
+        service = self.settings.get(SETTING_SERVICE_SERVICE)
+
         ha_entity = self.plugin_base.backend.get_entity(
-            self._get_setting(SETTING_ENTITY_ENTITY))
+            self.settings.get(SETTING_ENTITY_ENTITY))
         ha_entity_icon = ha_entity.get(ATTRIBUTES, {}).get(ATTRIBUTE_ICON, None)
-        has_icon = bool(ha_entity_icon)
+        has_icon = bool(ha_entity_icon) or (
+                domain in DOMAINS_WITH_SERVICE_ICONS.keys() and service in
+                DOMAINS_WITH_SERVICE_ICONS[domain].keys())
 
         if not is_entity_set:
             self.icon_show_icon.set_sensitive(False)
@@ -843,9 +875,9 @@ class HomeAssistantAction(HomeAssistantActionBase):
             self.text_show_text.set_subtitle(EMPTY_STRING)
 
             ha_entity = self.plugin_base.backend.get_entity(
-                self._get_setting(SETTING_ENTITY_ENTITY))
+                self.settings.get(SETTING_ENTITY_ENTITY))
 
-            self.text_attribute_combo.set_sensitive(len(self.text_attribute_model) > 1)
+            self.text_attribute_combo.set_sensitive(self.text_attribute_model.get_n_items() > 1)
             self.text_position_combo.set_sensitive(True)
             self.text_adaptive_size.set_sensitive(True)
             self.text_size.set_sensitive(not self.text_adaptive_size.get_active())
@@ -877,33 +909,19 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         domain = self.settings.get(SETTING_ENTITY_DOMAIN)
 
-        if "media_player" == domain:
+        icon_name = state.get(ATTRIBUTES, {}).get(ATTRIBUTE_ICON, EMPTY_STRING)
+        color = ICON_COLOR_ON if "on" == state.get(STATE) else ICON_COLOR_OFF
+
+        if domain in DOMAINS_WITH_SERVICE_ICONS.keys():
             service = self.settings.get(SETTING_SERVICE_SERVICE)
-            # use icons for service instead of entity
-            if "media_play_pause" == service:
-                if "playing" == state.get(STATE):
-                    icon_name = "pause"
+
+            if service in DOMAINS_WITH_SERVICE_ICONS[domain].keys():
+                color = ICON_COLOR_ON
+
+                if state.get(STATE) in DOMAINS_WITH_SERVICE_ICONS[domain][service].keys():
+                    icon_name = DOMAINS_WITH_SERVICE_ICONS[domain][service][state.get(STATE)]
                 else:
-                    icon_name = "play"
-            elif "media_stop" == service:
-                icon_name = "stop"
-            elif "volume_up" == service:
-                icon_name = "volume-plus"
-            elif "volume_down" == service:
-                icon_name = "volume-minus"
-            elif "media_next_track" == service:
-                icon_name = "skip-next"
-            elif "media_previous_track" == service:
-                icon_name = "skip-previous"
-            else:
-                logging.warning("Icon not found for domain %s and service %s", domain, service)
-                icon_name = "alert-circle"
-
-            color = ICON_COLOR_ON
-        else:
-            icon_name = state.get(ATTRIBUTES, {}).get(ATTRIBUTE_ICON, EMPTY_STRING)
-
-            color = ICON_COLOR_ON if "on" == state.get(STATE) else ICON_COLOR_OFF
+                    icon_name = DOMAINS_WITH_SERVICE_ICONS[domain][service]["default"]
 
         icon_path = self._get_icon_path(icon_name)
 
@@ -947,7 +965,7 @@ def _set_value_in_combo(combo: ComboRow, model: StringList, value: str):
     if not value:
         return
 
-    for i in range(len(model)):
+    for i in range(model.get_n_items()):
         if model.get_string(i) == value:
             combo.set_selected(i)
             return

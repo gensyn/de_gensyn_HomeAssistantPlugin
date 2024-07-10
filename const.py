@@ -31,8 +31,13 @@ CONNECT_NOTIFY_ENABLE_EXPANSION = "notify::enable-expansion"
 LABEL_ENTITY_DOMAIN = "actions.home_assistant.entity.domain.label"
 LABEL_ENTITY_ENTITY = "actions.home_assistant.entity.entity.label"
 
+LABEL_SERVICE_CALL_SERVICE = "actions.home_assistant.service.call_service.label"
 LABEL_SERVICE_SERVICE = "actions.home_assistant.service.service.label"
+LABEL_SERVICE_NO_DOMAIN = "actions.home_assistant.service.no_domain.label"
+LABEL_SERVICE_NO_ENTITY = "actions.home_assistant.service.no_entity.label"
+LABEL_SERVICE_NO_SERVICES = "actions.home_assistant.service.no_services.label"
 LABEL_SERVICE_PARAMETERS = "actions.home_assistant.service.parameters.label"
+LABEL_SERVICE_NO_PARAMETERS = "actions.home_assistant.service.no_parameters.label"
 
 LABEL_ICON_SHOW_ICON = "actions.home_assistant.icon.show_icon.label"
 LABEL_ICON_OPACITY = "actions.home_assistant.icon.opacity.label"
@@ -57,6 +62,7 @@ LABEL_SETTINGS_TEXT = "actions.home_assistant.settings.text.label"
 SETTING_ENTITY_DOMAIN = "entity.domain"
 SETTING_ENTITY_ENTITY = "entity.entity"
 
+SETTING_SERVICE_CALL_SERVICE = "service.call_service"
 SETTING_SERVICE_SERVICE = "service.service"
 SETTING_SERVICE_PARAMETERS = "service.service_parameters"
 
@@ -88,6 +94,8 @@ ICON_COLOR_ON = "#eeff1b"
 ICON_COLOR_OFF = "#bebebe"
 
 MDI_SVG_JSON = "assets/mdi-svg.json"
+
+DEFAULT_SERVICE_CALL_SERVICE = False
 
 DEFAULT_ICON_SHOW_ICON = False
 DEFAULT_ICON_SCALE = 80

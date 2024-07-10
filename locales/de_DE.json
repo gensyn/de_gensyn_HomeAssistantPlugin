@@ -14,14 +14,19 @@
     "actions.home_assistant.entity.domain.label": "Domäne:",
     "actions.home_assistant.entity.entity.label": "Entität:",
 
+    "actions.home_assistant.service.call_service.label": "Service aufrufen:",
     "actions.home_assistant.service.service.label": "Service:",
+    "actions.home_assistant.service.no_domain.label": "Keine Domäne ausgewählt",
+    "actions.home_assistant.service.no_entity.label": "Keine Entität ausgewählt",
+    "actions.home_assistant.service.no_services.label": "Die ausgewählte Domäne stellt keine Services bereit",
     "actions.home_assistant.service.parameters.label": "Parameter:",
+    "actions.home_assistant.service.no_parameters.label": "Der ausgewählte Service akzeptiert keine Parameter",
 
     "actions.home_assistant.icon.show_icon.label": "Bild der Entität anzeigen:",
     "actions.home_assistant.icon.opacity.label": "Deckkraft:",
     "actions.home_assistant.icon.scale.label": "Größe:",
     "actions.home_assistant.icon.no_entity.label": "Keine Entität ausgewählt",
-    "actions.home_assistant.icon.no_entity_icon.label": "Die ausgewählte Entität hat kein Icon zugewiesen",
+    "actions.home_assistant.icon.no_entity_icon.label": "Die ausgewählte Entität hat kein Icon",
 
     "actions.home_assistant.text.show_text.label": "Entitättext anzeigen:",
     "actions.home_assistant.text.position.label": "Ausrichtung:",
