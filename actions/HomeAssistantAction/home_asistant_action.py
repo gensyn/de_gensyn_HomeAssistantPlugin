@@ -424,7 +424,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
         domain = combo.get_selected_item().get_string()
 
         if old_domain != domain:
-            old_entity = self.settings[SETTING_ENTITY_ENTITY]
+            old_entity = self.settings.get(SETTING_ENTITY_ENTITY)
 
             if old_entity:
                 self.plugin_base.backend.remove_tracked_entity(old_entity, self.uuid)
