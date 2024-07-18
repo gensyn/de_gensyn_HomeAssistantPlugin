@@ -8,9 +8,10 @@ from time import sleep
 from typing import Dict, Callable, Any, List
 
 from loguru import logger as log
-from plugins.de_gensyn_HomeAssistantPlugin.backend.const import CONNECTED, CONNECTING, \
-    DISCONNECTING, NOT_CONNECTED, AUTHENTICATING, WAITING_FOR_RETRY
 from websocket import create_connection, WebSocket, WebSocketException
+
+from de_gensyn_HomeAssistantPlugin.const import (CONNECTED, CONNECTING, DISCONNECTING,
+                                                 NOT_CONNECTED, AUTHENTICATING, WAITING_FOR_RETRY)
 
 HASS_WEBSOCKET_API = "/api/websocket?latest"
 

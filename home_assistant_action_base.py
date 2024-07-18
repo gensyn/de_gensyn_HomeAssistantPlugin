@@ -3,16 +3,13 @@ Module for the Home Assistant action base class.
 """
 
 import gi
-from plugins.de_gensyn_HomeAssistantPlugin.const import (CONNECT_NOTIFY_TEXT,
-                                                         CONNECT_NOTIFY_ACTIVE,
-                                                         LABEL_BASE_HOST,
-                                                         LABEL_BASE_PORT, LABEL_BASE_SSL,
-                                                         LABEL_BASE_TOKEN, SETTING_HOST,
-                                                         SETTING_PORT, SETTING_TOKEN,
-                                                         SETTING_SSL, CONNECTED, NOT_CONNECTED,
-                                                         LABEL_BASE_SETTINGS,
-                                                         LABEL_BASE_SETTINGS_HEADER)
 
+from de_gensyn_HomeAssistantPlugin.const import (CONNECT_NOTIFY_TEXT, CONNECT_NOTIFY_ACTIVE,
+                                                 LABEL_BASE_HOST, LABEL_BASE_PORT, LABEL_BASE_SSL,
+                                                 LABEL_BASE_TOKEN, SETTING_HOST, SETTING_PORT,
+                                                 SETTING_TOKEN, SETTING_SSL, CONNECTED,
+                                                 NOT_CONNECTED, LABEL_BASE_SETTINGS,
+                                                 LABEL_BASE_SETTINGS_HEADER)
 from src.backend.PluginManager.ActionBase import ActionBase
 
 gi.require_version("Adw", "1")

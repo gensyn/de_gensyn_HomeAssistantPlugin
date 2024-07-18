@@ -4,7 +4,7 @@ The module for migrating settings to the newest version.
 
 from typing import Dict, Any
 
-from plugins.de_gensyn_HomeAssistantPlugin.const import (SETTING_TEXT_ATTRIBUTE, STATE,
+from de_gensyn_HomeAssistantPlugin.const import (SETTING_TEXT_ATTRIBUTE, STATE,
                                                          SETTING_SERVICE_CALL_SERVICE,
                                                          SETTING_SERVICE_SERVICE)
 

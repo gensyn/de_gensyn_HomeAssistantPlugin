@@ -1,17 +1,22 @@
 """
 Entry point for StreamController to load the plugin.
 """
+import sys
+from pathlib import Path
 from typing import Dict, Any
 
-from plugins.de_gensyn_HomeAssistantPlugin.const import (EMPTY_STRING, HOME_ASSISTANT,
-                                                         SETTING_HOST, \
-                                                         SETTING_PORT, \
-                                                         SETTING_SSL, SETTING_TOKEN)
+absolute_plugin_path = str(Path(__file__).parent.parent.absolute())
+
+sys.path.insert(0, absolute_plugin_path)
+
+from de_gensyn_HomeAssistantPlugin.const import (EMPTY_STRING, HOME_ASSISTANT, SETTING_HOST,
+                                                 SETTING_PORT, SETTING_SSL, SETTING_TOKEN)
 from src.backend.PluginManager.ActionHolder import ActionHolder
 from src.backend.PluginManager.PluginBase import PluginBase
 
-from .actions.HomeAssistantAction.home_asistant_action import HomeAssistantAction
-from .backend.home_assistant import HomeAssistantBackend
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.home_asistant_action import \
+    HomeAssistantAction
+from de_gensyn_HomeAssistantPlugin.backend.home_assistant import HomeAssistantBackend
 
 
 class HomeAssistant(PluginBase):
@@ -38,10 +43,10 @@ class HomeAssistant(PluginBase):
         )
 
         settings = self.get_settings()
-        host = settings.setdefault(SETTING_HOST, EMPTY_STRING)
-        port = settings.setdefault(SETTING_PORT, EMPTY_STRING)
-        ssl = settings.setdefault(SETTING_SSL, True)
-        token = settings.setdefault(SETTING_TOKEN, EMPTY_STRING)
+        host = settings.get(SETTING_HOST, EMPTY_STRING)
+        port = settings.get(SETTING_PORT, EMPTY_STRING)
+        ssl = settings.get(SETTING_SSL, True)
+        token = settings.get(SETTING_TOKEN, EMPTY_STRING)
 
         self.backend = HomeAssistantBackend()
         self.backend.set_host(host)
@@ -55,10 +60,10 @@ class HomeAssistant(PluginBase):
         """
         super().set_settings(settings)
 
-        host = settings.setdefault(SETTING_HOST, EMPTY_STRING)
-        port = settings.setdefault(SETTING_PORT, EMPTY_STRING)
-        ssl = settings.setdefault(SETTING_SSL, True)
-        token = settings.setdefault(SETTING_TOKEN, EMPTY_STRING)
+        host = settings.get(SETTING_HOST, EMPTY_STRING)
+        port = settings.get(SETTING_PORT, EMPTY_STRING)
+        ssl = settings.get(SETTING_SSL, True)
+        token = settings.get(SETTING_TOKEN, EMPTY_STRING)
 
         self.backend.set_host(host)
         self.backend.set_port(port)

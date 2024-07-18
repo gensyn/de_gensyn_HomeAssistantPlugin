@@ -20,65 +20,48 @@ gi.require_version("Adw", "1")
 from gi.repository.Gtk import Align, Label, SignalListItemFactory, StringList
 from gi.repository.Adw import ComboRow, EntryRow, ExpanderRow, PreferencesGroup, SpinRow, SwitchRow
 
-from plugins.de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction import migration
-from plugins.de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.domains_with_custom_icons import DOMAINS_WITH_SERVICE_ICONS
-from plugins.de_gensyn_HomeAssistantPlugin.home_assistant_action_base import HomeAssistantActionBase
-from plugins.de_gensyn_HomeAssistantPlugin.const import (CONNECT_BIND, SETTING_ENTITY_ENTITY,
-                                                         SETTING_TEXT_SHOW_TEXT, TEXT_POSITION_TOP,
-                                                         TEXT_POSITION_CENTER,
-                                                         TEXT_POSITION_BOTTOM,
-                                                         LABEL_TEXT_POSITION, LABEL_SETTINGS_TEXT,
-                                                         SETTING_TEXT_POSITION, SETTING_TEXT_SIZE,
-                                                         SETTING_SERVICE_SERVICE,
-                                                         LABEL_ENTITY_DOMAIN, LABEL_ENTITY_ENTITY,
-                                                         LABEL_SERVICE_SERVICE,
-                                                         LABEL_SETTINGS_ENTITY,
-                                                         LABEL_SETTINGS_SERVICE,
-                                                         LABEL_ICON_SHOW_ICON,
-                                                         LABEL_SETTINGS_ICON,
-                                                         SETTING_ICON_SHOW_ICON,
-                                                         CONNECT_NOTIFY_SELECTED,
-                                                         CONNECT_NOTIFY_ACTIVE,
-                                                         SETTING_ENTITY_DOMAIN,
-                                                         EMPTY_STRING, ATTRIBUTE_FRIENDLY_NAME,
-                                                         LABEL_TEXT_SHOW_TEXT, LABEL_TEXT_SIZE,
-                                                         LABEL_TEXT_SHOW_UNIT,
-                                                         SETTING_TEXT_SHOW_UNIT,
-                                                         LABEL_TEXT_UNIT_LINE_BREAK,
-                                                         SETTING_TEXT_UNIT_LINE_BREAK,
-                                                         LABEL_TEXT_VALUE, CONNECT_CHANGED,
-                                                         ATTRIBUTES,
-                                                         SETTING_TEXT_ATTRIBUTE,
-                                                         LABEL_TEXT_ADAPTIVE_SIZE,
-                                                         SETTING_TEXT_ADAPTIVE_SIZE,
-                                                         ATTRIBUTE_UNIT_OF_MEASUREMENT, STATE,
-                                                         LABEL_ICON_OPACITY, SETTING_ICON_OPACITY,
-                                                         ATTRIBUTE_ICON,
-                                                         ICON_COLOR_ON, ICON_COLOR_OFF,
-                                                         MDI_SVG_JSON, LABEL_ICON_SCALE,
-                                                         SETTING_ICON_SCALE,
-                                                         DEFAULT_ICON_SCALE, DEFAULT_ICON_SHOW_ICON,
-                                                         DEFAULT_ICON_OPACITY,
-                                                         DEFAULT_TEXT_SHOW_TEXT,
-                                                         DEFAULT_TEXT_POSITION,
-                                                         DEFAULT_TEXT_ADAPTIVE_SIZE,
-                                                         DEFAULT_TEXT_SIZE,
-                                                         DEFAULT_TEXT_SHOW_UNIT,
-                                                         DEFAULT_TEXT_UNIT_LINE_BREAK,
-                                                         LABEL_SERVICE_PARAMETERS,
-                                                         ATTRIBUTE_FIELDS,
-                                                         SETTING_SERVICE_PARAMETERS,
-                                                         CONNECT_NOTIFY_TEXT, LABEL_ICON_NO_ENTITY,
-                                                         LABEL_ICON_NO_ENTITY_ICON,
-                                                         CONNECT_NOTIFY_ENABLE_EXPANSION,
-                                                         LABEL_TEXT_NO_ENTITY,
-                                                         LABEL_SERVICE_CALL_SERVICE,
-                                                         SETTING_SERVICE_CALL_SERVICE,
-                                                         DEFAULT_SERVICE_CALL_SERVICE,
-                                                         LABEL_SERVICE_NO_SERVICES,
-                                                         LABEL_SERVICE_NO_PARAMETERS,
-                                                         LABEL_SERVICE_NO_ENTITY,
-                                                         LABEL_SERVICE_NO_DOMAIN)
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction import migration
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.domains_with_custom_icons import \
+    DOMAINS_WITH_SERVICE_ICONS
+from de_gensyn_HomeAssistantPlugin.home_assistant_action_base import HomeAssistantActionBase
+from de_gensyn_HomeAssistantPlugin.const import (CONNECT_BIND, SETTING_ENTITY_ENTITY,
+                                                 SETTING_TEXT_SHOW_TEXT, TEXT_POSITION_TOP,
+                                                 TEXT_POSITION_CENTER, TEXT_POSITION_BOTTOM,
+                                                 LABEL_TEXT_POSITION, LABEL_SETTINGS_TEXT,
+                                                 SETTING_TEXT_POSITION, SETTING_TEXT_SIZE,
+                                                 SETTING_SERVICE_SERVICE, LABEL_ENTITY_DOMAIN,
+                                                 LABEL_ENTITY_ENTITY, LABEL_SERVICE_SERVICE,
+                                                 LABEL_SETTINGS_ENTITY, LABEL_SETTINGS_SERVICE,
+                                                 LABEL_ICON_SHOW_ICON, LABEL_SETTINGS_ICON,
+                                                 SETTING_ICON_SHOW_ICON, CONNECT_NOTIFY_SELECTED,
+                                                 CONNECT_NOTIFY_ACTIVE, SETTING_ENTITY_DOMAIN,
+                                                 EMPTY_STRING, ATTRIBUTE_FRIENDLY_NAME,
+                                                 LABEL_TEXT_SHOW_TEXT, LABEL_TEXT_SIZE,
+                                                 LABEL_TEXT_SHOW_UNIT, SETTING_TEXT_SHOW_UNIT,
+                                                 LABEL_TEXT_UNIT_LINE_BREAK,
+                                                 SETTING_TEXT_UNIT_LINE_BREAK, LABEL_TEXT_VALUE,
+                                                 CONNECT_CHANGED, ATTRIBUTES,
+                                                 SETTING_TEXT_ATTRIBUTE, LABEL_TEXT_ADAPTIVE_SIZE,
+                                                 SETTING_TEXT_ADAPTIVE_SIZE,
+                                                 ATTRIBUTE_UNIT_OF_MEASUREMENT, STATE,
+                                                 LABEL_ICON_OPACITY, SETTING_ICON_OPACITY,
+                                                 ATTRIBUTE_ICON, ICON_COLOR_ON, ICON_COLOR_OFF,
+                                                 MDI_SVG_JSON, LABEL_ICON_SCALE, SETTING_ICON_SCALE,
+                                                 DEFAULT_ICON_SCALE, DEFAULT_ICON_SHOW_ICON,
+                                                 DEFAULT_ICON_OPACITY, DEFAULT_TEXT_SHOW_TEXT,
+                                                 DEFAULT_TEXT_POSITION, DEFAULT_TEXT_ADAPTIVE_SIZE,
+                                                 DEFAULT_TEXT_SIZE, DEFAULT_TEXT_SHOW_UNIT,
+                                                 DEFAULT_TEXT_UNIT_LINE_BREAK,
+                                                 LABEL_SERVICE_PARAMETERS, ATTRIBUTE_FIELDS,
+                                                 SETTING_SERVICE_PARAMETERS, CONNECT_NOTIFY_TEXT,
+                                                 LABEL_ICON_NO_ENTITY, LABEL_ICON_NO_ENTITY_ICON,
+                                                 CONNECT_NOTIFY_ENABLE_EXPANSION,
+                                                 LABEL_TEXT_NO_ENTITY, LABEL_SERVICE_CALL_SERVICE,
+                                                 SETTING_SERVICE_CALL_SERVICE,
+                                                 DEFAULT_SERVICE_CALL_SERVICE,
+                                                 LABEL_SERVICE_NO_SERVICES,
+                                                 LABEL_SERVICE_NO_PARAMETERS,
+                                                 LABEL_SERVICE_NO_ENTITY, LABEL_SERVICE_NO_DOMAIN)
 
 from GtkHelper.GtkHelper import BetterExpander
 from locales.LegacyLocaleManager import LegacyLocaleManager
@@ -549,9 +532,9 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
         if not entity or (not show_icon and not show_text):
             self.set_media(image=None)
-            self.set_top_label(None)
-            self.set_center_label(None)
-            self.set_bottom_label(None)
+            self.set_top_label(EMPTY_STRING)
+            self.set_center_label(EMPTY_STRING)
+            self.set_bottom_label(EMPTY_STRING)
             return
 
         settings_entity = self.settings.get(SETTING_ENTITY_ENTITY)
@@ -569,9 +552,9 @@ class HomeAssistantAction(HomeAssistantActionBase):
         if show_text:
             self._update_labels(show_text, state)
         else:
-            self.set_top_label(None)
-            self.set_center_label(None)
-            self.set_bottom_label(None)
+            self.set_top_label(EMPTY_STRING)
+            self.set_center_label(EMPTY_STRING)
+            self.set_bottom_label(EMPTY_STRING)
 
         self._set_enabled_disabled()
 
@@ -601,9 +584,9 @@ class HomeAssistantAction(HomeAssistantActionBase):
         Update the labels to reflect the entity state.
         """
         if not show_text or not state:
-            self.set_top_label(None)
-            self.set_center_label(None)
-            self.set_bottom_label(None)
+            self.set_top_label(EMPTY_STRING)
+            self.set_center_label(EMPTY_STRING)
+            self.set_bottom_label(EMPTY_STRING)
             return
 
         text = str(state.get(STATE))
@@ -647,15 +630,15 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
         if position == TEXT_POSITION_TOP:
             self.set_top_label(text, font_size=font_size)
-            self.set_center_label(None)
-            self.set_bottom_label(None)
+            self.set_center_label(EMPTY_STRING)
+            self.set_bottom_label(EMPTY_STRING)
         elif position == TEXT_POSITION_CENTER:
-            self.set_top_label(None)
+            self.set_top_label(EMPTY_STRING)
             self.set_center_label(text, font_size=font_size)
-            self.set_bottom_label(None)
+            self.set_bottom_label(EMPTY_STRING)
         elif position == TEXT_POSITION_BOTTOM:
-            self.set_top_label(None)
-            self.set_center_label(None)
+            self.set_top_label(EMPTY_STRING)
+            self.set_center_label(EMPTY_STRING)
             self.set_bottom_label(text, font_size=font_size)
 
     def _load_domains(self):
