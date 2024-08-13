@@ -566,6 +566,25 @@ class HomeAssistantBackend:
         if action in self._pending_actions:
             self._pending_actions.remove(action)
 
+    def create_url(self, resource: str) -> None | str:
+        if not self._host or not resource:
+            return None
+
+        host = self._host
+
+        schema = "http://"
+
+        if self._ssl:
+            schema = "https://"
+
+        if host[-1] == "/":
+            host = host[:-1]
+
+        if resource[0] == "/":
+            resource = resource[1:]
+
+        return f"{schema}{host}:{self._port}/{resource}"
+
 
 def _get_field_from_message(message: str, field: str) -> Any:
     """

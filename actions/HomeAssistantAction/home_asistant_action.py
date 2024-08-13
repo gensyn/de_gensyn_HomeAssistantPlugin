@@ -12,12 +12,11 @@ from typing import Any, Dict
 
 import cairosvg
 import gi
-# Import gtk modules - used for the config rows
 from PIL import Image
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository.Gtk import Align, Label, SignalListItemFactory, StringList
+from gi.repository.Gtk import Align, Label, PropertyExpression, SignalListItemFactory, StringList, StringObject
 from gi.repository.Adw import ComboRow, EntryRow, ExpanderRow, PreferencesGroup, SpinRow, SwitchRow
 
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction import migration
@@ -82,6 +81,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
     lm: LegacyLocaleManager
     combo_factory: SignalListItemFactory
+    combo_expression: PropertyExpression = PropertyExpression.new(StringObject, None, "string")
 
     entity_domain_combo: ComboRow
     entity_domain_model: StringList
@@ -204,10 +204,13 @@ class HomeAssistantAction(HomeAssistantActionBase):
         Get all entity rows.
         """
         self.entity_domain_combo = ComboRow(title=self.lm.get(LABEL_ENTITY_DOMAIN))
-        self.entity_domain_combo.set_factory(self.combo_factory)
+        self.entity_domain_combo.set_enable_search(True)
+        self.entity_domain_combo.set_expression(self.combo_expression)
 
         self.entity_entity_combo = ComboRow(title=self.lm.get(LABEL_ENTITY_ENTITY))
         self.entity_entity_combo.set_factory(self.combo_factory)
+        self.entity_entity_combo.set_enable_search(True)
+        self.entity_entity_combo.set_expression(self.combo_expression)
 
         group = PreferencesGroup()
         group.set_title(self.lm.get(LABEL_SETTINGS_ENTITY))
@@ -228,6 +231,9 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
         self.service_service_combo = ComboRow(title=self.lm.get(LABEL_SERVICE_SERVICE))
         self.service_service_combo.set_factory(self.combo_factory)
+        self.service_service_combo.set_enable_search(True)
+        self.service_service_combo.set_expression(self.combo_expression)
+
         self.service_parameters = BetterExpander(title=self.lm.get(LABEL_SERVICE_PARAMETERS))
 
         self.service_call_service.add_row(self.service_service_combo)

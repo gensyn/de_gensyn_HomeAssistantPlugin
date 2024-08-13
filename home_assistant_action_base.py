@@ -71,10 +71,10 @@ class HomeAssistantActionBase(ActionBase):
         Loads Home Assistant base settings from the disk.
         """
         settings = self.plugin_base.get_settings()
-        host = settings.setdefault(SETTING_HOST, "")
-        port = settings.setdefault(SETTING_PORT, "")
-        ssl = settings.setdefault(SETTING_SSL, True)
-        token = settings.setdefault(SETTING_TOKEN, "")
+        host = settings.get(SETTING_HOST, "")
+        port = settings.get(SETTING_PORT, "")
+        ssl = settings.get(SETTING_SSL, True)
+        token = settings.get(SETTING_TOKEN, "")
 
         self.host_entry.set_text(host)
         self.port_entry.set_text(port)
