@@ -638,14 +638,14 @@ class HomeAssistantAction(HomeAssistantActionBase):
             self.set_top_label(text, font_size=font_size)
             self.set_center_label(EMPTY_STRING)
             self.set_bottom_label(EMPTY_STRING)
-        elif position == TEXT_POSITION_CENTER:
-            self.set_top_label(EMPTY_STRING)
-            self.set_center_label(text, font_size=font_size)
-            self.set_bottom_label(EMPTY_STRING)
         elif position == TEXT_POSITION_BOTTOM:
             self.set_top_label(EMPTY_STRING)
             self.set_center_label(EMPTY_STRING)
             self.set_bottom_label(text, font_size=font_size)
+        else:
+            self.set_top_label(EMPTY_STRING)
+            self.set_center_label(text, font_size=font_size)
+            self.set_bottom_label(EMPTY_STRING)
 
     def _load_domains(self):
         """
