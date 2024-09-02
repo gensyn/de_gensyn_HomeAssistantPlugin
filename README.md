@@ -73,3 +73,4 @@ A button to show and control air quality.
 ## Planned features
 * Option to change icon color
 * Possibly further custom icons based on domains and services
+* Improve input options for service parameters (sliders etc.) 

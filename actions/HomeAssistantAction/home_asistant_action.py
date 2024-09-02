@@ -873,13 +873,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
             has_unit = bool(ha_entity.get(ATTRIBUTES, {}).get(ATTRIBUTE_UNIT_OF_MEASUREMENT, False))
 
-            attribute = self.text_attribute_combo.get_selected_item().get_string() if (
-                self.text_attribute_combo.get_selected_item()) else False
-            no_attribute_selected = not bool(attribute)
-
-            unit_rows_active = has_unit and no_attribute_selected
-
-            if unit_rows_active:
+            if has_unit:
                 self.text_show_unit.set_sensitive(True)
                 self.text_unit_line_break.set_sensitive(True)
             else:

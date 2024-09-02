@@ -528,6 +528,12 @@ class HomeAssistantBackend:
         """
         while True:
             sleep(PING_INTERVAL)
+
+            if not self._websocket:
+                self._connection_status_callback(NOT_CONNECTED)
+                log.info("Disconnected from Home Assistant: Connection closed")
+                return
+
             try:
                 self._websocket.ping()
             except WebSocketException as e:
