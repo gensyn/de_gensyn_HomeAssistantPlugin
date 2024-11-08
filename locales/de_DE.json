@@ -25,8 +25,8 @@
     "actions.home_assistant.icon.show_icon.label": "Bild der Entität anzeigen:",
     "actions.home_assistant.icon.opacity.label": "Deckkraft:",
     "actions.home_assistant.icon.scale.label": "Größe:",
+    "actions.home_assistant.icon.custom_icons.label": "Eigene Icons:",
     "actions.home_assistant.icon.no_entity.label": "Keine Entität ausgewählt",
-    "actions.home_assistant.icon.no_entity_icon.label": "Die ausgewählte Entität hat kein Icon",
 
     "actions.home_assistant.text.show_text.label": "Entitättext anzeigen:",
     "actions.home_assistant.text.position.label": "Ausrichtung:",
@@ -35,5 +35,23 @@
     "actions.home_assistant.text.show_unit.label": "Einheit anzeigen:",
     "actions.home_assistant.text.unit_line_break.label": "Neue Zeile zwischen Wert und Einheit:",
     "actions.home_assistant.text.value.label": "Wert:",
-    "actions.home_assistant.text.no_entity.label": "Keine Entität ausgewählt"
+    "actions.home_assistant.text.no_entity.label": "Keine Entität ausgewählt",
+
+    "actions.home_assistant.customization.icon.label": "Icon",
+    "actions.home_assistant.customization.icon_color.label": "Icon Farbe",
+    "actions.home_assistant.customization.title.label": "{value} hinzufügen",
+    "actions.home_assistant.customization.attribute.label": "Attribut",
+    "actions.home_assistant.customization.operator.label": "Operator",
+    "actions.home_assistant.customization.value.label": "Wert",
+    "actions.home_assistant.customization.if.label": "Wenn",
+    "actions.home_assistant.customization.then.label": "dann zeige",
+    "actions.home_assistant.customization.add.label": "Hinzufügen",
+    "actions.home_assistant.customization.update.label": "Aktualisieren",
+    "actions.home_assistant.customization.cancel.label": "Abbbrechen",
+    "actions.home_assistant.customization.equals.label": "ist gleich",
+    "actions.home_assistant.customization.not_equals.label": "ist ungleich",
+    "actions.home_assistant.customization.less_than.label": "ist kleiner",
+    "actions.home_assistant.customization.less_than_equals.label": "ist kleiner gleich",
+    "actions.home_assistant.customization.greater_than.label": "ist größer",
+    "actions.home_assistant.customization.greater_than_equals.label": "ist größer gleich"
 }

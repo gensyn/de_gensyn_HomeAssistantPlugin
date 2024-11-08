@@ -21,6 +21,7 @@ SETTING_TOKEN = "token"
 # HOME_ASSISTANT_ACTION
 CONNECT_BIND = "bind"
 CONNECT_CHANGED = "changed"
+CONNECT_CLICKED = "clicked"
 CONNECT_NOTIFY_SELECTED = "notify::selected"
 CONNECT_NOTIFY_ACTIVE = "notify::active"
 CONNECT_NOTIFY_TEXT = "notify::text"
@@ -40,8 +41,8 @@ LABEL_SERVICE_NO_PARAMETERS = "actions.home_assistant.service.no_parameters.labe
 LABEL_ICON_SHOW_ICON = "actions.home_assistant.icon.show_icon.label"
 LABEL_ICON_OPACITY = "actions.home_assistant.icon.opacity.label"
 LABEL_ICON_SCALE = "actions.home_assistant.icon.scale.label"
+LABEL_ICON_CUSTOM_ICONS = "actions.home_assistant.icon.custom_icons.label"
 LABEL_ICON_NO_ENTITY = "actions.home_assistant.icon.no_entity.label"
-LABEL_ICON_NO_ENTITY_ICON = "actions.home_assistant.icon.no_entity_icon.label"
 
 LABEL_TEXT_SHOW_TEXT = "actions.home_assistant.text.show_text.label"
 LABEL_TEXT_POSITION = "actions.home_assistant.text.position.label"
@@ -56,6 +57,28 @@ LABEL_SETTINGS_ENTITY = "actions.home_assistant.settings.entity.label"
 LABEL_SETTINGS_SERVICE = "actions.home_assistant.settings.service.label"
 LABEL_SETTINGS_ICON = "actions.home_assistant.settings.icon.label"
 LABEL_SETTINGS_TEXT = "actions.home_assistant.settings.text.label"
+
+LABEL_CUSTOMIZATION_ICON = "actions.home_assistant.customization.icon.label"
+LABEL_CUSTOMIZATION_ICON_COLOR = "actions.home_assistant.customization.icon_color.label"
+LABEL_CUSTOMIZATION_TITLE = "actions.home_assistant.customization.title.label"
+LABEL_CUSTOMIZATION_ATTRIBUTE = "actions.home_assistant.customization.attribute.label"
+LABEL_CUSTOMIZATION_OPERATOR = "actions.home_assistant.customization.operator.label"
+LABEL_CUSTOMIZATION_VALUE = "actions.home_assistant.customization.value.label"
+LABEL_CUSTOMIZATION_IF = "actions.home_assistant.customization.if.label"
+LABEL_CUSTOMIZATION_THEN = "actions.home_assistant.customization.then.label"
+LABEL_CUSTOMIZATION_ADD = "actions.home_assistant.customization.add.label"
+LABEL_CUSTOMIZATION_UPDATE = "actions.home_assistant.customization.update.label"
+LABEL_CUSTOMIZATION_CANCEL = "actions.home_assistant.customization.cancel.label"
+
+LABEL_CUSTOMIZATION_OPERATORS = {
+    "==": "actions.home_assistant.customization.equals.label",
+    "!=": "actions.home_assistant.customization.not_equals.label",
+    "<": "actions.home_assistant.customization.less_than.label",
+    "<=": "actions.home_assistant.customization.less_than_equals.label",
+    ">": "actions.home_assistant.customization.greater_than.label",
+    ">=": "actions.home_assistant.customization.greater_than_equals.label"
+}
+
 
 SETTING_ENTITY_DOMAIN = "entity.domain"
 SETTING_ENTITY_ENTITY = "entity.entity"
@@ -75,6 +98,8 @@ SETTING_TEXT_SIZE = "text.size"
 SETTING_TEXT_SHOW_UNIT = "text.show_unit"
 SETTING_TEXT_UNIT_LINE_BREAK = "text.unit_line_break"
 SETTING_TEXT_ATTRIBUTE = "text.attribute"
+
+SETTING_CUSTOMIZATION_ICONS = "customization.icons"
 
 STATE = "state"
 
