@@ -25,8 +25,8 @@
     "actions.home_assistant.icon.show_icon.label": "Show entity icon:",
     "actions.home_assistant.icon.opacity.label": "Opacity:",
     "actions.home_assistant.icon.scale.label": "Scale:",
+    "actions.home_assistant.icon.custom_icons.label": "Custom icons:",
     "actions.home_assistant.icon.no_entity.label": "No entity selected",
-    "actions.home_assistant.icon.no_entity_icon.label": "The selected entity has no icon",
 
     "actions.home_assistant.text.show_text.label": "Show entity text:",
     "actions.home_assistant.text.position.label": "Position:",
@@ -35,5 +35,23 @@
     "actions.home_assistant.text.show_unit.label": "Show unit of measurement:",
     "actions.home_assistant.text.unit_line_break.label": "Line break between value and unit:",
     "actions.home_assistant.text.value.label": "Value:",
-    "actions.home_assistant.text.no_entity.label": "No entity selected"
+    "actions.home_assistant.text.no_entity.label": "No entity selected",
+
+    "actions.home_assistant.customization.icon.label": "icon",
+    "actions.home_assistant.customization.icon_color.label": "icon color",
+    "actions.home_assistant.customization.title.label": "Add custom {value}",
+    "actions.home_assistant.customization.attribute.label": "Attribute",
+    "actions.home_assistant.customization.operator.label": "Operator",
+    "actions.home_assistant.customization.value.label": "Value",
+    "actions.home_assistant.customization.if.label": "If",
+    "actions.home_assistant.customization.then.label": "then show",
+    "actions.home_assistant.customization.add.label": "Add",
+    "actions.home_assistant.customization.update.label": "Update",
+    "actions.home_assistant.customization.cancel.label": "Cancel",
+    "actions.home_assistant.customization.equals.label": "equals",
+    "actions.home_assistant.customization.not_equals.label": "not equals",
+    "actions.home_assistant.customization.less_than.label": "is less than",
+    "actions.home_assistant.customization.less_than_equals.label": "is less than or equals",
+    "actions.home_assistant.customization.greater_than.label": "is greater than",
+    "actions.home_assistant.customization.greater_than_equals.label": "is greater than or equals"
 }

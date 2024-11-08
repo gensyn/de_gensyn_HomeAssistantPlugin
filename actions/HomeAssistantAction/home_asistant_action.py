@@ -8,16 +8,21 @@ import logging
 import os
 import uuid
 from json import JSONDecodeError
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import cairosvg
 import gi
 from PIL import Image
 
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization_window import \
+    CustomizationWindow
+
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository.Gtk import Align, Label, PropertyExpression, SignalListItemFactory, StringList, StringObject
-from gi.repository.Adw import ComboRow, EntryRow, ExpanderRow, PreferencesGroup, SpinRow, SwitchRow
+from gi.repository.Gtk import Align, Button, Label, PropertyExpression, \
+    SignalListItemFactory, StringList, StringObject
+from gi.repository.Adw import ActionRow, ComboRow, EntryRow, \
+    ExpanderRow, PreferencesGroup, SpinRow, SwitchRow
 
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction import migration
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.domains_with_custom_icons import \
@@ -53,14 +58,19 @@ from de_gensyn_HomeAssistantPlugin.const import (CONNECT_BIND, SETTING_ENTITY_EN
                                                  DEFAULT_TEXT_UNIT_LINE_BREAK,
                                                  LABEL_SERVICE_PARAMETERS, ATTRIBUTE_FIELDS,
                                                  SETTING_SERVICE_PARAMETERS, CONNECT_NOTIFY_TEXT,
-                                                 LABEL_ICON_NO_ENTITY, LABEL_ICON_NO_ENTITY_ICON,
+                                                 LABEL_ICON_NO_ENTITY,
                                                  CONNECT_NOTIFY_ENABLE_EXPANSION,
                                                  LABEL_TEXT_NO_ENTITY, LABEL_SERVICE_CALL_SERVICE,
                                                  SETTING_SERVICE_CALL_SERVICE,
                                                  DEFAULT_SERVICE_CALL_SERVICE,
                                                  LABEL_SERVICE_NO_SERVICES,
                                                  LABEL_SERVICE_NO_PARAMETERS,
-                                                 LABEL_SERVICE_NO_ENTITY, LABEL_SERVICE_NO_DOMAIN)
+                                                 LABEL_SERVICE_NO_ENTITY, LABEL_SERVICE_NO_DOMAIN,
+                                                 LABEL_ICON_CUSTOM_ICONS, CONNECT_CLICKED,
+                                                 SETTING_CUSTOMIZATION_ICONS,
+                                                 LABEL_CUSTOMIZATION_OPERATORS,
+                                                 LABEL_CUSTOMIZATION_IF, LABEL_CUSTOMIZATION_THEN,
+                                                 LABEL_CUSTOMIZATION_ATTRIBUTE)
 
 from GtkHelper.GtkHelper import BetterExpander
 from locales.LegacyLocaleManager import LegacyLocaleManager
@@ -98,6 +108,9 @@ class HomeAssistantAction(HomeAssistantActionBase):
     icon_show_icon: SwitchRow
     icon_scale: SpinRow
     icon_opacity: SpinRow
+    icon_custom_icons_expander: BetterExpander
+    icon_custom_icons: List = []
+    icon_custom_icon_add: Button
 
     text_show_text: SwitchRow
     text_attribute_combo: ComboRow
@@ -263,8 +276,17 @@ class HomeAssistantAction(HomeAssistantActionBase):
         self.icon_opacity.set_title(self.lm.get(LABEL_ICON_OPACITY))
         self.icon_opacity.set_value(self.settings.get(SETTING_ICON_OPACITY, DEFAULT_ICON_OPACITY))
 
+        self.icon_custom_icon_add = Button(icon_name="list-add", valign=Align.CENTER)
+        self.icon_custom_icon_add.set_size_request(15, 15)
+
+        self.icon_custom_icons_expander = BetterExpander(title=self.lm.get(LABEL_ICON_CUSTOM_ICONS))
+        self.icon_custom_icons_expander.add_suffix(self.icon_custom_icon_add)
+
+        self._load_custom_icons()
+
         self.icon_show_icon.add_row(self.icon_scale)
         self.icon_show_icon.add_row(self.icon_opacity)
+        self.icon_show_icon.add_row(self.icon_custom_icons_expander)
 
         group = PreferencesGroup()
         group.set_title(self.lm.get(LABEL_SETTINGS_ICON))
@@ -272,6 +294,49 @@ class HomeAssistantAction(HomeAssistantActionBase):
         group.add(self.icon_show_icon)
 
         return group
+
+    def _on_add_custom_icon(self, _, index: int = None):
+        attributes = []
+
+        for i in range(self.text_attribute_model.get_n_items()):
+            attributes.append(self.text_attribute_model.get_item(i).get_string())
+
+        if index is not None and index > -1:
+            current = self.icon_custom_icons[index]
+        else:
+            current = None
+
+        window = CustomizationWindow(CustomizationWindow.Customization.ICON, self.lm, attributes,
+                                     self._add_custom_icon, icons=list(MDI_ICONS.keys()),
+                                     current=current, index=index)
+        window.show()
+
+    def _add_custom_icon(self, attribute: str, operator: str, value: str, target: str, index: int):
+        custom_icon = {
+            "attribute": attribute,
+            "operator": operator,
+            "value": value,
+            "icon": target
+        }
+
+        if custom_icon in self.icon_custom_icons:
+            if index is not None and index > -1:
+                # edited item is identical to existing - delete it
+                self.icon_custom_icons.pop(index)
+                self._load_custom_icons()
+
+            # no duplicates necessary
+            return
+
+        if index is not None and index > -1:
+            self.icon_custom_icons[index] = custom_icon
+        else:
+            self.icon_custom_icons.append(custom_icon)
+
+        self.settings[SETTING_CUSTOMIZATION_ICONS] = self.icon_custom_icons
+        self.set_settings(self.settings)
+        self._load_custom_icons()
+        self._entity_updated(self.settings.get(SETTING_ENTITY_ENTITY))
 
     def _get_text_group(self) -> PreferencesGroup:
         """
@@ -344,6 +409,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
                                     SETTING_ICON_SHOW_ICON)
         self.icon_scale.connect(CONNECT_CHANGED, self._on_change_spin, SETTING_ICON_SCALE)
         self.icon_opacity.connect(CONNECT_CHANGED, self._on_change_spin, SETTING_ICON_OPACITY)
+        self.icon_custom_icon_add.connect(CONNECT_CLICKED, self._on_add_custom_icon)
 
         self.text_show_text.connect(CONNECT_NOTIFY_ENABLE_EXPANSION,
                                     self._on_change_expansion_switch,
@@ -424,6 +490,9 @@ class HomeAssistantAction(HomeAssistantActionBase):
             self.settings[SETTING_SERVICE_SERVICE] = EMPTY_STRING
             self.settings[SETTING_ICON_SHOW_ICON] = DEFAULT_ICON_SHOW_ICON
             self.settings[SETTING_TEXT_SHOW_TEXT] = DEFAULT_TEXT_SHOW_TEXT
+            self.icon_custom_icons.clear()
+            self.settings.get(SETTING_CUSTOMIZATION_ICONS, []).clear()
+            self._load_custom_icons()
             self.set_settings(self.settings)
 
             self.entity_entity_combo.set_model(None)
@@ -447,6 +516,9 @@ class HomeAssistantAction(HomeAssistantActionBase):
             return
 
         self.settings[SETTING_ENTITY_ENTITY] = entity
+        self.icon_custom_icons.clear()
+        self.settings.get(SETTING_CUSTOMIZATION_ICONS, []).clear()
+        self._load_custom_icons()
         self.set_settings(self.settings)
 
         if old_entity:
@@ -554,14 +626,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
             state = self.plugin_base.backend.get_entity(entity)
 
         self._update_icon(show_icon, state)
-
-        if show_text:
-            self._update_labels(show_text, state)
-        else:
-            self.set_top_label(EMPTY_STRING)
-            self.set_center_label(EMPTY_STRING)
-            self.set_bottom_label(EMPTY_STRING)
-
+        self._update_labels(show_text, state)
         self._set_enabled_disabled()
 
     def _update_icon(self, show_icon: bool, state: dict):
@@ -576,11 +641,8 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
         if icon:
             png_data = cairosvg.svg2png(bytestring=icon, dpi=600)
-
             image = Image.open(io.BytesIO(png_data))
-
             scale = round(self.settings.get(SETTING_ICON_SCALE, DEFAULT_ICON_SCALE) / 100, 2)
-
             self.set_media(image=image, size=scale)
         else:
             self.set_media(image=None)
@@ -789,6 +851,45 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
         _set_value_in_combo(self.text_attribute_combo, self.text_attribute_model, old_attribute)
 
+    def _load_custom_icons(self):
+        self.icon_custom_icons_expander.clear()
+
+        self.icon_custom_icons = self.settings.get(SETTING_CUSTOMIZATION_ICONS, [])
+
+        for index, custom_icon in enumerate(self.icon_custom_icons):
+            edit_button = Button(icon_name="edit", valign=Align.CENTER)
+            edit_button.set_size_request(15, 15)
+            edit_button.connect(CONNECT_CLICKED, self._on_edit_custom_icon, index)
+
+            delete_button = Button(icon_name="user-trash", valign=Align.CENTER)
+            delete_button.set_size_request(15, 15)
+            delete_button.connect(CONNECT_CLICKED, self._on_delete_custom_icon, index)
+
+            row = ActionRow(
+                title=f"{self.lm.get(LABEL_CUSTOMIZATION_IF)} "
+                      f"{self.lm.get(LABEL_CUSTOMIZATION_ATTRIBUTE).lower()} "
+                      f"\"{custom_icon['attribute']}\" "
+                      f"{self.lm.get(LABEL_CUSTOMIZATION_OPERATORS[custom_icon['operator']])} "
+                      f"\"{custom_icon['value']}\" "
+                      f"{self.lm.get(LABEL_CUSTOMIZATION_THEN)} "
+                      f"\"{custom_icon['icon']}\".")
+            row.add_suffix(edit_button)
+            row.add_suffix(delete_button)
+
+            self.icon_custom_icons_expander.add_row(row)
+
+    def _on_edit_custom_icon(self, _, index: int):
+        self._on_add_custom_icon(_, index)
+
+    def _on_delete_custom_icon(self, _, index: int):
+        self.icon_custom_icons.pop(index)
+
+        # the settings have been implicitly changed by altering the custom icon list
+        self.set_settings(self.settings)
+
+        self._load_custom_icons()
+        self._entity_updated(self.settings.get(SETTING_ENTITY_ENTITY))
+
     def _set_enabled_disabled(self) -> None:
         """
         Set the active/inactive state for all rows.
@@ -833,23 +934,10 @@ class HomeAssistantAction(HomeAssistantActionBase):
             self.service_parameters.set_subtitle(self.lm.get(LABEL_SERVICE_NO_PARAMETERS))
 
         # Icon section
-        service = self.settings.get(SETTING_SERVICE_SERVICE)
-
-        ha_entity = self.plugin_base.backend.get_entity(
-            self.settings.get(SETTING_ENTITY_ENTITY))
-        ha_entity_icon = ha_entity.get(ATTRIBUTES, {}).get(ATTRIBUTE_ICON, None)
-        has_icon = bool(ha_entity_icon) or (
-                domain in DOMAINS_WITH_SERVICE_ICONS.keys() and service in
-                DOMAINS_WITH_SERVICE_ICONS[domain].keys())
-
         if not is_entity_set:
             self.icon_show_icon.set_sensitive(False)
             self.icon_show_icon.set_enable_expansion(False)
             self.icon_show_icon.set_subtitle(self.lm.get(LABEL_ICON_NO_ENTITY))
-        elif not has_icon:
-            self.icon_show_icon.set_sensitive(False)
-            self.icon_show_icon.set_enable_expansion(False)
-            self.icon_show_icon.set_subtitle(self.lm.get(LABEL_ICON_NO_ENTITY_ICON))
         else:
             self.icon_show_icon.set_sensitive(True)
             self.icon_show_icon.set_subtitle(EMPTY_STRING)
@@ -886,13 +974,14 @@ class HomeAssistantAction(HomeAssistantActionBase):
                 self.text_unit_line_break.set_active(False)
                 self.text_unit_line_break.set_sensitive(False)
 
-    def _get_icon(self, state: dict) -> str:
+    def _get_icon(self, state: Dict) -> str:
         """
         Get the item corresponding to the given state.
         """
         domain = self.settings.get(SETTING_ENTITY_DOMAIN)
 
-        icon_name = state.get(ATTRIBUTES, {}).get(ATTRIBUTE_ICON, EMPTY_STRING)
+        icon_name = self._get_icon_name(state)
+
         color = ICON_COLOR_ON if "on" == state.get(STATE) else ICON_COLOR_OFF
 
         if domain in DOMAINS_WITH_SERVICE_ICONS.keys():
@@ -917,6 +1006,59 @@ class HomeAssistantAction(HomeAssistantActionBase):
             .replace("<color>", color)
             .replace("<opacity>", opacity)
         )
+
+    def _get_icon_name(self, state: Dict) -> str:
+        custom_icons = self.settings.get(SETTING_CUSTOMIZATION_ICONS, [])
+
+        for custom_icon in custom_icons:
+            if custom_icon["attribute"] == STATE:
+                value = state[STATE]
+            else:
+                value = state[ATTRIBUTES].get(custom_icon["attribute"])
+
+            custom_icon_value = custom_icon["value"]
+
+            try:
+                # if both values are numbers, convert them both to float
+                # if one is int and one float, testing for equality might fail (21 vs 21.0 eg)
+                value = float(value)
+                custom_icon_value = float(custom_icon_value)
+            except ValueError:
+                pass
+
+            operator = custom_icon["operator"]
+            custom_icon = custom_icon["icon"]
+
+            if operator == "==" and str(value) == str(custom_icon_value):
+                return custom_icon
+
+            if operator == "!=" and str(value) != str(custom_icon_value):
+                return custom_icon
+
+            if not isinstance(value, float):
+                # other operators are only applicable to numbers
+                continue
+
+            try:
+                custom_icon_value = float(custom_icon_value)
+            except ValueError:
+                logging.error("Could not convert custom value to float: %s",
+                              custom_icon_value)
+                continue
+
+            if operator == "<" and value < custom_icon_value:
+                return custom_icon
+
+            if operator == "<=" and value <= custom_icon_value:
+                return custom_icon
+
+            if operator == ">" and value > custom_icon_value:
+                return custom_icon
+
+            if operator == ">=" and value >= custom_icon_value:
+                return custom_icon
+
+        return state.get(ATTRIBUTES, {}).get(ATTRIBUTE_ICON, EMPTY_STRING)
 
     def _get_icon_path(self, name: str) -> str:
         """
