@@ -867,11 +867,12 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
             row = ActionRow(
                 title=f"{self.lm.get(LABEL_CUSTOMIZATION_IF)} "
-                      f"{self.lm.get(LABEL_CUSTOMIZATION_ATTRIBUTE).lower
-                      ()} \"{custom_icon["attribute"]}\" "
-                      f"{self.lm.get(LABEL_CUSTOMIZATION_OPERATORS[custom_icon["operator"]])} \""
-                      f"{custom_icon["value"]}\" {self.lm.get(LABEL_CUSTOMIZATION_THEN)} \""
-                      f"{custom_icon["icon"]}\".")
+                      f"{self.lm.get(LABEL_CUSTOMIZATION_ATTRIBUTE).lower()} "
+                      f"\"{custom_icon["attribute"]}\" "
+                      f"{self.lm.get(LABEL_CUSTOMIZATION_OPERATORS[custom_icon["operator"]])} "
+                      f"\"{custom_icon["value"]}\" "
+                      f"{self.lm.get(LABEL_CUSTOMIZATION_THEN)} "
+                      f"\"{custom_icon["icon"]}\".")
             row.add_suffix(edit_button)
             row.add_suffix(delete_button)
 
