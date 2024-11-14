@@ -982,7 +982,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
         icon_name = self._get_icon_name(state)
 
-        color = ICON_COLOR_ON if "on" == state.get(STATE) else ICON_COLOR_OFF
+        color = ICON_COLOR_ON if state.get(STATE) in ("on", "home") else ICON_COLOR_OFF
 
         if domain in DOMAINS_WITH_SERVICE_ICONS.keys():
             service = self.settings.get(SETTING_SERVICE_SERVICE)
