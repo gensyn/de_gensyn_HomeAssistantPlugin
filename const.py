@@ -4,6 +4,7 @@ Constants for the Home Assistant plugin.
 
 EMPTY_STRING = ""
 HOME_ASSISTANT = "Home Assistant"
+ERROR = "error"
 
 # BASE
 LABEL_BASE_HOST = "actions.base.host.label"
@@ -102,6 +103,8 @@ SETTING_TEXT_ATTRIBUTE = "text.attribute"
 SETTING_CUSTOMIZATION_ICONS = "customization.icons"
 
 STATE = "state"
+STATE_ON = "on"
+STATE_HOME = "home"
 
 ATTRIBUTES = "attributes"
 ATTRIBUTE_FRIENDLY_NAME = "friendly_name"

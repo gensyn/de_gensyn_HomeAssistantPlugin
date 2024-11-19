@@ -5,12 +5,12 @@ import sys
 from pathlib import Path
 from typing import Dict, Any
 
+from de_gensyn_HomeAssistantPlugin import const
+
 absolute_plugin_path = str(Path(__file__).parent.parent.absolute())
 
 sys.path.insert(0, absolute_plugin_path)
 
-from de_gensyn_HomeAssistantPlugin.const import (EMPTY_STRING, HOME_ASSISTANT, SETTING_HOST,
-                                                 SETTING_PORT, SETTING_SSL, SETTING_TOKEN)
 from src.backend.PluginManager.ActionHolder import ActionHolder
 from src.backend.PluginManager.PluginBase import PluginBase
 
@@ -31,22 +31,22 @@ class HomeAssistant(PluginBase):
             plugin_base=self,
             action_base=HomeAssistantAction,
             action_id="de_gensyn_HomeAssistantPlugin::HomeAssistantAction",
-            action_name=HOME_ASSISTANT,
+            action_name=const.HOME_ASSISTANT,
         )
         self.add_action_holder(self.home_assistant_action_holder)
 
         self.register(
-            plugin_name=HOME_ASSISTANT,
+            plugin_name=const.HOME_ASSISTANT,
             github_repo="https://github.com/gensyn/de_gensyn_HomeAssistantPlugin",
             plugin_version="0.9.3-beta",
             app_version="1.5.0-beta"
         )
 
         settings = self.get_settings()
-        host = settings.get(SETTING_HOST, EMPTY_STRING)
-        port = settings.get(SETTING_PORT, EMPTY_STRING)
-        ssl = settings.get(SETTING_SSL, True)
-        token = settings.get(SETTING_TOKEN, EMPTY_STRING)
+        host = settings.get(const.SETTING_HOST, const.EMPTY_STRING)
+        port = settings.get(const.SETTING_PORT, const.EMPTY_STRING)
+        ssl = settings.get(const.SETTING_SSL, True)
+        token = settings.get(const.SETTING_TOKEN, const.EMPTY_STRING)
 
         self.backend = HomeAssistantBackend()
         self.backend.set_host(host)
@@ -60,10 +60,10 @@ class HomeAssistant(PluginBase):
         """
         super().set_settings(settings)
 
-        host = settings.get(SETTING_HOST, EMPTY_STRING)
-        port = settings.get(SETTING_PORT, EMPTY_STRING)
-        ssl = settings.get(SETTING_SSL, True)
-        token = settings.get(SETTING_TOKEN, EMPTY_STRING)
+        host = settings.get(const.SETTING_HOST, const.EMPTY_STRING)
+        port = settings.get(const.SETTING_PORT, const.EMPTY_STRING)
+        ssl = settings.get(const.SETTING_SSL, True)
+        token = settings.get(const.SETTING_TOKEN, const.EMPTY_STRING)
 
         self.backend.set_host(host)
         self.backend.set_port(port)
