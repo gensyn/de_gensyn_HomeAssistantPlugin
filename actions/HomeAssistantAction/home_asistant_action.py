@@ -28,7 +28,7 @@ from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction import migration
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.domains_with_custom_icons import \
     DOMAINS_WITH_SERVICE_ICONS
 from de_gensyn_HomeAssistantPlugin.home_assistant_action_base import HomeAssistantActionBase
-import de_gensyn_HomeAssistantPlugin.const as const
+from de_gensyn_HomeAssistantPlugin import const
 
 from GtkHelper.GtkHelper import BetterExpander
 from locales.LegacyLocaleManager import LegacyLocaleManager
@@ -63,15 +63,17 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
     service_parameters: BetterExpander
 
-    icon_show_icon: SwitchRow
+    icon_show_icon: ExpanderRow
     icon_scale: SpinRow
     icon_opacity: SpinRow
     icon_custom_icons_expander: BetterExpander
     icon_custom_icons: List = []
     icon_custom_icon_add: Button
 
-    text_show_text: SwitchRow
+    text_show_text: ExpanderRow
     text_attribute_combo: ComboRow
+    text_round: ExpanderRow
+    text_round_precision: SpinRow
     text_attribute_model: StringList
     text_position_combo: ComboRow
     text_position_model: StringList
@@ -310,6 +312,22 @@ class HomeAssistantAction(HomeAssistantActionBase):
         self.text_show_text.set_enable_expansion(
             self.settings.get(const.SETTING_TEXT_SHOW_TEXT, const.DEFAULT_TEXT_SHOW_TEXT))
 
+        self.text_attribute_combo = ComboRow(title=self.lm.get(const.LABEL_TEXT_VALUE))
+        self.text_attribute_combo.set_factory(self.combo_factory)
+
+        self.text_round = ExpanderRow(title=self.lm.get(const.LABEL_TEXT_ROUND))
+        self.text_round.set_show_enable_switch(True)
+        self.text_round.set_enable_expansion(
+            self.settings.get(const.SETTING_TEXT_ROUND, const.DEFAULT_TEXT_ROUND))
+
+        self.text_round_precision = SpinRow.new_with_range(0, 20, 1)
+        self.text_round_precision.set_title(self.lm.get(const.LABEL_TEXT_ROUND_PRECISION))
+        self.text_round_precision.set_value(
+            self.settings.get(const.SETTING_TEXT_ROUND_PRECISION,
+                              const.DEFAULT_TEXT_ROUND_PRECISION))
+
+        self.text_round.add_row(self.text_round_precision)
+
         self.text_position_model = StringList.new(
             [const.TEXT_POSITION_TOP, const.TEXT_POSITION_CENTER, const.TEXT_POSITION_BOTTOM])
 
@@ -339,12 +357,10 @@ class HomeAssistantAction(HomeAssistantActionBase):
             self.settings.get(const.SETTING_TEXT_UNIT_LINE_BREAK,
                               const.DEFAULT_TEXT_UNIT_LINE_BREAK))
 
-        self.text_attribute_combo = ComboRow(title=self.lm.get(const.LABEL_TEXT_VALUE))
-        self.text_attribute_combo.set_factory(self.combo_factory)
-
         self._load_attributes()
 
         self.text_show_text.add_row(self.text_attribute_combo)
+        self.text_show_text.add_row(self.text_round)
         self.text_show_text.add_row(self.text_position_combo)
         self.text_show_text.add_row(self.text_adaptive_size)
         self.text_show_text.add_row(self.text_size)
@@ -382,6 +398,13 @@ class HomeAssistantAction(HomeAssistantActionBase):
         self.text_show_text.connect(const.CONNECT_NOTIFY_ENABLE_EXPANSION,
                                     self._on_change_expansion_switch,
                                     const.SETTING_TEXT_SHOW_TEXT)
+        self.text_attribute_combo.connect(const.CONNECT_NOTIFY_SELECTED, self._on_change_combo,
+                                          const.SETTING_TEXT_ATTRIBUTE)
+        self.text_round.connect(const.CONNECT_NOTIFY_ENABLE_EXPANSION,
+                                self._on_change_expansion_switch,
+                                const.SETTING_TEXT_ROUND)
+        self.text_round_precision.connect(const.CONNECT_CHANGED, self._on_change_spin,
+                                          const.SETTING_TEXT_ROUND_PRECISION)
         self.text_position_combo.connect(const.CONNECT_NOTIFY_SELECTED, self._on_change_combo,
                                          const.SETTING_TEXT_POSITION)
         self.text_adaptive_size.connect(const.CONNECT_NOTIFY_ACTIVE, self._on_change_switch,
@@ -391,8 +414,6 @@ class HomeAssistantAction(HomeAssistantActionBase):
                                     const.SETTING_TEXT_SHOW_UNIT)
         self.text_unit_line_break.connect(const.CONNECT_NOTIFY_ACTIVE, self._on_change_switch,
                                           const.SETTING_TEXT_UNIT_LINE_BREAK)
-        self.text_attribute_combo.connect(const.CONNECT_NOTIFY_SELECTED, self._on_change_combo,
-                                          const.SETTING_TEXT_ATTRIBUTE)
 
     def _on_change_switch(self, switch, *args):
         """
@@ -646,6 +667,16 @@ class HomeAssistantAction(HomeAssistantActionBase):
         else:
             text = str(state.get(const.ATTRIBUTES, {}).get(attribute, const.EMPTY_STRING))
             text_length = len(text)
+
+        if self.settings.get(const.SETTING_TEXT_ROUND, const.DEFAULT_TEXT_ROUND) and is_float(text):
+            precision = int(self.settings.get(const.SETTING_TEXT_ROUND_PRECISION, const.DEFAULT_TEXT_ROUND_PRECISION))
+
+            as_number = round(float(text), precision)
+
+            if precision == 0:
+                as_number = int(as_number)
+
+            text = str(as_number)
 
         position = self.settings.get(const.SETTING_TEXT_POSITION)
         font_size = self.settings.get(const.SETTING_TEXT_SIZE)
@@ -955,7 +986,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
         icon_name = self._get_icon_name(state)
 
         color = const.ICON_COLOR_ON if state.get(const.STATE) in (
-        const.STATE_ON, const.STATE_HOME) else const.ICON_COLOR_OFF
+            const.STATE_ON, const.STATE_HOME) else const.ICON_COLOR_OFF
 
         if domain in DOMAINS_WITH_SERVICE_ICONS.keys():
             service = self.settings.get(const.SETTING_SERVICE_SERVICE)
@@ -1069,3 +1100,14 @@ def _set_value_in_combo(combo: ComboRow, model: StringList, value: str):
         if model.get_string(i) == value:
             combo.set_selected(i)
             return
+
+
+def is_float(value: str):
+    if not "." in value:
+        return False
+
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
