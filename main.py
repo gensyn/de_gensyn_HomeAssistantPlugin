@@ -5,11 +5,11 @@ import sys
 from pathlib import Path
 from typing import Dict, Any
 
-from de_gensyn_HomeAssistantPlugin import const
-
 absolute_plugin_path = str(Path(__file__).parent.parent.absolute())
 
 sys.path.insert(0, absolute_plugin_path)
+
+from de_gensyn_HomeAssistantPlugin import const
 
 from src.backend.PluginManager.ActionHolder import ActionHolder
 from src.backend.PluginManager.PluginBase import PluginBase
