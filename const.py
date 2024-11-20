@@ -4,6 +4,7 @@ Constants for the Home Assistant plugin.
 
 EMPTY_STRING = ""
 HOME_ASSISTANT = "Home Assistant"
+ERROR = "error"
 
 # BASE
 LABEL_BASE_HOST = "actions.base.host.label"
@@ -45,12 +46,14 @@ LABEL_ICON_CUSTOM_ICONS = "actions.home_assistant.icon.custom_icons.label"
 LABEL_ICON_NO_ENTITY = "actions.home_assistant.icon.no_entity.label"
 
 LABEL_TEXT_SHOW_TEXT = "actions.home_assistant.text.show_text.label"
+LABEL_TEXT_VALUE = "actions.home_assistant.text.value.label"
+LABEL_TEXT_ROUND = "actions.home_assistant.text.round.label"
+LABEL_TEXT_ROUND_PRECISION = "actions.home_assistant.text.round_precision.label"
 LABEL_TEXT_POSITION = "actions.home_assistant.text.position.label"
 LABEL_TEXT_SIZE = "actions.home_assistant.text.size.label"
 LABEL_TEXT_ADAPTIVE_SIZE = "actions.home_assistant.text.adaptive_size.label"
 LABEL_TEXT_SHOW_UNIT = "actions.home_assistant.text.show_unit.label"
 LABEL_TEXT_UNIT_LINE_BREAK = "actions.home_assistant.text.unit_line_break.label"
-LABEL_TEXT_VALUE = "actions.home_assistant.text.value.label"
 LABEL_TEXT_NO_ENTITY = "actions.home_assistant.text.no_entity.label"
 
 LABEL_SETTINGS_ENTITY = "actions.home_assistant.settings.entity.label"
@@ -92,16 +95,20 @@ SETTING_ICON_OPACITY = "icon.opacity"
 SETTING_ICON_SCALE = "icon.scale"
 
 SETTING_TEXT_SHOW_TEXT = "text.show_text"
+SETTING_TEXT_ATTRIBUTE = "text.attribute"
+SETTING_TEXT_ROUND = "text.round"
+SETTING_TEXT_ROUND_PRECISION = "text.round_precision"
 SETTING_TEXT_POSITION = "text.position"
 SETTING_TEXT_ADAPTIVE_SIZE = "text.adaptive_size"
 SETTING_TEXT_SIZE = "text.size"
 SETTING_TEXT_SHOW_UNIT = "text.show_unit"
 SETTING_TEXT_UNIT_LINE_BREAK = "text.unit_line_break"
-SETTING_TEXT_ATTRIBUTE = "text.attribute"
 
 SETTING_CUSTOMIZATION_ICONS = "customization.icons"
 
 STATE = "state"
+STATE_ON = "on"
+STATE_HOME = "home"
 
 ATTRIBUTES = "attributes"
 ATTRIBUTE_FRIENDLY_NAME = "friendly_name"
@@ -125,6 +132,8 @@ DEFAULT_ICON_SCALE = 80
 DEFAULT_ICON_OPACITY = 100
 
 DEFAULT_TEXT_SHOW_TEXT = False
+DEFAULT_TEXT_ROUND = False
+DEFAULT_TEXT_ROUND_PRECISION = 2
 DEFAULT_TEXT_POSITION = TEXT_POSITION_CENTER
 DEFAULT_TEXT_ADAPTIVE_SIZE = True
 DEFAULT_TEXT_SIZE = 20

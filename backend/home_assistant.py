@@ -10,8 +10,7 @@ from typing import Dict, Callable, Any, List
 from loguru import logger as log
 from websocket import create_connection, WebSocket, WebSocketException
 
-from de_gensyn_HomeAssistantPlugin.const import (CONNECTED, CONNECTING, DISCONNECTING,
-                                                 NOT_CONNECTED, AUTHENTICATING, WAITING_FOR_RETRY)
+from de_gensyn_HomeAssistantPlugin import const
 
 HASS_WEBSOCKET_API = "/api/websocket?latest"
 
@@ -126,10 +125,10 @@ class HomeAssistantBackend:
             # already connected
             return True
 
-        self._connection_status_callback(CONNECTING)
+        self._connection_status_callback(const.CONNECTING)
 
         if not self._host or not self._token or not self._port:
-            self._connection_status_callback(NOT_CONNECTED)
+            self._connection_status_callback(const.NOT_CONNECTED)
             return False
 
         if self._websocket and self._websocket.connected:
@@ -140,19 +139,19 @@ class HomeAssistantBackend:
             # close existing websocket
             self._changes_websocket.close()
 
-        self._connection_status_callback(AUTHENTICATING)
+        self._connection_status_callback(const.AUTHENTICATING)
 
         self._websocket = self._auth()
 
         if not self._websocket:
-            self._connection_status_callback(NOT_CONNECTED)
+            self._connection_status_callback(const.NOT_CONNECTED)
             return False
 
         self._changes_websocket = self._auth()
 
         if not self._changes_websocket:
             self._websocket.close()
-            self._connection_status_callback(NOT_CONNECTED)
+            self._connection_status_callback(const.NOT_CONNECTED)
             return False
 
         message = self._create_message("get_config")
@@ -165,11 +164,11 @@ class HomeAssistantBackend:
             # might have been initialized - try again later
             self._websocket.close()
             self._changes_websocket.close()
-            self._connection_status_callback(NOT_CONNECTED)
+            self._connection_status_callback(const.NOT_CONNECTED)
             return False
 
         log.info("Connected to Home Assistant")
-        self._connection_status_callback(CONNECTED)
+        self._connection_status_callback(const.CONNECTED)
 
         Thread(target=self._async_run_recv_loop, daemon=True).start()
 
@@ -190,7 +189,7 @@ class HomeAssistantBackend:
         """
         Disconnect from Home Assistant.
         """
-        self._connection_status_callback(DISCONNECTING)
+        self._connection_status_callback(const.DISCONNECTING)
 
         self._retry_connection = False
 
@@ -200,7 +199,7 @@ class HomeAssistantBackend:
         if self._changes_websocket and self._changes_websocket.connected:
             self._changes_websocket.close()
 
-        self._connection_status_callback(NOT_CONNECTED)
+        self._connection_status_callback(const.NOT_CONNECTED)
 
     def _auth(self):
         websocket_host = (f'{"wss://" if self._ssl else "ws://"}{self._host}:{self._port}'
@@ -300,7 +299,7 @@ class HomeAssistantBackend:
                     action_entity_updated(entity_id, update_state)
 
         self._websocket.close()
-        self._connection_status_callback(NOT_CONNECTED)
+        self._connection_status_callback(const.NOT_CONNECTED)
 
         if not self._reconnect_thread or not self._reconnect_thread.is_alive():
             self._reconnect_thread = Thread(target=self._retry_connect, daemon=True)
@@ -530,14 +529,14 @@ class HomeAssistantBackend:
             sleep(PING_INTERVAL)
 
             if not self._websocket:
-                self._connection_status_callback(NOT_CONNECTED)
+                self._connection_status_callback(const.NOT_CONNECTED)
                 log.info("Disconnected from Home Assistant: Connection closed")
                 return
 
             try:
                 self._websocket.ping()
             except WebSocketException as e:
-                self._connection_status_callback(NOT_CONNECTED)
+                self._connection_status_callback(const.NOT_CONNECTED)
                 log.info("Disconnected from Home Assistant: %s", e)
                 return
 
@@ -550,7 +549,7 @@ class HomeAssistantBackend:
         count = 1
 
         while not self._connect() and count < 3600 and self._retry_connection:
-            self._connection_status_callback(WAITING_FOR_RETRY)
+            self._connection_status_callback(const.WAITING_FOR_RETRY)
             if count < 13:
                 sleep(10)
             else:

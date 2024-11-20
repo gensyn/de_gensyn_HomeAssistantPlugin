@@ -7,19 +7,8 @@ from typing import Callable, List, Dict
 
 from gi.repository.Gtk import Align, Box, Button, CellRendererText, ComboBox, CssProvider, Entry, \
     Grid, Label, ListStore, Window
-from de_gensyn_HomeAssistantPlugin.const import (CONNECT_CLICKED,
-                                                 LABEL_CUSTOMIZATION_ICON,
-                                                 LABEL_CUSTOMIZATION_TITLE,
-                                                 LABEL_CUSTOMIZATION_ATTRIBUTE,
-                                                 LABEL_CUSTOMIZATION_OPERATOR,
-                                                 LABEL_CUSTOMIZATION_VALUE,
-                                                 LABEL_CUSTOMIZATION_IF,
-                                                 LABEL_CUSTOMIZATION_THEN,
-                                                 LABEL_CUSTOMIZATION_ADD,
-                                                 LABEL_CUSTOMIZATION_UPDATE,
-                                                 LABEL_CUSTOMIZATION_CANCEL,
-                                                 LABEL_CUSTOMIZATION_OPERATORS,
-                                                 CONNECT_CHANGED)
+
+from de_gensyn_HomeAssistantPlugin import const
 
 CSS = b"""
 combo.error {
@@ -58,15 +47,15 @@ class CustomizationWindow(Window):
         self.lm = lm
         self.index = index
 
-        self.set_title(lm.get(LABEL_CUSTOMIZATION_TITLE).format(value=customization.value))
+        self.set_title(lm.get(const.LABEL_CUSTOMIZATION_TITLE).format(value=customization.value))
         self.set_modal(True)
 
-        label_attribute = _create_label(lm.get(LABEL_CUSTOMIZATION_ATTRIBUTE))
-        label_operator = _create_label(lm.get(LABEL_CUSTOMIZATION_OPERATOR))
-        label_value = _create_label(lm.get(LABEL_CUSTOMIZATION_VALUE))
-        label_icon = _create_label(lm.get(LABEL_CUSTOMIZATION_ICON))
-        label_if = _create_label(lm.get(LABEL_CUSTOMIZATION_IF))
-        label_then = _create_label(lm.get(LABEL_CUSTOMIZATION_THEN))
+        label_attribute = _create_label(lm.get(const.LABEL_CUSTOMIZATION_ATTRIBUTE))
+        label_operator = _create_label(lm.get(const.LABEL_CUSTOMIZATION_OPERATOR))
+        label_value = _create_label(lm.get(const.LABEL_CUSTOMIZATION_VALUE))
+        label_icon = _create_label(lm.get(const.LABEL_CUSTOMIZATION_ICON))
+        label_if = _create_label(lm.get(const.LABEL_CUSTOMIZATION_IF))
+        label_then = _create_label(lm.get(const.LABEL_CUSTOMIZATION_THEN))
 
         self.combo_attribute = self._create_combo_attribute(attributes)
         self.combo_operator = self._create_combo_operator()
@@ -76,12 +65,12 @@ class CustomizationWindow(Window):
 
         self.entry_icon = self._create_entry()
 
-        cancel_button = Button(label=lm.get(LABEL_CUSTOMIZATION_CANCEL))
-        cancel_button.connect(CONNECT_CLICKED, self._on_cancel_button)
+        cancel_button = Button(label=lm.get(const.LABEL_CUSTOMIZATION_CANCEL))
+        cancel_button.connect(const.CONNECT_CLICKED, self._on_cancel_button)
 
-        add_button = Button(label=lm.get(LABEL_CUSTOMIZATION_ADD) if not current else lm.get(
-            LABEL_CUSTOMIZATION_UPDATE))
-        add_button.connect(CONNECT_CLICKED, self._on_add_button)
+        add_button = Button(label=lm.get(const.LABEL_CUSTOMIZATION_ADD) if not current else lm.get(
+            const.LABEL_CUSTOMIZATION_UPDATE))
+        add_button.connect(const.CONNECT_CLICKED, self._on_add_button)
 
         self._set_margins(
             [label_attribute, label_operator, label_value, label_icon, label_if,
@@ -155,7 +144,7 @@ class CustomizationWindow(Window):
         # Pack the renderer into the ComboBox
         combo.pack_start(renderer, True)
         combo.add_attribute(renderer, "text", 0)
-        combo.connect(CONNECT_CHANGED, self._on_widget_changed)
+        combo.connect(const.CONNECT_CHANGED, self._on_widget_changed)
 
         return combo
 
@@ -163,12 +152,12 @@ class CustomizationWindow(Window):
         combo = ComboBox()
 
         model = ListStore(str, str)
-        model.append(["==", self.lm.get(LABEL_CUSTOMIZATION_OPERATORS["=="])])
-        model.append(["!=", self.lm.get(LABEL_CUSTOMIZATION_OPERATORS["!="])])
-        model.append(["<", self.lm.get(LABEL_CUSTOMIZATION_OPERATORS["<"])])
-        model.append(["<=", self.lm.get(LABEL_CUSTOMIZATION_OPERATORS["<="])])
-        model.append([">", self.lm.get(LABEL_CUSTOMIZATION_OPERATORS[">"])])
-        model.append([">=", self.lm.get(LABEL_CUSTOMIZATION_OPERATORS[">="])])
+        model.append(["==", self.lm.get(const.LABEL_CUSTOMIZATION_OPERATORS["=="])])
+        model.append(["!=", self.lm.get(const.LABEL_CUSTOMIZATION_OPERATORS["!="])])
+        model.append(["<", self.lm.get(const.LABEL_CUSTOMIZATION_OPERATORS["<"])])
+        model.append(["<=", self.lm.get(const.LABEL_CUSTOMIZATION_OPERATORS["<="])])
+        model.append([">", self.lm.get(const.LABEL_CUSTOMIZATION_OPERATORS[">"])])
+        model.append([">=", self.lm.get(const.LABEL_CUSTOMIZATION_OPERATORS[">="])])
 
         combo.set_model(model)
 
@@ -177,14 +166,14 @@ class CustomizationWindow(Window):
         # Pack the renderer into the ComboBox
         combo.pack_start(renderer, True)
         combo.add_attribute(renderer, "text", 1)
-        combo.connect(CONNECT_CHANGED, self._on_widget_changed)
+        combo.connect(const.CONNECT_CHANGED, self._on_widget_changed)
 
         return combo
 
     def _create_entry(self):
         entry = Entry()
         entry.set_size_request(200, -1)
-        entry.connect(CONNECT_CHANGED, self._on_widget_changed)
+        entry.connect(const.CONNECT_CHANGED, self._on_widget_changed)
         return entry
 
     def _on_cancel_button(self, _):
@@ -192,15 +181,15 @@ class CustomizationWindow(Window):
 
     def _on_add_button(self, _):
         if self.combo_attribute.get_active() < 0:
-            self.combo_attribute.get_style_context().add_class("error")
+            self.combo_attribute.get_style_context().add_class(const.ERROR)
             return
 
         if self.combo_operator.get_active() < 0:
-            self.combo_operator.get_style_context().add_class("error")
+            self.combo_operator.get_style_context().add_class(const.ERROR)
             return
 
         if not self.entry_value.get_text():
-            self.entry_value.get_style_context().add_class("error")
+            self.entry_value.get_style_context().add_class(const.ERROR)
             return
 
         icon = self.entry_icon.get_text()
@@ -214,12 +203,12 @@ class CustomizationWindow(Window):
             try:
                 float(self.entry_value.get_text())
             except ValueError:
-                self.combo_operator.get_style_context().add_class("error")
-                self.entry_value.get_style_context().add_class("error")
+                self.combo_operator.get_style_context().add_class(const.ERROR)
+                self.entry_value.get_style_context().add_class(const.ERROR)
                 return
 
         if icon not in self.icons:
-            self.entry_icon.get_style_context().add_class("error")
+            self.entry_icon.get_style_context().add_class(const.ERROR)
             return
 
         self.callback(
@@ -230,7 +219,7 @@ class CustomizationWindow(Window):
         self.destroy()
 
     def _on_widget_changed(self, _):
-        self.combo_attribute.get_style_context().remove_class("error")
-        self.combo_operator.get_style_context().remove_class("error")
-        self.entry_value.get_style_context().remove_class("error")
-        self.entry_icon.get_style_context().remove_class("error")
+        self.combo_attribute.get_style_context().remove_class(const.ERROR)
+        self.combo_operator.get_style_context().remove_class(const.ERROR)
+        self.entry_value.get_style_context().remove_class(const.ERROR)
+        self.entry_icon.get_style_context().remove_class(const.ERROR)
