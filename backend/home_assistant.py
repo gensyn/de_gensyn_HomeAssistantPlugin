@@ -518,7 +518,17 @@ class HomeAssistantBackend:
         Send a websocket message to Home Assistant and return the response.
         """
         with self._websocket_semaphore:
-            self._websocket.send(json.dumps(message))
+            try:
+                self._websocket.send(json.dumps(message))
+            except BrokenPipeError:
+                connected = self._reconnect()
+
+                if connected:
+                    self._websocket.send(json.dumps(message))
+                else:
+                    log.error("(BrokenPipeError) Cannot send message %s", str(message))
+                    return const.EMPTY_STRING
+
             return self._websocket.recv()
 
     def _keep_alive(self):
