@@ -572,6 +572,9 @@ class HomeAssistantBackend:
             self._pending_actions.remove(action)
 
     def create_url(self, resource: str) -> None | str:
+        """
+        Creates the URL for a specific resource on the HA host
+        """
         if not self._host or not resource:
             return None
 

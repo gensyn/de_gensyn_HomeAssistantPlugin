@@ -5,7 +5,6 @@ The module for the Home Assistant action that is loaded in StreamController.
 import io
 import json
 import logging
-import os
 import uuid
 from json import JSONDecodeError
 from typing import Any, Dict, List
@@ -14,9 +13,6 @@ import cairosvg
 import gi
 from PIL import Image
 
-from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization_window import \
-    CustomizationWindow
-
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository.Gtk import Align, Button, Label, PropertyExpression, \
@@ -24,19 +20,15 @@ from gi.repository.Gtk import Align, Button, Label, PropertyExpression, \
 from gi.repository.Adw import ActionRow, ComboRow, EntryRow, \
     ExpanderRow, PreferencesGroup, SpinRow, SwitchRow
 
-from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction import migration
-from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.domains_with_custom_icons import \
-    DOMAINS_WITH_SERVICE_ICONS
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction import migration, icon_helper, \
+    text_helper
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization_window import \
+    CustomizationWindow
 from de_gensyn_HomeAssistantPlugin.home_assistant_action_base import HomeAssistantActionBase
 from de_gensyn_HomeAssistantPlugin import const
 
 from GtkHelper.GtkHelper import BetterExpander
 from locales.LegacyLocaleManager import LegacyLocaleManager
-
-MDI_FILENAME = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../..", const.MDI_SVG_JSON)
-
-with open(MDI_FILENAME, "r", encoding="utf-8") as f:
-    MDI_ICONS: Dict[str, str] = json.loads(f.read())
 
 
 class HomeAssistantAction(HomeAssistantActionBase):
@@ -57,7 +49,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
     entity_entity_combo: ComboRow
     entity_entity_model: StringList
 
-    service_call_service: BetterExpander
+    service_call_service: ExpanderRow
     service_service_combo: ComboRow
     service_service_model: StringList
 
@@ -272,7 +264,8 @@ class HomeAssistantAction(HomeAssistantActionBase):
             current = None
 
         window = CustomizationWindow(CustomizationWindow.Customization.ICON, self.lm, attributes,
-                                     self._add_custom_icon, icons=list(MDI_ICONS.keys()),
+                                     self._add_custom_icon,
+                                     icons=list(icon_helper.MDI_ICONS.keys()),
                                      current=current, index=index)
         window.show()
 
@@ -626,7 +619,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
             self.set_media(image=None)
             return
 
-        icon = self._get_icon(state)
+        icon = icon_helper.get_icon(state, self.settings)
 
         if icon:
             png_data = cairosvg.svg2png(bytestring=icon, dpi=600)
@@ -647,54 +640,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
             self.set_bottom_label(const.EMPTY_STRING)
             return
 
-        text = str(state.get(const.STATE))
-        text_length = len(text)
-        text_height = 1
-        attribute = self.settings.get(const.SETTING_TEXT_ATTRIBUTE)
-
-        if attribute == const.STATE:
-            if self.settings.get(const.SETTING_TEXT_SHOW_UNIT):
-                unit = state.get(const.ATTRIBUTES, {}).get(const.ATTRIBUTE_UNIT_OF_MEASUREMENT,
-                                                           const.EMPTY_STRING)
-
-                if self.settings.get(const.SETTING_TEXT_UNIT_LINE_BREAK):
-                    text_length = max(len(text), len(unit))
-                    text = f"{text}\n{unit}"
-                    text_height = 2
-                else:
-                    text = f"{text} {unit}"
-                    text_length = len(text)
-        else:
-            text = str(state.get(const.ATTRIBUTES, {}).get(attribute, const.EMPTY_STRING))
-            text_length = len(text)
-
-        if self.settings.get(const.SETTING_TEXT_ROUND, const.DEFAULT_TEXT_ROUND) and is_float(text):
-            precision = int(self.settings.get(const.SETTING_TEXT_ROUND_PRECISION, const.DEFAULT_TEXT_ROUND_PRECISION))
-
-            as_number = round(float(text), precision)
-
-            if precision == 0:
-                as_number = int(as_number)
-
-            text = str(as_number)
-
-        position = self.settings.get(const.SETTING_TEXT_POSITION)
-        font_size = self.settings.get(const.SETTING_TEXT_SIZE)
-
-        if self.settings.get(const.SETTING_TEXT_ADAPTIVE_SIZE):
-            if text_length == 1:
-                font_size = 50
-            elif text_length == 2:
-                font_size = 40
-            else:
-                font_size = 30 - 3 * (text_length - 3)
-
-            if text_height > 1:
-                # account for text with line break
-                font_size = min(font_size, 35)
-
-            # set minimal font size, smaller is not readable
-            font_size = max(font_size, 10)
+        text, position, font_size = text_helper.get_text(state, self.settings)
 
         if position == const.TEXT_POSITION_TOP:
             self.set_top_label(text, font_size=font_size)
@@ -977,116 +923,6 @@ class HomeAssistantAction(HomeAssistantActionBase):
                 self.text_unit_line_break.set_active(False)
                 self.text_unit_line_break.set_sensitive(False)
 
-    def _get_icon(self, state: Dict) -> str:
-        """
-        Get the item corresponding to the given state.
-        """
-        domain = self.settings.get(const.SETTING_ENTITY_DOMAIN)
-
-        icon_name = self._get_icon_name(state)
-
-        color = const.ICON_COLOR_ON if state.get(const.STATE) in (
-            const.STATE_ON, const.STATE_HOME) else const.ICON_COLOR_OFF
-
-        if domain in DOMAINS_WITH_SERVICE_ICONS.keys():
-            service = self.settings.get(const.SETTING_SERVICE_SERVICE)
-
-            if service in DOMAINS_WITH_SERVICE_ICONS[domain].keys():
-                color = const.ICON_COLOR_ON
-
-                if state.get(const.STATE) in DOMAINS_WITH_SERVICE_ICONS[domain][service].keys():
-                    icon_name = DOMAINS_WITH_SERVICE_ICONS[domain][service][state.get(const.STATE)]
-                else:
-                    icon_name = DOMAINS_WITH_SERVICE_ICONS[domain][service]["default"]
-
-        icon_path = self._get_icon_path(icon_name)
-
-        opacity = str(
-            round(self.settings.get(const.SETTING_ICON_OPACITY, const.DEFAULT_ICON_OPACITY) / 100,
-                  2))
-
-        icon = _get_icon_svg(icon_name, icon_path)
-
-        return (
-            icon
-            .replace("<color>", color)
-            .replace("<opacity>", opacity)
-        )
-
-    def _get_icon_name(self, state: Dict) -> str:
-        custom_icons = self.settings.get(const.SETTING_CUSTOMIZATION_ICONS, [])
-
-        for custom_icon in custom_icons:
-            if custom_icon["attribute"] == const.STATE:
-                value = state[const.STATE]
-            else:
-                value = state[const.ATTRIBUTES].get(custom_icon["attribute"])
-
-            custom_icon_value = custom_icon["value"]
-
-            try:
-                # if both values are numbers, convert them both to float
-                # if one is int and one float, testing for equality might fail (21 vs 21.0 eg)
-                value = float(value)
-                custom_icon_value = float(custom_icon_value)
-            except ValueError:
-                pass
-
-            operator = custom_icon["operator"]
-            custom_icon = custom_icon["icon"]
-
-            if operator == "==" and str(value) == str(custom_icon_value):
-                return custom_icon
-
-            if operator == "!=" and str(value) != str(custom_icon_value):
-                return custom_icon
-
-            if not isinstance(value, float):
-                # other operators are only applicable to numbers
-                continue
-
-            try:
-                custom_icon_value = float(custom_icon_value)
-            except ValueError:
-                logging.error("Could not convert custom value to float: %s",
-                              custom_icon_value)
-                continue
-
-            if operator == "<" and value < custom_icon_value:
-                return custom_icon
-
-            if operator == "<=" and value <= custom_icon_value:
-                return custom_icon
-
-            if operator == ">" and value > custom_icon_value:
-                return custom_icon
-
-            if operator == ">=" and value >= custom_icon_value:
-                return custom_icon
-
-        return state.get(const.ATTRIBUTES, {}).get(const.ATTRIBUTE_ICON, const.EMPTY_STRING)
-
-    def _get_icon_path(self, name: str) -> str:
-        """
-        Get the SVG path for the icon's MDI name.
-        """
-        if "mdi:" in name:
-            name = name.replace("mdi:", const.EMPTY_STRING)
-
-        return MDI_ICONS.get(name, const.EMPTY_STRING)
-
-
-def _get_icon_svg(name: str, path: str) -> str:
-    """
-    Build a complete SVG string from an icons' name and path.
-    """
-    if not path:
-        return const.EMPTY_STRING
-
-    return (f'<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 24 '
-            f'24"><title>{name}</title><path d="{path}" fill="<color>" opacity="<opacity>" '
-            f'/></svg>')
-
 
 def _set_value_in_combo(combo: ComboRow, model: StringList, value: str):
     """
@@ -1100,14 +936,3 @@ def _set_value_in_combo(combo: ComboRow, model: StringList, value: str):
         if model.get_string(i) == value:
             combo.set_selected(i)
             return
-
-
-def is_float(value: str):
-    if not "." in value:
-        return False
-
-    try:
-        float(value)
-        return True
-    except ValueError:
-        return False

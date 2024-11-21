@@ -4,11 +4,12 @@ Module for the Home Assistant action base class.
 
 import gi
 
-from de_gensyn_HomeAssistantPlugin import const
 from src.backend.PluginManager.ActionBase import ActionBase
 
 gi.require_version("Adw", "1")
 from gi.repository.Adw import EntryRow, ExpanderRow, PasswordEntryRow, PreferencesGroup, SwitchRow
+
+from de_gensyn_HomeAssistantPlugin import const
 
 
 class HomeAssistantActionBase(ActionBase):
@@ -38,7 +39,7 @@ class HomeAssistantActionBase(ActionBase):
         self.connection_status.set_text(
             const.CONNECTED if self.plugin_base.backend.is_connected() else const.NOT_CONNECTED)
 
-        self.plugin_base.backend.set_connection_status_callback(self._set_status)
+        self.plugin_base.backend.set_connection_status_callback(self.set_status)
 
         self._load_config_defaults_base()
 
@@ -95,7 +96,7 @@ class HomeAssistantActionBase(ActionBase):
         settings[const.SETTING_SSL] = bool(switch.get_active())
         self.plugin_base.set_settings(settings)
 
-    def _set_status(self, status) -> None:
+    def set_status(self, status) -> None:
         """
         Callback function to be executed when the Home Assistant connection status changes.
         """
