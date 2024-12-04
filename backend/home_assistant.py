@@ -3,6 +3,7 @@ Module for the Home Assistant backend.
 """
 
 import json
+from ssl import CERT_NONE, SSLError
 from threading import Thread, Semaphore
 from time import sleep
 from typing import Dict, Callable, Any, List
@@ -43,6 +44,7 @@ class HomeAssistantBackend:
     _host: str = ""
     _port: str = ""
     _ssl: bool = True
+    _verify_certificate: bool = True
     _token: str = ""
     _connection_status_callback: Callable = lambda _1, _2: None
     _keep_alive_thread: Thread = None
@@ -83,6 +85,16 @@ class HomeAssistantBackend:
             return
 
         self._ssl = ssl
+        self._reconnect()
+
+    def set_verify_certificate(self, verify_certificate: bool) -> None:
+        """
+        Set whether the certificate should be verified.
+        """
+        if self._verify_certificate == verify_certificate:
+            return
+
+        self._verify_certificate = verify_certificate
         self._reconnect()
 
     def set_token(self, token: str) -> None:
@@ -205,8 +217,13 @@ class HomeAssistantBackend:
         websocket_host = (f'{"wss://" if self._ssl else "ws://"}{self._host}:{self._port}'
                           f'{HASS_WEBSOCKET_API}')
 
+        sslopt = {}
+
+        if not self._verify_certificate:
+            sslopt["cert_reqs"] = CERT_NONE
+
         try:
-            new_websocket = create_connection(websocket_host)
+            new_websocket = create_connection(websocket_host, sslopt=sslopt)
 
             auth_required = new_websocket.recv()
             auth_required = _get_field_from_message(auth_required, FIELD_TYPE)
@@ -223,6 +240,15 @@ class HomeAssistantBackend:
             if not auth_ok or "auth_ok" != auth_ok:
                 log.error("Could not auth with Home Assistant")
                 return None
+        except SSLError:
+            error = "An SSL error occurred. Is the sever certificate valid?"
+
+            if self._verify_certificate:
+                error += (" If you are using a self-signed certificate, please disable verifying "
+                          "the certificate in the plugin settings.")
+
+            log.error(error)
+            return None
         except ConnectionRefusedError:
             log.error(
                 f'Connection refused by {websocket_host}. Make sure'

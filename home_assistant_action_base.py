@@ -19,6 +19,7 @@ class HomeAssistantActionBase(ActionBase):
     host_entry: EntryRow
     port_entry: EntryRow
     ssl_switch: SwitchRow
+    verify_certificate_switch: SwitchRow
     token_entry: PasswordEntryRow
     connection_status: EntryRow
     settings_expander: ExpanderRow
@@ -32,6 +33,8 @@ class HomeAssistantActionBase(ActionBase):
         self.host_entry = EntryRow(title=lm.get(const.LABEL_BASE_HOST))
         self.port_entry = EntryRow(title=lm.get(const.LABEL_BASE_PORT))
         self.ssl_switch = SwitchRow(title=lm.get(const.LABEL_BASE_SSL))
+        self.verify_certificate_switch = SwitchRow(
+            title=lm.get(const.LABEL_BASE_VERIFY_CERTIFICATE))
         self.token_entry = PasswordEntryRow(title=lm.get(const.LABEL_BASE_TOKEN))
 
         self.connection_status = EntryRow(title="Connection status:")
@@ -43,18 +46,21 @@ class HomeAssistantActionBase(ActionBase):
 
         self._load_config_defaults_base()
 
-        self.host_entry.connect(const.CONNECT_NOTIFY_TEXT, self._on_change_entry,
+        self.host_entry.connect(const.CONNECT_NOTIFY_TEXT, self._on_change_base_entry,
                                 const.SETTING_HOST)
-        self.port_entry.connect(const.CONNECT_NOTIFY_TEXT, self._on_change_entry,
+        self.port_entry.connect(const.CONNECT_NOTIFY_TEXT, self._on_change_base_entry,
                                 const.SETTING_PORT)
-        self.ssl_switch.connect(const.CONNECT_NOTIFY_ACTIVE, self._on_change_ssl)
-        self.token_entry.connect(const.CONNECT_NOTIFY_TEXT, self._on_change_entry,
+        self.ssl_switch.connect(const.CONNECT_NOTIFY_ACTIVE, self._on_change_base_switch, const.SETTING_SSL)
+        self.verify_certificate_switch.connect(const.CONNECT_NOTIFY_ACTIVE, self._on_change_base_switch,
+                                               const.SETTING_VERIFY_CERTIFICATE)
+        self.token_entry.connect(const.CONNECT_NOTIFY_TEXT, self._on_change_base_entry,
                                  const.SETTING_TOKEN)
 
         self.settings_expander = ExpanderRow(title=lm.get(const.LABEL_BASE_SETTINGS))
         self.settings_expander.add_row(self.host_entry)
         self.settings_expander.add_row(self.port_entry)
         self.settings_expander.add_row(self.ssl_switch)
+        self.settings_expander.add_row(self.verify_certificate_switch)
         self.settings_expander.add_row(self.token_entry)
 
         group = PreferencesGroup()
@@ -73,14 +79,16 @@ class HomeAssistantActionBase(ActionBase):
         host = settings.get(const.SETTING_HOST, "")
         port = settings.get(const.SETTING_PORT, "")
         ssl = settings.get(const.SETTING_SSL, True)
+        verify_certificate = settings.get(const.SETTING_VERIFY_CERTIFICATE, True)
         token = settings.get(const.SETTING_TOKEN, "")
 
         self.host_entry.set_text(host)
         self.port_entry.set_text(port)
         self.ssl_switch.set_active(ssl)
+        self.verify_certificate_switch.set_active(verify_certificate)
         self.token_entry.set_text(token)
 
-    def _on_change_entry(self, entry, *args) -> None:
+    def _on_change_base_entry(self, entry, *args) -> None:
         """
         Executed when an entry row is changed.
         """
@@ -88,12 +96,12 @@ class HomeAssistantActionBase(ActionBase):
         settings[args[1]] = entry.get_text()
         self.plugin_base.set_settings(settings)
 
-    def _on_change_ssl(self, switch, _) -> None:
+    def _on_change_base_switch(self, switch, *args) -> None:
         """
         Executed when a switch row is changed.
         """
         settings = self.plugin_base.get_settings()
-        settings[const.SETTING_SSL] = bool(switch.get_active())
+        settings[args[1]] = bool(switch.get_active())
         self.plugin_base.set_settings(settings)
 
     def set_status(self, status) -> None:

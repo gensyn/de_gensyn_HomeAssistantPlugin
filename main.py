@@ -37,7 +37,7 @@ class HomeAssistant(PluginBase):  # pylint: disable=too-few-public-methods
         self.register(
             plugin_name=const.HOME_ASSISTANT,
             github_repo="https://github.com/gensyn/de_gensyn_HomeAssistantPlugin",
-            plugin_version="0.9.3-beta",
+            plugin_version="0.9.4-beta",
             app_version="1.5.0-beta"
         )
 
@@ -45,12 +45,14 @@ class HomeAssistant(PluginBase):  # pylint: disable=too-few-public-methods
         host = settings.get(const.SETTING_HOST, const.EMPTY_STRING)
         port = settings.get(const.SETTING_PORT, const.EMPTY_STRING)
         ssl = settings.get(const.SETTING_SSL, True)
+        verify_certificate = settings.get(const.SETTING_VERIFY_CERTIFICATE, True)
         token = settings.get(const.SETTING_TOKEN, const.EMPTY_STRING)
 
         self.backend = HomeAssistantBackend()
         self.backend.set_host(host)
         self.backend.set_port(port)
         self.backend.set_ssl(ssl)
+        self.backend.set_verify_certificate(verify_certificate)
         self.backend.set_token(token)
 
     def set_settings(self, settings: Dict[str, Any]):
@@ -62,9 +64,11 @@ class HomeAssistant(PluginBase):  # pylint: disable=too-few-public-methods
         host = settings.get(const.SETTING_HOST, const.EMPTY_STRING)
         port = settings.get(const.SETTING_PORT, const.EMPTY_STRING)
         ssl = settings.get(const.SETTING_SSL, True)
+        verify_certificate = settings.get(const.SETTING_VERIFY_CERTIFICATE, True)
         token = settings.get(const.SETTING_TOKEN, const.EMPTY_STRING)
 
         self.backend.set_host(host)
         self.backend.set_port(port)
         self.backend.set_ssl(ssl)
+        self.backend.set_verify_certificate(verify_certificate)
         self.backend.set_token(token)
