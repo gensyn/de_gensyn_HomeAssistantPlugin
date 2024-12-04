@@ -4,6 +4,7 @@
     "actions.base.host.label": "Host:",
     "actions.base.port.label": "Port:",
     "actions.base.ssl.label": "SSL:",
+    "actions.base.verify_certificate.label": "Zertifikat überprüfen:",
     "actions.base.token.label": "Token:",
 
     "actions.home_assistant.settings.entity.label": "Entität",
