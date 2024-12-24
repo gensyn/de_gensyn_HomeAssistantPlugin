@@ -124,6 +124,9 @@ TEXT_POSITION_BOTTOM = "bottom"
 
 ICON_COLOR_ON = "#eeff1b"
 ICON_COLOR_OFF = "#bebebe"
+ICON_COLOR_RED = "#ff0000"
+
+ICON_NETWORK_OFF = "network-off"
 
 MDI_SVG_JSON = "assets/mdi-svg.json"
 

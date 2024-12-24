@@ -6,12 +6,11 @@ import json
 from ssl import CERT_NONE, SSLError
 from threading import Thread, Semaphore
 from time import sleep
-from typing import Dict, Callable, Any, List
-
-from loguru import logger as log
-from websocket import create_connection, WebSocket, WebSocketException
+from typing import Dict, Callable, Any, List, Set
 
 from de_gensyn_HomeAssistantPlugin import const
+from loguru import logger as log
+from websocket import create_connection, WebSocket, WebSocketException
 
 HASS_WEBSOCKET_API = "/api/websocket?latest"
 
@@ -38,9 +37,9 @@ class HomeAssistantBackend:
     _websocket: WebSocket = None
     _changes_websocket: WebSocket = None
     _message_id: int = 0
-    _domains: list = []
-    _entities: dict = {}
-    _services: dict = {}
+    _domains: List[str] = []
+    _entities: Dict[str, Dict[str, Any]] = {}
+    _services: Dict[str, Dict[str, Any]] = {}
     _host: str = ""
     _port: str = ""
     _ssl: bool = True
@@ -52,7 +51,7 @@ class HomeAssistantBackend:
     _pending_actions: List[Callable] = []
     _entities_update_semaphore = Semaphore(1)
     _websocket_semaphore = Semaphore(1)
-    _retry_connection = False
+    _tracked_entities: Dict[str, Set[Callable]] = {}
 
     def set_host(self, host: str) -> None:
         """
@@ -124,8 +123,6 @@ class HomeAssistantBackend:
             if not self._reconnect_thread or not self._reconnect_thread.is_alive():
                 self._reconnect_thread = Thread(target=self._retry_connect, daemon=True)
                 self._reconnect_thread.start()
-            else:
-                self._retry_connection = True
 
         return success
 
@@ -177,6 +174,7 @@ class HomeAssistantBackend:
             self._websocket.close()
             self._changes_websocket.close()
             self._connection_status_callback(const.NOT_CONNECTED)
+            log.info("Home Assistant not fully started - retrying")
             return False
 
         log.info("Connected to Home Assistant")
@@ -195,6 +193,11 @@ class HomeAssistantBackend:
         for action in self._pending_actions:
             action()
 
+        # update all actions
+        for entity_id, actions in self._tracked_entities.items():
+            for action in actions:
+                action()
+
         return True
 
     def _disconnect(self) -> None:
@@ -202,8 +205,6 @@ class HomeAssistantBackend:
         Disconnect from Home Assistant.
         """
         self._connection_status_callback(const.DISCONNECTING)
-
-        self._retry_connection = False
 
         if self._websocket and self._websocket.connected:
             self._websocket.close()
@@ -244,8 +245,8 @@ class HomeAssistantBackend:
             error = "An SSL error occurred. Is the sever certificate valid?"
 
             if self._verify_certificate:
-                error += (" If you are using a self-signed certificate, please disable verifying "
-                          "the certificate in the plugin settings.")
+                error += (" If you are using a self-signed certificate, please disable certificate "
+                          "verification in the plugin settings.")
 
             log.error(error)
             return None
@@ -301,6 +302,17 @@ class HomeAssistantBackend:
                         "to_state", {})
                 )
 
+                if not new_state:
+                    # this can happen if the entity was removed from HA
+                    entity_id = json.loads(message).get(FIELD_EVENT, {}).get("variables", {}).get("trigger",
+                                                                                      {}).get(
+                        "from_state", {}).get(ENTITY_ID)
+                    entity_settings = self._entities[entity_id.split(".")[0]].get(entity_id)
+                    actions = entity_settings.get("keys").values()
+                    for action_entity_updated in actions:
+                        action_entity_updated({"disconnected": True})
+                    return
+
                 entity_id = new_state.get(ENTITY_ID)
 
                 domain = entity_id.split(".")[0]
@@ -322,16 +334,17 @@ class HomeAssistantBackend:
                 }
 
                 for action_entity_updated in actions:
-                    action_entity_updated(entity_id, update_state)
+                    action_entity_updated(update_state)
 
-        self._websocket.close()
+        if self._websocket:
+            self._websocket.close()
+
         self._connection_status_callback(const.NOT_CONNECTED)
+        log.info("Disconnected from Home Assistant: Connection closed")
 
         if not self._reconnect_thread or not self._reconnect_thread.is_alive():
             self._reconnect_thread = Thread(target=self._retry_connect, daemon=True)
             self._reconnect_thread.start()
-        else:
-            self._retry_connection = True
 
     def get_domains(self) -> list:
         """
@@ -416,7 +429,7 @@ class HomeAssistantBackend:
         self._domains = domains
         self._entities = entities
 
-    def get_services(self, domain: str) -> Dict[str, dict]:
+    def get_services(self, domain: str) -> Dict[str, Dict[str, Any]]:
         """
         Return all services known to Home Assistant.
         """
@@ -495,6 +508,11 @@ class HomeAssistantBackend:
             # key already registered
             return
 
+        actions = self._tracked_entities.get(entity_id, set())
+        actions.add(action_entity_updated)
+
+        self._tracked_entities[entity_id] = actions
+
         entity_settings.get("keys")[action_uid] = action_entity_updated
 
         if entity_settings.get("subscription_id") > -1:
@@ -504,11 +522,9 @@ class HomeAssistantBackend:
         message = self._create_message("subscribe_trigger")
         message["trigger"] = {"platform": "state", ENTITY_ID: entity_id}
 
-        message_id = message.get(ID)
-
         self._changes_websocket.send(json.dumps(message))
 
-        entity_settings["subscription_id"] = message_id
+        entity_settings["subscription_id"] = message.get(ID)
 
     def remove_tracked_entity(self, entity_id: str, action_uid: str) -> None:
         """
@@ -532,6 +548,8 @@ class HomeAssistantBackend:
         self._changes_websocket.send(json.dumps(message))
 
         entity_settings["subscription_id"] = -1
+
+        self._tracked_entities.pop(entity_id)
 
     def is_connected(self) -> bool:
         """
@@ -565,31 +583,33 @@ class HomeAssistantBackend:
             sleep(PING_INTERVAL)
 
             if not self._websocket:
-                self._connection_status_callback(const.NOT_CONNECTED)
-                log.info("Disconnected from Home Assistant: Connection closed")
                 return
 
             try:
                 self._websocket.ping()
             except WebSocketException as e:
                 self._connection_status_callback(const.NOT_CONNECTED)
-                log.info("Disconnected from Home Assistant: %s", e)
+                log.info(f"Disconnected from Home Assistant: {e}")
                 return
 
     def _retry_connect(self):
         """
         Periodically try to connect to the Home Assistant server.
         """
+        log.info("Trying to reconnect to Home Assistant")
+        self._connection_status_callback(const.WAITING_FOR_RETRY)
         sleep(10)
 
         count = 1
 
-        while not self._connect() and count < 3600 and self._retry_connection:
+        while not self._connect():
             self._connection_status_callback(const.WAITING_FOR_RETRY)
             if count < 13:
                 sleep(10)
-            else:
+            elif count < 70:
                 sleep(60)
+            else:
+                sleep(300)
 
             count += 1
 
@@ -628,6 +648,11 @@ class HomeAssistantBackend:
             resource = resource[1:]
 
         return f"{schema}{host}:{self._port}/{resource}"
+
+    def on_disconnect(self) -> None:
+        for entity_id, actions in self._tracked_entities.items():
+            for action in actions:
+                action(entity_id, {"disconnected": True})
 
 
 def _get_field_from_message(message: str, field: str) -> Any:

@@ -11,6 +11,11 @@ def get_text(state: Dict, settings: Dict):
     """
     Determine text, position and font size to show on StreamDeck.
     """
+    position = settings.get(const.SETTING_TEXT_POSITION)
+
+    if state.get("disconnected"):
+        return "N/A", position, 30
+
     text = str(state.get(const.STATE))
     text_length = len(text)
     text_height = 1
@@ -35,7 +40,6 @@ def get_text(state: Dict, settings: Dict):
         text = _round_value(text, settings)
         text_length = len(text)
 
-    position = settings.get(const.SETTING_TEXT_POSITION)
     font_size = settings.get(const.SETTING_TEXT_SIZE)
 
     if settings.get(const.SETTING_TEXT_ADAPTIVE_SIZE):
