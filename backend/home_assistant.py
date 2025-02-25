@@ -10,7 +10,7 @@ from typing import Dict, Callable, Any, List, Set
 
 from de_gensyn_HomeAssistantPlugin import const
 from loguru import logger as log
-from websocket import create_connection, WebSocket, WebSocketException
+from websocket import create_connection, WebSocket, WebSocketException, WebSocketAddressException
 
 HASS_WEBSOCKET_API = "/api/websocket?latest"
 
@@ -256,9 +256,9 @@ class HomeAssistantBackend:
                 f" 'websocket_api' is enabled in your Home Assistant configuration."
             )
             return None
-        except WebSocketException as e:
+        except (WebSocketException, WebSocketAddressException, ValueError) as e:
             log.error(
-                "Could not connect to %s: %s", websocket_host, e
+                f"Could not connect to {websocket_host}: {e}"
             )
             return None
 
@@ -310,7 +310,7 @@ class HomeAssistantBackend:
                     entity_settings = self._entities[entity_id.split(".")[0]].get(entity_id)
                     actions = entity_settings.get("keys").values()
                     for action_entity_updated in actions:
-                        action_entity_updated({"disconnected": True})
+                        action_entity_updated()
                     return
 
                 entity_id = new_state.get(ENTITY_ID)
@@ -321,16 +321,17 @@ class HomeAssistantBackend:
 
                 actions = entity_settings.get("keys").values()
 
-                state = new_state.get("state")
+                state = new_state.get(const.STATE)
 
-                attributes = new_state.get("attributes", {})
+                attributes = new_state.get(const.ATTRIBUTES, {})
 
-                self._entities[domain][entity_id]["state"] = state
-                self._entities[domain][entity_id]["attributes"] = attributes
+                self._entities[domain][entity_id][const.STATE] = state
+                self._entities[domain][entity_id][const.ATTRIBUTES] = attributes
 
                 update_state = {
-                    "state": state,
-                    "attributes": attributes,
+                    const.STATE: state,
+                    const.ATTRIBUTES: attributes,
+                    const.HA_CONNECTED: self.is_connected()
                 }
 
                 for action_entity_updated in actions:
@@ -341,6 +342,10 @@ class HomeAssistantBackend:
 
         self._connection_status_callback(const.NOT_CONNECTED)
         log.info("Disconnected from Home Assistant: Connection closed")
+
+        for entity_id, actions in self._tracked_entities.items():
+            for action in actions:
+                action()
 
         if not self._reconnect_thread or not self._reconnect_thread.is_alive():
             self._reconnect_thread = Thread(target=self._retry_connect, daemon=True)
@@ -362,11 +367,21 @@ class HomeAssistantBackend:
         """
         Return the entity state with the requested name.
         """
+        entity_fallback_dict = {
+            const.STATE: "N/A",
+            const.ATTRIBUTES: {},
+            const.HA_CONNECTED: self.is_connected()
+        }
+
         if not entity_id or "." not in entity_id:
-            return {}
+            return entity_fallback_dict
 
         domain = entity_id.split(".")[0]
-        return self._entities.get(domain, {}).get(entity_id, {})
+
+        entity_dict = self._entities.get(domain, {}).get(entity_id, entity_fallback_dict)
+        entity_dict[const.HA_CONNECTED] = self.is_connected()
+
+        return entity_dict
 
     def get_entities(self, domain: str) -> list:
         """
@@ -498,7 +513,7 @@ class HomeAssistantBackend:
         if not self._entities:
             self._load_domains_and_entities()
 
-        entity_settings = self._entities[domain].get(entity_id)
+        entity_settings = self._entities.get(domain, {}).get(entity_id)
 
         if not entity_settings:
             # entity doesn't exist (anymore)
@@ -648,11 +663,6 @@ class HomeAssistantBackend:
             resource = resource[1:]
 
         return f"{schema}{host}:{self._port}/{resource}"
-
-    def on_disconnect(self) -> None:
-        for entity_id, actions in self._tracked_entities.items():
-            for action in actions:
-                action(entity_id, {"disconnected": True})
 
 
 def _get_field_from_message(message: str, field: str) -> Any:

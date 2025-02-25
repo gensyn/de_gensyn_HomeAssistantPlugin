@@ -13,7 +13,7 @@ def get_text(state: Dict, settings: Dict):
     """
     position = settings.get(const.SETTING_TEXT_POSITION)
 
-    if state.get("disconnected"):
+    if not state["connected"]:
         return "N/A", position, 30
 
     text = str(state.get(const.STATE))

@@ -21,7 +21,7 @@ def get_icon(state: Dict, settings: Dict) -> str:
     """
     Get the item corresponding to the given state.
     """
-    if state.get("disconnected"):
+    if not state["connected"]:
         return _get_icon_svg(const.ICON_NETWORK_OFF).replace("<color>",
                                                              const.ICON_COLOR_RED).replace(
             "<opacity>", "1.0")

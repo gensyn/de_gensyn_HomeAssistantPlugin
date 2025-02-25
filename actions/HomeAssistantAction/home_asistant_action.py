@@ -252,13 +252,13 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
         return group
 
-    def _on_add_custom_icon(self, _, index: int = None):
+    def _on_add_custom_icon(self, _, index: int = -1):
         attributes = []
 
         for i in range(self.text_attribute_model.get_n_items()):
             attributes.append(self.text_attribute_model.get_item(i).get_string())
 
-        if index is not None and index > -1:
+        if index > -1:
             current = self.icon_custom_icons[index]
         else:
             current = None
@@ -658,13 +658,15 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
         domains = sorted(self.plugin_base.backend.get_domains())
 
+        if not old_domain in domains:
+            domains.append(old_domain)
+
         for domain in domains:
             self.entity_domain_model.append(domain)
 
-        if old_domain in domains:
-            _set_value_in_combo(self.entity_domain_combo, self.entity_domain_model, old_domain)
-            self._load_entities()
-            self._load_services()
+        _set_value_in_combo(self.entity_domain_combo, self.entity_domain_model, old_domain)
+        self._load_entities()
+        self._load_services()
 
     def _load_entities(self):
         """
@@ -678,6 +680,9 @@ class HomeAssistantAction(HomeAssistantActionBase):
         entities = sorted(
             self.plugin_base.backend.get_entities(
                 self.entity_domain_combo.get_selected_item().get_string()))
+
+        if not old_entity in entities:
+            entities.append(old_entity)
 
         for entity in entities:
             self.entity_entity_model.append(entity)
