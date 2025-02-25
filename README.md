@@ -63,14 +63,17 @@ A button to show and control air quality.
   * If the entity's state changes, the text is updated on the StreamDeck
   * Position and size of the text are customizable
   * Option to show unit of measurement (with or without line break)
-* Automatic connection retries when the connection is lost for up to one hour
+* Automatic connection retries when the connection is lost
+  * every 10 seconds for the first two minutes
+  * then every minute for the first hour
+  * every 5 minutes after that
 
-![Streamdeck UI Usage Example](/assets/action.png)
-
-## Known bugs
-* You tell me
+![Streamdeck UI Usage Example](assets/action.png)
 
 ## Planned features
 * Option to change icon color
-* Possibly further custom icons based on domains and services
-* Improve input options for service parameters (sliders etc.) 
+* Option to customize text
+* Improve input options for service parameters (sliders etc.)
+
+## Problems?
+* Please open a [GitHub issue](https://github.com/gensyn/de_gensyn_HomeAssistantPlugin/issues).
