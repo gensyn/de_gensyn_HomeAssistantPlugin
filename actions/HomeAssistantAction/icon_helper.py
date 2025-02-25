@@ -21,6 +21,11 @@ def get_icon(state: Dict, settings: Dict) -> str:
     """
     Get the item corresponding to the given state.
     """
+    if not state["connected"]:
+        return _get_icon_svg(const.ICON_NETWORK_OFF).replace("<color>",
+                                                             const.ICON_COLOR_RED).replace(
+            "<opacity>", "1.0")
+
     domain = settings.get(const.SETTING_ENTITY_DOMAIN)
 
     icon_name = _get_icon_name(state, settings)
@@ -39,13 +44,11 @@ def get_icon(state: Dict, settings: Dict) -> str:
             else:
                 icon_name = DOMAINS_WITH_SERVICE_ICONS[domain][service]["default"]
 
-    icon_path = _get_icon_path(icon_name)
-
     opacity = str(
         round(settings.get(const.SETTING_ICON_OPACITY, const.DEFAULT_ICON_OPACITY) / 100,
               2))
 
-    icon = _get_icon_svg(icon_name, icon_path)
+    icon = _get_icon_svg(icon_name)
 
     return (
         icon
@@ -54,7 +57,8 @@ def get_icon(state: Dict, settings: Dict) -> str:
     )
 
 
-def _get_icon_name(state: Dict, settings: Dict) -> str:  # pylint: disable=too-many-return-statements
+def _get_icon_name(state: Dict,
+                   settings: Dict) -> str:  # pylint: disable=too-many-return-statements
     custom_icons = settings.get(const.SETTING_CUSTOMIZATION_ICONS, [])
 
     for custom_icon in custom_icons:
@@ -118,10 +122,12 @@ def _get_icon_path(name: str) -> str:
     return MDI_ICONS.get(name, const.EMPTY_STRING)
 
 
-def _get_icon_svg(name: str, path: str) -> str:
+def _get_icon_svg(name: str) -> str:
     """
     Build a complete SVG string from an icons' name and path.
     """
+    path = _get_icon_path(name)
+
     if not path:
         return const.EMPTY_STRING
 

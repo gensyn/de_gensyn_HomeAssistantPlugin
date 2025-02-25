@@ -99,7 +99,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
         if entity:
             self.plugin_base.backend.add_tracked_entity(entity, self.uuid, self._entity_updated)
 
-        self._entity_updated(entity)
+        self._entity_updated()
 
     def on_remove(self) -> None:
         """
@@ -110,7 +110,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
             self.settings.get(const.SETTING_ENTITY_ENTITY),
             self.uuid)
 
-        self._entity_updated("")
+        self._entity_updated()
 
     def on_key_down(self) -> None:
         """
@@ -252,13 +252,13 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
         return group
 
-    def _on_add_custom_icon(self, _, index: int = None):
+    def _on_add_custom_icon(self, _, index: int = -1):
         attributes = []
 
         for i in range(self.text_attribute_model.get_n_items()):
             attributes.append(self.text_attribute_model.get_item(i).get_string())
 
-        if index is not None and index > -1:
+        if index > -1:
             current = self.icon_custom_icons[index]
         else:
             current = None
@@ -294,7 +294,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
         self.settings[const.SETTING_CUSTOMIZATION_ICONS] = self.icon_custom_icons
         self.set_settings(self.settings)
         self._load_custom_icons()
-        self._entity_updated(self.settings.get(const.SETTING_ENTITY_ENTITY))
+        self._entity_updated()
 
     def _get_text_group(self) -> PreferencesGroup:
         """
@@ -416,11 +416,11 @@ class HomeAssistantAction(HomeAssistantActionBase):
         self.set_settings(self.settings)
 
         if args[1] == const.SETTING_ICON_SHOW_ICON:
-            self._entity_updated(self.settings.get(const.SETTING_ENTITY_ENTITY))
+            self._entity_updated()
 
         self._set_enabled_disabled()
 
-        self._entity_updated(self.settings.get(const.SETTING_ENTITY_ENTITY))
+        self._entity_updated()
 
     def _on_change_expansion_switch(self, expander, *args):
         """
@@ -429,12 +429,9 @@ class HomeAssistantAction(HomeAssistantActionBase):
         self.settings[args[1]] = expander.get_enable_expansion()
         self.set_settings(self.settings)
 
-        if args[1] == const.SETTING_ICON_SHOW_ICON:
-            self._entity_updated(self.settings.get(const.SETTING_ENTITY_ENTITY))
-
         self._set_enabled_disabled()
 
-        self._entity_updated(self.settings.get(const.SETTING_ENTITY_ENTITY))
+        self._entity_updated()
 
     def _factory_bind(self, _, item):
         """
@@ -512,7 +509,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
             self._load_attributes()
             self._load_service_parameters()
 
-        self._entity_updated(entity)
+        self._entity_updated()
 
         self._set_enabled_disabled()
 
@@ -530,7 +527,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
         self._set_enabled_disabled()
 
-        self._entity_updated(self.settings.get(const.SETTING_ENTITY_ENTITY))
+        self._entity_updated()
 
     def _on_change_parameters_combo(self, combo, *args):
         """
@@ -571,7 +568,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
         self._set_enabled_disabled()
 
-        self._entity_updated(self.settings.get(const.SETTING_ENTITY_ENTITY))
+        self._entity_updated()
 
     def _on_change_spin(self, spin, *args):
         """
@@ -581,30 +578,25 @@ class HomeAssistantAction(HomeAssistantActionBase):
         self.settings[args[0]] = size
         self.set_settings(self.settings)
 
-        self._entity_updated(self.settings.get(const.SETTING_ENTITY_ENTITY))
+        self._entity_updated()
 
-    def _entity_updated(self, entity: str, state: dict = None) -> None:
+    def _entity_updated(self, state: dict = None) -> None:
         """
         Executed when an entity is updated to reflect the changes on the key.
         """
         show_icon = self.settings.get(const.SETTING_ICON_SHOW_ICON)
         show_text = self.settings.get(const.SETTING_TEXT_SHOW_TEXT)
 
-        if not entity or (not show_icon and not show_text):
+        if not show_icon and not show_text:
             self.set_media(image=None)
             self.set_top_label(const.EMPTY_STRING)
             self.set_center_label(const.EMPTY_STRING)
             self.set_bottom_label(const.EMPTY_STRING)
             return
 
-        settings_entity = self.settings.get(const.SETTING_ENTITY_ENTITY)
+        entity = self.settings.get(const.SETTING_ENTITY_ENTITY)
 
-        if entity != settings_entity:
-            logging.error("Mismatching entities; settings: %s, callback: %s", settings_entity,
-                          entity)
-            return
-
-        if show_icon or show_text and state is None:
+        if (show_icon or show_text) and state is None:
             state = self.plugin_base.backend.get_entity(entity)
 
         self._update_icon(show_icon, state)
@@ -666,13 +658,15 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
         domains = sorted(self.plugin_base.backend.get_domains())
 
+        if not old_domain in domains:
+            domains.append(old_domain)
+
         for domain in domains:
             self.entity_domain_model.append(domain)
 
-        if old_domain in domains:
-            _set_value_in_combo(self.entity_domain_combo, self.entity_domain_model, old_domain)
-            self._load_entities()
-            self._load_services()
+        _set_value_in_combo(self.entity_domain_combo, self.entity_domain_model, old_domain)
+        self._load_entities()
+        self._load_services()
 
     def _load_entities(self):
         """
@@ -686,6 +680,9 @@ class HomeAssistantAction(HomeAssistantActionBase):
         entities = sorted(
             self.plugin_base.backend.get_entities(
                 self.entity_domain_combo.get_selected_item().get_string()))
+
+        if not old_entity in entities:
+            entities.append(old_entity)
 
         for entity in entities:
             self.entity_entity_model.append(entity)
@@ -836,7 +833,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
         self.set_settings(self.settings)
 
         self._load_custom_icons()
-        self._entity_updated(self.settings.get(const.SETTING_ENTITY_ENTITY))
+        self._entity_updated()
 
     def _set_enabled_disabled(self) -> None:
         """

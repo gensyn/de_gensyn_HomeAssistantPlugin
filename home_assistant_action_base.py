@@ -8,6 +8,7 @@ from src.backend.PluginManager.ActionBase import ActionBase
 
 gi.require_version("Adw", "1")
 from gi.repository.Adw import EntryRow, ExpanderRow, PasswordEntryRow, PreferencesGroup, SwitchRow
+from gi.repository import GLib
 
 from de_gensyn_HomeAssistantPlugin import const
 
@@ -102,11 +103,21 @@ class HomeAssistantActionBase(ActionBase):
         """
         settings = self.plugin_base.get_settings()
         settings[args[1]] = bool(switch.get_active())
+
+        if args[1] == const.SETTING_SSL and bool(switch.get_active()):
+            self.verify_certificate_switch.set_active(settings.get(const.SETTING_VERIFY_CERTIFICATE, True))
+            self.verify_certificate_switch.set_sensitive(True)
+        elif args[1] == const.SETTING_SSL:
+            self.verify_certificate_switch.set_active(False)
+            self.verify_certificate_switch.set_sensitive(False)
+
+
         self.plugin_base.set_settings(settings)
+
 
     def set_status(self, status) -> None:
         """
         Callback function to be executed when the Home Assistant connection status changes.
         """
-        self.connection_status.set_text(status)
-        self.settings_expander.set_expanded(status != const.CONNECTED)
+        GLib.idle_add(self.connection_status.set_text, status)
+        GLib.idle_add(self.settings_expander.set_expanded, status != const.CONNECTED)
