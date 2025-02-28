@@ -59,7 +59,6 @@ class HomeAssistantAction(ActionBase):
     icon_scale: SpinRow
     icon_opacity: SpinRow
     icon_custom_icons_expander: BetterExpander
-    icon_custom_icons: List = []
     icon_custom_icon_add: Button
 
     text_show_text: ExpanderRow
@@ -270,7 +269,7 @@ class HomeAssistantAction(ActionBase):
             attributes.append(self.text_attribute_model.get_item(i).get_string())
 
         if index > -1:
-            current = self.icon_custom_icons[index]
+            current = self.settings[const.SETTING_CUSTOMIZATION_ICONS][index]
         else:
             current = None
 
@@ -288,7 +287,7 @@ class HomeAssistantAction(ActionBase):
             "icon": target
         }
 
-        custom_icons_to_check_for_duplicates = self.icon_custom_icons.copy()
+        custom_icons_to_check_for_duplicates = self.settings[const.SETTING_CUSTOMIZATION_ICONS].copy()
 
         if index > -1:
             # we have to check for duplicates without the item being edited because it may have
@@ -298,18 +297,18 @@ class HomeAssistantAction(ActionBase):
         if custom_icon in custom_icons_to_check_for_duplicates:
             if index > -1:
                 # edited item is identical to existing - delete it
-                self.icon_custom_icons.pop(index)
+                self.settings[const.SETTING_CUSTOMIZATION_ICONS].pop(index)
+                self.set_settings(self.settings)
 
             self._load_custom_icons()
             self._entity_updated()
             return
 
         if index > -1:
-            self.icon_custom_icons[index] = custom_icon
+            self.settings[const.SETTING_CUSTOMIZATION_ICONS][index] = custom_icon
         else:
-            self.icon_custom_icons.append(custom_icon)
+            self.settings[const.SETTING_CUSTOMIZATION_ICONS].append(custom_icon)
 
-        self.settings[const.SETTING_CUSTOMIZATION_ICONS] = self.icon_custom_icons
         self.set_settings(self.settings)
         self._load_custom_icons()
         self._entity_updated()
@@ -421,8 +420,7 @@ class HomeAssistantAction(ActionBase):
         """
         Execute when a switch is changed.
         """
-        self.settings[args[1]] = switch.get_active()
-        self.set_settings(self.settings)
+        self.set_setting(args[1], switch.get_active())
 
         if args[1] == const.SETTING_ICON_SHOW_ICON:
             self._entity_updated()
@@ -435,8 +433,7 @@ class HomeAssistantAction(ActionBase):
         """
         Execute when the switch of an ExpanderRow is changed.
         """
-        self.settings[args[1]] = expander.get_enable_expansion()
-        self.set_settings(self.settings)
+        self.set_setting(args[1], expander.get_enable_expansion())
 
         self._set_enabled_disabled()
 
@@ -478,10 +475,11 @@ class HomeAssistantAction(ActionBase):
             self.settings[const.SETTING_SERVICE_SERVICE] = const.EMPTY_STRING
             self.settings[const.SETTING_ICON_SHOW_ICON] = const.DEFAULT_ICON_SHOW_ICON
             self.settings[const.SETTING_TEXT_SHOW_TEXT] = const.DEFAULT_TEXT_SHOW_TEXT
-            self.icon_custom_icons.clear()
             self.settings[const.SETTING_CUSTOMIZATION_ICONS].clear()
-            self._load_custom_icons()
+
             self.set_settings(self.settings)
+
+            self._load_custom_icons()
 
             self.entity_entity_combo.set_model(None)
             self.service_service_combo.set_model(None)
@@ -504,7 +502,6 @@ class HomeAssistantAction(ActionBase):
             return
 
         self.settings[const.SETTING_ENTITY_ENTITY] = entity
-        self.icon_custom_icons.clear()
         self.settings[const.SETTING_CUSTOMIZATION_ICONS].clear()
         self._load_custom_icons()
         self.set_settings(self.settings)
@@ -810,9 +807,7 @@ class HomeAssistantAction(ActionBase):
     def _load_custom_icons(self):
         self.icon_custom_icons_expander.clear()
 
-        self.icon_custom_icons = self.settings[const.SETTING_CUSTOMIZATION_ICONS]
-
-        for index, custom_icon in enumerate(self.icon_custom_icons):
+        for index, custom_icon in enumerate(self.settings[const.SETTING_CUSTOMIZATION_ICONS]):
             edit_button = Button(icon_name="edit", valign=Align.CENTER)
             edit_button.set_size_request(15, 15)
             edit_button.connect(const.CONNECT_CLICKED, self._on_edit_custom_icon, index)
@@ -838,9 +833,8 @@ class HomeAssistantAction(ActionBase):
         self._on_add_custom_icon(_, index)
 
     def _on_delete_custom_icon(self, _, index: int):
-        self.icon_custom_icons.pop(index)
+        self.settings[const.SETTING_CUSTOMIZATION_ICONS].pop(index)
 
-        # the settings have been implicitly changed by altering the custom icon list
         self.set_settings(self.settings)
 
         self._load_custom_icons()
@@ -897,7 +891,7 @@ class HomeAssistantAction(ActionBase):
         else:
             self.icon_show_icon.set_sensitive(True)
             self.icon_show_icon.set_subtitle(const.EMPTY_STRING)
-            self.icon_custom_icons_expander.set_expanded(len(self.icon_custom_icons) > 0)
+            self.icon_custom_icons_expander.set_expanded(len(self.settings[const.SETTING_CUSTOMIZATION_ICONS]) > 0)
 
         # Text section
         if not is_entity_set:
@@ -937,6 +931,10 @@ class HomeAssistantAction(ActionBase):
         Callback function to be executed when the Home Assistant connection status changes.
         """
         GLib.idle_add(self.connection_status.set_text, status)
+
+    def set_setting(self, key, value) -> None:
+        self.settings[key] = value
+        self.set_settings(self.settings)
 
 
 def _set_value_in_combo(combo: ComboRow, model: StringList, value: str):

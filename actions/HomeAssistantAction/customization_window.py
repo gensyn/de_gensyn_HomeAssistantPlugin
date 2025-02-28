@@ -5,10 +5,9 @@ The module for the Home Assistant customization window.
 from enum import Enum
 from typing import Callable, List, Dict
 
+from de_gensyn_HomeAssistantPlugin import const
 from gi.repository.Gtk import Align, Box, Button, CellRendererText, ComboBox, CssProvider, Entry, \
     Grid, Label, ListStore, Window
-
-from de_gensyn_HomeAssistantPlugin import const
 
 CSS = b"""
 combo.error {
@@ -61,7 +60,6 @@ class CustomizationWindow(Window):
         self.combo_operator = self._create_combo_operator()
 
         self.entry_value = self._create_entry()
-
 
         self.entry_icon = self._create_entry()
 
@@ -176,6 +174,7 @@ class CustomizationWindow(Window):
         entry = Entry()
         entry.set_size_request(200, -1)
         entry.connect(const.CONNECT_CHANGED, self._on_widget_changed)
+        entry.connect(const.CONNECT_ACTIVATE, self._on_add_button)
         return entry
 
     def _on_cancel_button(self, _):
@@ -200,7 +199,7 @@ class CustomizationWindow(Window):
             icon = icon[4:]
 
         if self.combo_operator.get_model()[self.combo_operator.get_active()][0] in (
-        "<", "<=", ">", ">="):
+                "<", "<=", ">", ">="):
             # expecting a number in value
             try:
                 float(self.entry_value.get_text())
