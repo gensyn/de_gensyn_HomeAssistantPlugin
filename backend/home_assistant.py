@@ -193,8 +193,7 @@ class HomeAssistantBackend:
         for action in self._pending_actions:
             action()
 
-        # update all actions
-        for entity_id, actions in self._tracked_entities.items():
+        for _, actions in self._tracked_entities.items():
             for action in actions:
                 action()
 
@@ -343,7 +342,7 @@ class HomeAssistantBackend:
         self._connection_status_callback(const.NOT_CONNECTED)
         log.info("Disconnected from Home Assistant: Connection closed")
 
-        for entity_id, actions in self._tracked_entities.items():
+        for _, actions in self._tracked_entities.items():
             for action in actions:
                 action()
 

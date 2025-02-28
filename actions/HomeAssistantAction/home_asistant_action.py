@@ -4,7 +4,6 @@ The module for the Home Assistant action that is loaded in StreamController.
 
 import io
 import json
-import logging
 import uuid
 from json import JSONDecodeError
 from typing import Any, Dict, List
@@ -20,8 +19,8 @@ from gi.repository.Gtk import Align, Button, Label, PropertyExpression, \
 from gi.repository.Adw import ActionRow, ComboRow, EntryRow, \
     ExpanderRow, PreferencesGroup, SpinRow, SwitchRow
 
-from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction import migration, icon_helper, \
-    text_helper
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction import icon_helper, \
+    text_helper, settings_helper
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization_window import \
     CustomizationWindow
 from de_gensyn_HomeAssistantPlugin.home_assistant_action_base import HomeAssistantActionBase
@@ -85,7 +84,8 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         Set up action when StreamController has finished loading.
         """
-        settings = migration.migrate(self.get_settings())
+        settings = settings_helper.migrate(self.get_settings())
+        settings = settings_helper.fill_defaults(settings)
         self.set_settings(settings)
 
         self.settings = settings
@@ -94,7 +94,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
             self.plugin_base.backend.register_action(self.on_ready)
             return
 
-        entity = self.settings.get(const.SETTING_ENTITY_ENTITY)
+        entity = self.settings[const.SETTING_ENTITY_ENTITY]
 
         if entity:
             self.plugin_base.backend.add_tracked_entity(entity, self.uuid, self._entity_updated)
@@ -107,7 +107,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         self.plugin_base.backend.remove_action(self.on_ready)
         self.plugin_base.backend.remove_tracked_entity(
-            self.settings.get(const.SETTING_ENTITY_ENTITY),
+            self.settings[const.SETTING_ENTITY_ENTITY],
             self.uuid)
 
         self._entity_updated()
@@ -116,15 +116,15 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         Call the service stated in the settings.
         """
-        entity = self.settings.get(const.SETTING_ENTITY_ENTITY)
-        service = self.settings.get(const.SETTING_SERVICE_SERVICE)
+        entity = self.settings[const.SETTING_ENTITY_ENTITY]
+        service = self.settings[const.SETTING_SERVICE_SERVICE]
 
         if not entity or not service:
             return
 
         parameters = {}
 
-        for parameter, value in self.settings.get(const.SETTING_SERVICE_PARAMETERS, {}).items():
+        for parameter, value in self.settings[const.SETTING_SERVICE_PARAMETERS].items():
             try:
                 # try to create a dict or list from the value
                 value = json.loads(value)
@@ -193,8 +193,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
         self.service_call_service = ExpanderRow(title=self.lm.get(const.LABEL_SERVICE_CALL_SERVICE))
         self.service_call_service.set_show_enable_switch(True)
         self.service_call_service.set_enable_expansion(
-            self.settings.get(const.SETTING_SERVICE_CALL_SERVICE,
-                              const.DEFAULT_SERVICE_CALL_SERVICE))
+            self.settings[const.SETTING_SERVICE_CALL_SERVICE])
 
         self.service_service_combo = ComboRow(title=self.lm.get(const.LABEL_SERVICE_SERVICE))
         self.service_service_combo.set_factory(self.combo_factory)
@@ -219,18 +218,15 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         self.icon_show_icon = ExpanderRow(title=self.lm.get(const.LABEL_ICON_SHOW_ICON))
         self.icon_show_icon.set_show_enable_switch(True)
-        self.icon_show_icon.set_enable_expansion(
-            self.settings.get(const.SETTING_ICON_SHOW_ICON, const.DEFAULT_ICON_SHOW_ICON))
+        self.icon_show_icon.set_enable_expansion(self.settings[const.SETTING_ICON_SHOW_ICON])
 
         self.icon_scale = SpinRow.new_with_range(1, 100, 1)
         self.icon_scale.set_title(self.lm.get(const.LABEL_ICON_SCALE))
-        self.icon_scale.set_value(
-            self.settings.get(const.SETTING_ICON_SCALE, const.DEFAULT_ICON_SCALE))
+        self.icon_scale.set_value(self.settings[const.SETTING_ICON_SCALE])
 
         self.icon_opacity = SpinRow.new_with_range(1, 100, 1)
         self.icon_opacity.set_title(self.lm.get(const.LABEL_ICON_OPACITY))
-        self.icon_opacity.set_value(
-            self.settings.get(const.SETTING_ICON_OPACITY, const.DEFAULT_ICON_OPACITY))
+        self.icon_opacity.set_value(self.settings[const.SETTING_ICON_OPACITY])
 
         self.icon_custom_icon_add = Button(icon_name="list-add", valign=Align.CENTER)
         self.icon_custom_icon_add.set_size_request(15, 15)
@@ -302,22 +298,18 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         self.text_show_text = ExpanderRow(title=self.lm.get(const.LABEL_TEXT_SHOW_TEXT))
         self.text_show_text.set_show_enable_switch(True)
-        self.text_show_text.set_enable_expansion(
-            self.settings.get(const.SETTING_TEXT_SHOW_TEXT, const.DEFAULT_TEXT_SHOW_TEXT))
+        self.text_show_text.set_enable_expansion(self.settings[const.SETTING_TEXT_SHOW_TEXT])
 
         self.text_attribute_combo = ComboRow(title=self.lm.get(const.LABEL_TEXT_VALUE))
         self.text_attribute_combo.set_factory(self.combo_factory)
 
         self.text_round = ExpanderRow(title=self.lm.get(const.LABEL_TEXT_ROUND))
         self.text_round.set_show_enable_switch(True)
-        self.text_round.set_enable_expansion(
-            self.settings.get(const.SETTING_TEXT_ROUND, const.DEFAULT_TEXT_ROUND))
+        self.text_round.set_enable_expansion(self.settings[const.SETTING_TEXT_ROUND])
 
         self.text_round_precision = SpinRow.new_with_range(0, 20, 1)
         self.text_round_precision.set_title(self.lm.get(const.LABEL_TEXT_ROUND_PRECISION))
-        self.text_round_precision.set_value(
-            self.settings.get(const.SETTING_TEXT_ROUND_PRECISION,
-                              const.DEFAULT_TEXT_ROUND_PRECISION))
+        self.text_round_precision.set_value(self.settings[const.SETTING_TEXT_ROUND_PRECISION])
 
         self.text_round.add_row(self.text_round_precision)
 
@@ -329,26 +321,21 @@ class HomeAssistantAction(HomeAssistantActionBase):
         self.text_position_combo.set_model(self.text_position_model)
 
         _set_value_in_combo(self.text_position_combo, self.text_position_model,
-                            self.settings.get(const.SETTING_TEXT_POSITION,
-                                              const.DEFAULT_TEXT_POSITION))
+                            self.settings[const.SETTING_TEXT_POSITION])
 
         self.text_adaptive_size = SwitchRow(title=self.lm.get(const.LABEL_TEXT_ADAPTIVE_SIZE))
-        self.text_adaptive_size.set_active(
-            self.settings.get(const.SETTING_TEXT_ADAPTIVE_SIZE, const.DEFAULT_TEXT_ADAPTIVE_SIZE))
+        self.text_adaptive_size.set_active(self.settings[const.SETTING_TEXT_ADAPTIVE_SIZE])
 
         self.text_size = SpinRow.new_with_range(0, 100, 1)
         self.text_size.set_title(self.lm.get(const.LABEL_TEXT_SIZE))
-        self.text_size.set_value(
-            self.settings.get(const.SETTING_TEXT_SIZE, const.DEFAULT_TEXT_SIZE))
+        self.text_size.set_value(self.settings[const.SETTING_TEXT_SIZE])
 
         self.text_show_unit = SwitchRow(title=self.lm.get(const.LABEL_TEXT_SHOW_UNIT))
-        self.text_show_unit.set_active(
-            self.settings.get(const.SETTING_TEXT_SHOW_UNIT, const.DEFAULT_TEXT_SHOW_UNIT))
+        self.text_show_unit.set_active(self.settings[const.SETTING_TEXT_SHOW_UNIT])
 
         self.text_unit_line_break = SwitchRow(title=self.lm.get(const.LABEL_TEXT_UNIT_LINE_BREAK))
         self.text_unit_line_break.set_active(
-            self.settings.get(const.SETTING_TEXT_UNIT_LINE_BREAK,
-                              const.DEFAULT_TEXT_UNIT_LINE_BREAK))
+            self.settings[const.SETTING_TEXT_UNIT_LINE_BREAK])
 
         self._load_attributes()
 
@@ -458,7 +445,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
         domain = combo.get_selected_item().get_string()
 
         if old_domain != domain:
-            old_entity = self.settings.get(const.SETTING_ENTITY_ENTITY)
+            old_entity = self.settings[const.SETTING_ENTITY_ENTITY]
 
             if old_entity:
                 self.plugin_base.backend.remove_tracked_entity(old_entity, self.uuid)
@@ -470,7 +457,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
             self.settings[const.SETTING_ICON_SHOW_ICON] = const.DEFAULT_ICON_SHOW_ICON
             self.settings[const.SETTING_TEXT_SHOW_TEXT] = const.DEFAULT_TEXT_SHOW_TEXT
             self.icon_custom_icons.clear()
-            self.settings.get(const.SETTING_CUSTOMIZATION_ICONS, []).clear()
+            self.settings[const.SETTING_CUSTOMIZATION_ICONS].clear()
             self._load_custom_icons()
             self.set_settings(self.settings)
 
@@ -496,7 +483,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
         self.settings[const.SETTING_ENTITY_ENTITY] = entity
         self.icon_custom_icons.clear()
-        self.settings.get(const.SETTING_CUSTOMIZATION_ICONS, []).clear()
+        self.settings[const.SETTING_CUSTOMIZATION_ICONS].clear()
         self._load_custom_icons()
         self.set_settings(self.settings)
 
@@ -584,8 +571,8 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         Executed when an entity is updated to reflect the changes on the key.
         """
-        show_icon = self.settings.get(const.SETTING_ICON_SHOW_ICON)
-        show_text = self.settings.get(const.SETTING_TEXT_SHOW_TEXT)
+        show_icon = self.settings[const.SETTING_ICON_SHOW_ICON]
+        show_text = self.settings[const.SETTING_TEXT_SHOW_TEXT]
 
         if not show_icon and not show_text:
             self.set_media(image=None)
@@ -594,7 +581,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
             self.set_bottom_label(const.EMPTY_STRING)
             return
 
-        entity = self.settings.get(const.SETTING_ENTITY_ENTITY)
+        entity = self.settings[const.SETTING_ENTITY_ENTITY]
 
         if (show_icon or show_text) and state is None:
             state = self.plugin_base.backend.get_entity(entity)
@@ -617,7 +604,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
             png_data = cairosvg.svg2png(bytestring=icon, dpi=600)
             image = Image.open(io.BytesIO(png_data))
             scale = round(
-                self.settings.get(const.SETTING_ICON_SCALE, const.DEFAULT_ICON_SCALE) / 100, 2)
+                self.settings[const.SETTING_ICON_SCALE] / 100, 2)
             self.set_media(image=image, size=scale)
         else:
             self.set_media(image=None)
@@ -651,7 +638,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         Load domains from Home Assistant.
         """
-        old_domain = self.settings.get(const.SETTING_ENTITY_DOMAIN, const.EMPTY_STRING)
+        old_domain = self.settings[const.SETTING_ENTITY_DOMAIN]
 
         self.entity_domain_model = StringList.new([const.EMPTY_STRING])
         self.entity_domain_combo.set_model(self.entity_domain_model)
@@ -672,7 +659,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         Load entities from Home Assistant.
         """
-        old_entity = self.settings.get(const.SETTING_ENTITY_ENTITY, const.EMPTY_STRING)
+        old_entity = self.settings[const.SETTING_ENTITY_ENTITY]
 
         self.entity_entity_model = StringList.new([const.EMPTY_STRING])
         self.entity_entity_combo.set_model(self.entity_entity_model)
@@ -693,7 +680,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         Load services from Home Assistant.
         """
-        old_service = self.settings.get(const.SETTING_SERVICE_SERVICE, const.EMPTY_STRING)
+        old_service = self.settings[const.SETTING_SERVICE_SERVICE]
 
         self.service_service_model = StringList.new([])
         self.service_service_combo.set_model(self.service_service_model)
@@ -711,12 +698,15 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         Load service parameters from Home Assistant.
         """
+        self.service_parameters.clear()
+
         ha_entity = self.plugin_base.backend.get_entity(self.settings[const.SETTING_ENTITY_ENTITY])
         # supported_parameters = ha_entity.get(ATTRIBUTES, {}).keys()
 
-        self.service_parameters.clear()
-
         service = self.settings[const.SETTING_SERVICE_SERVICE]
+
+        if not ha_entity or not service:
+            return
 
         fields = self.plugin_base.backend.get_services(
             self.entity_domain_combo.get_selected_item().get_string()).get(
@@ -729,7 +719,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
             # if field not in supported_parameters:
             #     continue
 
-            setting_value = self.settings.get(const.SETTING_SERVICE_PARAMETERS, {}).get(field)
+            setting_value = self.settings[const.SETTING_SERVICE_PARAMETERS].get(field)
 
             selector = list(fields[field]["selector"].keys())[0]
 
@@ -782,10 +772,9 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         Load entity attributes from Home Assistant.
         """
-        old_attribute = self.settings.get(const.SETTING_TEXT_ATTRIBUTE, const.EMPTY_STRING)
+        old_attribute = self.settings[const.SETTING_TEXT_ATTRIBUTE]
 
-        ha_entity = self.plugin_base.backend.get_entity(
-            self.settings.get(const.SETTING_ENTITY_ENTITY))
+        ha_entity = self.plugin_base.backend.get_entity(self.settings[const.SETTING_ENTITY_ENTITY])
 
         self.text_attribute_model = StringList.new([const.STATE])
 
@@ -799,7 +788,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
     def _load_custom_icons(self):
         self.icon_custom_icons_expander.clear()
 
-        self.icon_custom_icons = self.settings.get(const.SETTING_CUSTOMIZATION_ICONS, [])
+        self.icon_custom_icons = self.settings[const.SETTING_CUSTOMIZATION_ICONS]
 
         for index, custom_icon in enumerate(self.icon_custom_icons):
             edit_button = Button(icon_name="edit", valign=Align.CENTER)
@@ -851,7 +840,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
             is_domain_set and self.entity_entity_model.get_n_items() > 1)
 
         # Service section
-        entity = self.settings.get(const.SETTING_ENTITY_ENTITY)
+        entity = self.settings[const.SETTING_ENTITY_ENTITY]
         is_entity_set = bool(entity)
 
         if not is_domain_set:
@@ -897,7 +886,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
             self.text_show_text.set_subtitle(const.EMPTY_STRING)
 
             ha_entity = self.plugin_base.backend.get_entity(
-                self.settings.get(const.SETTING_ENTITY_ENTITY))
+                self.settings[const.SETTING_ENTITY_ENTITY])
 
             self.text_attribute_combo.set_sensitive(self.text_attribute_model.get_n_items() > 1)
             self.text_position_combo.set_sensitive(True)
