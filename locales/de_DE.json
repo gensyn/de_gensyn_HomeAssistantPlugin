@@ -1,6 +1,5 @@
 {
-    "actions.base.settings_header.label": "Home Assistant",
-    "actions.base.settings.label": "Einstellungen",
+    "actions.base.settings_header.label": "Home Assistant Plugin Einstellungen",
     "actions.base.host.label": "Host:",
     "actions.base.port.label": "Port:",
     "actions.base.ssl.label": "SSL:",
@@ -11,6 +10,7 @@
     "actions.home_assistant.settings.service.label": "Service",
     "actions.home_assistant.settings.icon.label": "Bild",
     "actions.home_assistant.settings.text.label": "Text",
+    "actions.home_assistant.settings.connection.label": "Verbindung",
 
     "actions.home_assistant.entity.domain.label": "Domäne:",
     "actions.home_assistant.entity.entity.label": "Entität:",
@@ -40,9 +40,11 @@
     "actions.home_assistant.text.unit_line_break.label": "Neue Zeile zwischen Wert und Einheit:",
     "actions.home_assistant.text.no_entity.label": "Keine Entität ausgewählt",
 
+    "actions.home_assistant.connection.connection_status.label": "Verbindungsstatus",
+
     "actions.home_assistant.customization.icon.label": "Icon",
     "actions.home_assistant.customization.icon_color.label": "Icon Farbe",
-    "actions.home_assistant.customization.title.label": "{value} hinzufügen",
+    "actions.home_assistant.customization.title.label": "Icon anpassen",
     "actions.home_assistant.customization.attribute.label": "Attribut",
     "actions.home_assistant.customization.operator.label": "Operator",
     "actions.home_assistant.customization.value.label": "Wert",

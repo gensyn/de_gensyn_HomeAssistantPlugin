@@ -11,6 +11,7 @@ from typing import Any, Dict, List
 import cairosvg
 import gi
 from PIL import Image
+from src.backend.PluginManager.ActionBase import ActionBase
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
@@ -18,19 +19,19 @@ from gi.repository.Gtk import Align, Button, Label, PropertyExpression, \
     SignalListItemFactory, StringList, StringObject
 from gi.repository.Adw import ActionRow, ComboRow, EntryRow, \
     ExpanderRow, PreferencesGroup, SpinRow, SwitchRow
+from gi.repository import GLib
 
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction import icon_helper, \
     text_helper, settings_helper
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization_window import \
     CustomizationWindow
-from de_gensyn_HomeAssistantPlugin.home_assistant_action_base import HomeAssistantActionBase
 from de_gensyn_HomeAssistantPlugin import const
 
 from GtkHelper.GtkHelper import BetterExpander
 from locales.LegacyLocaleManager import LegacyLocaleManager
 
 
-class HomeAssistantAction(HomeAssistantActionBase):
+class HomeAssistantAction(ActionBase):
     """
     Action to be loaded by StreamController.
     """
@@ -73,6 +74,8 @@ class HomeAssistantAction(HomeAssistantActionBase):
     text_show_unit: SwitchRow
     text_unit_line_break: SwitchRow
 
+    connection_status: EntryRow
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -92,7 +95,6 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
         if not self.plugin_base.backend.is_connected():
             self.plugin_base.backend.register_action(self.on_ready)
-            return
 
         entity = self.settings[const.SETTING_ENTITY_ENTITY]
 
@@ -142,8 +144,6 @@ class HomeAssistantAction(HomeAssistantActionBase):
         """
         self.lm = self.plugin_base.locale_manager
 
-        rows: list = super().get_config_rows()
-
         self.combo_factory = SignalListItemFactory()
         self.combo_factory.connect(const.CONNECT_BIND, self._factory_bind)
 
@@ -151,6 +151,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
         service_group = self._get_service_group()
         icon_group = self._get_icon_group()
         text_group = self._get_text_group()
+        connection_group = self._get_connection_group()
 
         self._load_domains()
 
@@ -159,11 +160,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
         # connect as the last action - else the on_change functions trigger on populating the models
         self._connect_rows()
 
-        if self.plugin_base.backend.is_connected():
-            # already connected to home assistant -> put global settings at the bottom
-            return [entity_group, service_group, icon_group, text_group, *rows]
-
-        return [*rows, entity_group, service_group, icon_group, text_group]
+        return [entity_group, service_group, icon_group, text_group, connection_group]
 
     def _get_entity_group(self) -> PreferencesGroup:
         """
@@ -248,6 +245,24 @@ class HomeAssistantAction(HomeAssistantActionBase):
 
         return group
 
+    def _get_connection_group(self) -> PreferencesGroup:
+        """
+        Get all connection rows.
+        """
+        self.connection_status = EntryRow(title=self.lm.get(const.SETTING_CONNECTION_STATUS))
+        self.connection_status.set_editable(False)
+        self.connection_status.set_text(
+            const.CONNECTED if self.plugin_base.backend.is_connected() else const.NOT_CONNECTED)
+
+        self.plugin_base.backend.set_connection_status_callback(self.set_connection_status)
+
+        group = PreferencesGroup()
+        group.set_title(self.lm.get(const.LABEL_SETTINGS_CONNECTION))
+        group.set_margin_top(20)
+        group.add(self.connection_status)
+
+        return group
+
     def _on_add_custom_icon(self, _, index: int = -1):
         attributes = []
 
@@ -273,16 +288,23 @@ class HomeAssistantAction(HomeAssistantActionBase):
             "icon": target
         }
 
-        if custom_icon in self.icon_custom_icons:
-            if index is not None and index > -1:
+        custom_icons_to_check_for_duplicates = self.icon_custom_icons.copy()
+
+        if index > -1:
+            # we have to check for duplicates without the item being edited because it may have
+            # not been changed
+            custom_icons_to_check_for_duplicates.pop(index)
+
+        if custom_icon in custom_icons_to_check_for_duplicates:
+            if index > -1:
                 # edited item is identical to existing - delete it
                 self.icon_custom_icons.pop(index)
-                self._load_custom_icons()
 
-            # no duplicates necessary
+            self._load_custom_icons()
+            self._entity_updated()
             return
 
-        if index is not None and index > -1:
+        if index > -1:
             self.icon_custom_icons[index] = custom_icon
         else:
             self.icon_custom_icons.append(custom_icon)
@@ -875,6 +897,7 @@ class HomeAssistantAction(HomeAssistantActionBase):
         else:
             self.icon_show_icon.set_sensitive(True)
             self.icon_show_icon.set_subtitle(const.EMPTY_STRING)
+            self.icon_custom_icons_expander.set_expanded(len(self.icon_custom_icons) > 0)
 
         # Text section
         if not is_entity_set:
@@ -908,6 +931,12 @@ class HomeAssistantAction(HomeAssistantActionBase):
             if not self.text_show_unit.get_active():
                 self.text_unit_line_break.set_active(False)
                 self.text_unit_line_break.set_sensitive(False)
+
+    def set_connection_status(self, status) -> None:
+        """
+        Callback function to be executed when the Home Assistant connection status changes.
+        """
+        GLib.idle_add(self.connection_status.set_text, status)
 
 
 def _set_value_in_combo(combo: ComboRow, model: StringList, value: str):

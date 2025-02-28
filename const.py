@@ -13,7 +13,6 @@ LABEL_BASE_SSL = "actions.base.ssl.label"
 LABEL_BASE_VERIFY_CERTIFICATE = "actions.base.verify_certificate.label"
 LABEL_BASE_TOKEN = "actions.base.token.label"
 LABEL_BASE_SETTINGS_HEADER = "actions.base.settings_header.label"
-LABEL_BASE_SETTINGS = "actions.base.settings.label"
 
 SETTING_HOST = "host"
 SETTING_PORT = "port"
@@ -62,6 +61,7 @@ LABEL_SETTINGS_ENTITY = "actions.home_assistant.settings.entity.label"
 LABEL_SETTINGS_SERVICE = "actions.home_assistant.settings.service.label"
 LABEL_SETTINGS_ICON = "actions.home_assistant.settings.icon.label"
 LABEL_SETTINGS_TEXT = "actions.home_assistant.settings.text.label"
+LABEL_SETTINGS_CONNECTION = "actions.home_assistant.settings.connection.label"
 
 LABEL_CUSTOMIZATION_ICON = "actions.home_assistant.customization.icon.label"
 LABEL_CUSTOMIZATION_ICON_COLOR = "actions.home_assistant.customization.icon_color.label"
@@ -105,6 +105,8 @@ SETTING_TEXT_ADAPTIVE_SIZE = "text.adaptive_size"
 SETTING_TEXT_SIZE = "text.size"
 SETTING_TEXT_SHOW_UNIT = "text.show_unit"
 SETTING_TEXT_UNIT_LINE_BREAK = "text.unit_line_break"
+
+SETTING_CONNECTION_STATUS = "actions.home_assistant.connection.connection_status.label"
 
 SETTING_CUSTOMIZATION_ICONS = "customization.icons"
 

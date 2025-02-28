@@ -47,7 +47,7 @@ class CustomizationWindow(Window):
         self.lm = lm
         self.index = index
 
-        self.set_title(lm.get(const.LABEL_CUSTOMIZATION_TITLE).format(value=customization.value))
+        self.set_title(lm.get(const.LABEL_CUSTOMIZATION_TITLE))
         self.set_modal(True)
 
         label_attribute = _create_label(lm.get(const.LABEL_CUSTOMIZATION_ATTRIBUTE))
@@ -115,10 +115,12 @@ class CustomizationWindow(Window):
         for i in range(len(self.combo_attribute.get_model())):
             if self.combo_attribute.get_model()[i][0] == current["attribute"]:
                 self.combo_attribute.set_active(i)
+                break
 
         for i in range(len(self.combo_operator.get_model())):
             if self.combo_operator.get_model()[i][0] == current["operator"]:
                 self.combo_operator.set_active(i)
+                break
 
         self.entry_value.set_text(current["value"])
         self.entry_icon.set_text(current["icon"])
