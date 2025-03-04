@@ -23,10 +23,12 @@
     "actions.home_assistant.service.parameters.label": "Parameter:",
     "actions.home_assistant.service.no_parameters.label": "Der ausgewählte Service akzeptiert keine Parameter",
 
-    "actions.home_assistant.icon.show_icon.label": "Bild der Entität anzeigen:",
+    "actions.home_assistant.icon.show_icon.label": "Icon der Entität anzeigen:",
+    "actions.home_assistant.icon.icon.label": "Icon:",
+    "actions.home_assistant.icon.color.label": "Farbe:",
     "actions.home_assistant.icon.opacity.label": "Deckkraft:",
     "actions.home_assistant.icon.scale.label": "Größe:",
-    "actions.home_assistant.icon.custom_icons.label": "Eigene Icons:",
+    "actions.home_assistant.icon.custom_icons.label": "Anpassen:",
     "actions.home_assistant.icon.no_entity.label": "Keine Entität ausgewählt",
 
     "actions.home_assistant.text.show_text.label": "Entitättext anzeigen:",
@@ -42,14 +44,11 @@
 
     "actions.home_assistant.connection.connection_status.label": "Verbindungsstatus",
 
-    "actions.home_assistant.customization.icon.label": "Icon",
-    "actions.home_assistant.customization.icon_color.label": "Icon Farbe",
     "actions.home_assistant.customization.title.label": "Icon anpassen",
     "actions.home_assistant.customization.attribute.label": "Attribut",
     "actions.home_assistant.customization.operator.label": "Operator",
     "actions.home_assistant.customization.value.label": "Wert",
     "actions.home_assistant.customization.if.label": "Wenn",
-    "actions.home_assistant.customization.then.label": "dann zeige",
     "actions.home_assistant.customization.add.label": "Hinzufügen",
     "actions.home_assistant.customization.update.label": "Aktualisieren",
     "actions.home_assistant.customization.cancel.label": "Abbbrechen",

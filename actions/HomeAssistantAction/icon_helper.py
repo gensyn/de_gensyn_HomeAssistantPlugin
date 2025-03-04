@@ -8,8 +8,6 @@ import os
 from typing import Dict
 
 from de_gensyn_HomeAssistantPlugin import const
-from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.domains_with_custom_icons import \
-    DOMAINS_WITH_SERVICE_ICONS
 
 MDI_FILENAME = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../..", const.MDI_SVG_JSON)
 
@@ -17,7 +15,7 @@ with open(MDI_FILENAME, "r", encoding="utf-8") as f:
     MDI_ICONS: Dict[str, str] = json.loads(f.read())
 
 
-def get_icon(state: Dict, settings: Dict) -> str:
+def get_icon(state: Dict, settings: Dict) -> (str, float):
     """
     Get the item corresponding to the given state.
     """
@@ -26,65 +24,49 @@ def get_icon(state: Dict, settings: Dict) -> str:
                                                              const.ICON_COLOR_RED).replace(
             "<opacity>", "1.0")
 
-    domain = settings.get(const.SETTING_ENTITY_DOMAIN)
+    name, color, scale, opacity = _get_icon_settings(state, settings)
 
-    icon_name = _get_icon_name(state, settings)
+    # convert RGB color to hex
+    color = f'#{int(round(color[0]*255, 0)):02X}{int(round(color[1]*255, 0)):02X}{int(round(color[2]*255, 0)):02X}'
 
-    color = const.ICON_COLOR_ON if state.get(const.STATE) in (
-        const.STATE_ON, const.STATE_HOME) else const.ICON_COLOR_OFF
+    icon = _get_icon_svg(name)
 
-    if domain in DOMAINS_WITH_SERVICE_ICONS.keys():
-        service = settings.get(const.SETTING_SERVICE_SERVICE)
-
-        if service in DOMAINS_WITH_SERVICE_ICONS[domain].keys():
-            color = const.ICON_COLOR_ON
-
-            if state.get(const.STATE) in DOMAINS_WITH_SERVICE_ICONS[domain][service].keys():
-                icon_name = DOMAINS_WITH_SERVICE_ICONS[domain][service][state.get(const.STATE)]
-            else:
-                icon_name = DOMAINS_WITH_SERVICE_ICONS[domain][service]["default"]
-
-    opacity = str(
-        round(settings.get(const.SETTING_ICON_OPACITY, const.DEFAULT_ICON_OPACITY) / 100,
-              2))
-
-    icon = _get_icon_svg(icon_name)
-
-    return (
-        icon
-        .replace("<color>", color)
-        .replace("<opacity>", opacity)
-    )
+    return (icon.replace("<color>", color).replace("<opacity>", str(opacity))), scale
 
 
-def _get_icon_name(state: Dict,
-                   settings: Dict) -> str:  # pylint: disable=too-many-return-statements
-    custom_icons = settings.get(const.SETTING_CUSTOMIZATION_ICONS, [])
+def _get_icon_settings(state: Dict, settings: Dict) -> (str, str, str, str):
+    # default value for the icon is the icon set in HA
+    name = state.get(const.ATTRIBUTES, {}).get(const.ATTRIBUTE_ICON, const.EMPTY_STRING)
+    color = settings[const.SETTING_ICON_COLOR]
+    scale = round(settings[const.SETTING_ICON_SCALE] / 100, 2)
+    opacity = str(round(settings.get(const.SETTING_ICON_OPACITY, const.DEFAULT_ICON_OPACITY) / 100, 2))
+
+    if settings[const.SETTING_ICON_ICON] in MDI_ICONS.keys():
+        name = settings[const.SETTING_ICON_ICON]
+
+    custom_icons = settings[const.SETTING_CUSTOMIZATION_ICONS]
 
     for custom_icon in custom_icons:
-        if custom_icon["attribute"] == const.STATE:
+        if custom_icon[const.CUSTOM_ICON_ATTRIBUTE] == const.STATE:
             value = state[const.STATE]
         else:
-            value = state[const.ATTRIBUTES].get(custom_icon["attribute"])
+            value = state[const.ATTRIBUTES].get(custom_icon[const.CUSTOM_ICON_ATTRIBUTE])
 
-        custom_icon_value = custom_icon["value"]
+        custom_icon_value = custom_icon[const.CUSTOM_ICON_VALUE]
 
         try:
             # if both values are numbers, convert them both to float
             # if one is int and one float, testing for equality might fail (21 vs 21.0 eg)
             value = float(value)
             custom_icon_value = float(custom_icon_value)
-        except ValueError:
+        except (ValueError, TypeError):
             pass
 
-        operator = custom_icon["operator"]
-        custom_icon = custom_icon["icon"]
+        operator = custom_icon[const.CUSTOM_ICON_OPERATOR]
 
-        if operator == "==" and str(value) == str(custom_icon_value):
-            return custom_icon
-
-        if operator == "!=" and str(value) != str(custom_icon_value):
-            return custom_icon
+        if ((operator == "==" and str(value) == str(custom_icon_value))
+                or (operator == "!=" and str(value) != str(custom_icon_value))):
+            name, color, scale, opacity = _replace_values(name, color, scale, opacity, custom_icon)
 
         if not isinstance(value, float):
             # other operators are only applicable to numbers
@@ -97,19 +79,34 @@ def _get_icon_name(state: Dict,
                           custom_icon_value)
             continue
 
-        if operator == "<" and value < custom_icon_value:
-            return custom_icon
+        if ((operator == "<" and value < custom_icon_value)
+                or (operator == "<=" and value <= custom_icon_value)
+                or (operator == ">" and value > custom_icon_value)
+                or (operator == ">=" and value >= custom_icon_value)):
+            name, color, scale, opacity = _replace_values(name, color, scale, opacity, custom_icon)
 
-        if operator == "<=" and value <= custom_icon_value:
-            return custom_icon
+    return name, color, scale, opacity
 
-        if operator == ">" and value > custom_icon_value:
-            return custom_icon
 
-        if operator == ">=" and value >= custom_icon_value:
-            return custom_icon
+def _replace_values(name: str, color: str, scale: float, opacity: str, customization: dict):
+    ret_name = name
+    ret_color = color
+    ret_scale = scale
+    ret_opacity = opacity
 
-    return state.get(const.ATTRIBUTES, {}).get(const.ATTRIBUTE_ICON, const.EMPTY_STRING)
+    if customization.get(const.CUSTOM_ICON_ICON):
+        ret_name = customization[const.CUSTOM_ICON_ICON]
+
+    if customization.get(const.CUSTOM_ICON_COLOR):
+        ret_color = customization[const.CUSTOM_ICON_COLOR]
+
+    if customization.get(const.CUSTOM_ICON_SCALE):
+        ret_scale = round(customization[const.CUSTOM_ICON_SCALE] / 100, 2)
+
+    if customization.get(const.CUSTOM_ICON_OPACITY):
+        ret_opacity = round(customization[const.CUSTOM_ICON_OPACITY] / 100, 2)
+
+    return ret_name, ret_color, ret_scale, ret_opacity
 
 
 def _get_icon_path(name: str) -> str:

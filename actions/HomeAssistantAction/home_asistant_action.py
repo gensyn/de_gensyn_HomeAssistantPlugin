@@ -6,20 +6,22 @@ import io
 import json
 import uuid
 from json import JSONDecodeError
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 import cairosvg
 import gi
 from PIL import Image
+
 from src.backend.PluginManager.ActionBase import ActionBase
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository.Gtk import Align, Button, Label, PropertyExpression, \
-    SignalListItemFactory, StringList, StringObject
+    SignalListItemFactory, StringList, StringObject, Box, Orientation, ColorButton, CheckButton
 from gi.repository.Adw import ActionRow, ComboRow, EntryRow, \
     ExpanderRow, PreferencesGroup, SpinRow, SwitchRow
 from gi.repository import GLib
+from gi.repository.Gdk import RGBA
 
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction import icon_helper, \
     text_helper, settings_helper
@@ -56,6 +58,8 @@ class HomeAssistantAction(ActionBase):
     service_parameters: BetterExpander
 
     icon_show_icon: ExpanderRow
+    icon_icon: EntryRow
+    icon_color: ColorButton
     icon_scale: SpinRow
     icon_opacity: SpinRow
     icon_custom_icons_expander: BetterExpander
@@ -216,6 +220,19 @@ class HomeAssistantAction(ActionBase):
         self.icon_show_icon.set_show_enable_switch(True)
         self.icon_show_icon.set_enable_expansion(self.settings[const.SETTING_ICON_SHOW_ICON])
 
+        self.icon_color = ColorButton()
+        rgba_list = self.settings[const.SETTING_ICON_COLOR]
+        rgba = RGBA(use_alpha=False)
+        rgba.red = rgba_list[0]
+        rgba.green = rgba_list[1]
+        rgba.blue = rgba_list[2]
+        rgba.alpha = 1
+        self.icon_color.set_rgba(rgba)
+
+        self.icon_icon = EntryRow(title=self.lm.get(const.LABEL_ICON_ICON))
+        self.icon_icon.add_suffix(self.icon_color)
+        self.icon_icon.set_text(self.settings[const.SETTING_ICON_ICON])
+
         self.icon_scale = SpinRow.new_with_range(1, 100, 1)
         self.icon_scale.set_title(self.lm.get(const.LABEL_ICON_SCALE))
         self.icon_scale.set_value(self.settings[const.SETTING_ICON_SCALE])
@@ -233,6 +250,7 @@ class HomeAssistantAction(ActionBase):
 
         self._load_custom_icons()
 
+        self.icon_show_icon.add_row(self.icon_icon)
         self.icon_show_icon.add_row(self.icon_scale)
         self.icon_show_icon.add_row(self.icon_opacity)
         self.icon_show_icon.add_row(self.icon_custom_icons_expander)
@@ -279,13 +297,24 @@ class HomeAssistantAction(ActionBase):
                                      current=current, index=index)
         window.show()
 
-    def _add_custom_icon(self, attribute: str, operator: str, value: str, target: str, index: int):
+    def _add_custom_icon(self, attribute: str, operator: str, value: str, icon: str, color: str, scale: int, opacity: int, index: int):
         custom_icon = {
-            "attribute": attribute,
-            "operator": operator,
-            "value": value,
-            "icon": target
+            const.CUSTOM_ICON_ATTRIBUTE: attribute,
+            const.CUSTOM_ICON_OPERATOR: operator,
+            const.CUSTOM_ICON_VALUE: value
         }
+
+        if icon:
+            custom_icon[const.CUSTOM_ICON_ICON] = icon
+
+        if color:
+            custom_icon[const.CUSTOM_ICON_COLOR] = color
+
+        if scale:
+            custom_icon[const.CUSTOM_ICON_SCALE] = scale
+
+        if opacity:
+            custom_icon[const.CUSTOM_ICON_OPACITY] = opacity
 
         custom_icons_to_check_for_duplicates = self.settings[const.SETTING_CUSTOMIZATION_ICONS].copy()
 
@@ -390,10 +419,16 @@ class HomeAssistantAction(ActionBase):
         self.icon_show_icon.connect(const.CONNECT_NOTIFY_ENABLE_EXPANSION,
                                     self._on_change_expansion_switch,
                                     const.SETTING_ICON_SHOW_ICON)
+        self.icon_icon.connect(const.CONNECT_NOTIFY_TEXT, self._on_change_entry, const.SETTING_ICON_ICON)
+        self.icon_color.connect(const.CONNECT_NOTIFY_COLOR_SET, self._on_change_color, const.SETTING_ICON_COLOR)
+        self.icon_scale.connect(const.CONNECT_CHANGED, self._on_change_spin,
+                                const.SETTING_ICON_SCALE)
         self.icon_scale.connect(const.CONNECT_CHANGED, self._on_change_spin,
                                 const.SETTING_ICON_SCALE)
         self.icon_opacity.connect(const.CONNECT_CHANGED, self._on_change_spin,
                                   const.SETTING_ICON_OPACITY)
+        self.icon_opacity.connect(const.CONNECT_CHANGED, self._on_change_spin,
+                                const.SETTING_ICON_OPACITY)
         self.icon_custom_icon_add.connect(const.CONNECT_CLICKED, self._on_add_custom_icon)
 
         self.text_show_text.connect(const.CONNECT_NOTIFY_ENABLE_EXPANSION,
@@ -416,14 +451,21 @@ class HomeAssistantAction(ActionBase):
         self.text_unit_line_break.connect(const.CONNECT_NOTIFY_ACTIVE, self._on_change_switch,
                                           const.SETTING_TEXT_UNIT_LINE_BREAK)
 
+    def _on_change_entry(self, entry, *args):
+        """
+        Execute when an entry is changed.
+        """
+        self.set_setting(args[1], entry.get_text())
+
+        self._set_enabled_disabled()
+
+        self._entity_updated()
+
     def _on_change_switch(self, switch, *args):
         """
         Execute when a switch is changed.
         """
         self.set_setting(args[1], switch.get_active())
-
-        if args[1] == const.SETTING_ICON_SHOW_ICON:
-            self._entity_updated()
 
         self._set_enabled_disabled()
 
@@ -434,6 +476,18 @@ class HomeAssistantAction(ActionBase):
         Execute when the switch of an ExpanderRow is changed.
         """
         self.set_setting(args[1], expander.get_enable_expansion())
+
+        self._set_enabled_disabled()
+
+        self._entity_updated()
+
+    def _on_change_color(self, button, *args):
+        """
+        Execute when a color is changed.
+        """
+        color = button.get_rgba()
+        color_list = [color.red, color.green, color.blue]
+        self.set_setting(args[0], color_list)
 
         self._set_enabled_disabled()
 
@@ -617,13 +671,11 @@ class HomeAssistantAction(ActionBase):
             self.set_media(image=None)
             return
 
-        icon = icon_helper.get_icon(state, self.settings)
+        icon, scale = icon_helper.get_icon(state, self.settings)
 
         if icon:
             png_data = cairosvg.svg2png(bytestring=icon, dpi=600)
             image = Image.open(io.BytesIO(png_data))
-            scale = round(
-                self.settings[const.SETTING_ICON_SCALE] / 100, 2)
             self.set_media(image=image, size=scale)
         else:
             self.set_media(image=None)
@@ -816,16 +868,52 @@ class HomeAssistantAction(ActionBase):
             delete_button.set_size_request(15, 15)
             delete_button.connect(const.CONNECT_CLICKED, self._on_delete_custom_icon, index)
 
+            box_operations = Box(orientation=Orientation.VERTICAL, spacing=1)
+            box_operations.append(edit_button)
+            box_operations.append(delete_button)
+
+            up_button = Button(icon_name="go-up", valign=Align.CENTER)
+            up_button.set_size_request(15, 7)
+            up_button.connect(const.CONNECT_CLICKED, self._on_move_up, index)
+            up_button.set_sensitive(index != 0)
+
+            down_button = Button(icon_name="go-down", valign=Align.CENTER)
+            down_button.set_size_request(15, 7)
+            down_button.connect(const.CONNECT_CLICKED, self._on_move_down, index)
+            down_button.set_sensitive(index != len(self.settings[const.SETTING_CUSTOMIZATION_ICONS])-1)
+
+            box_arrows = Box(orientation=Orientation.VERTICAL, spacing=1)
+            box_arrows.append(up_button)
+            box_arrows.append(down_button)
+
+            title = (f"{self.lm.get(const.LABEL_CUSTOMIZATION_IF)} "
+                     f"{self.lm.get(const.LABEL_CUSTOMIZATION_ATTRIBUTE).lower()} "
+                     f"\"{custom_icon[const.CUSTOM_ICON_ATTRIBUTE]}\" "
+                     f"{self.lm.get(const.LABEL_CUSTOMIZATION_OPERATORS[custom_icon[const.CUSTOM_ICON_OPERATOR]])} "
+                     f"\"{custom_icon[const.CUSTOM_ICON_VALUE]}\":\n")
+
+            if custom_icon.get(const.CUSTOM_ICON_ICON):
+                title += (f"\n{self.lm.get(const.LABEL_ICON_ICON)} "
+                          f"{custom_icon[const.CUSTOM_ICON_ICON]}")
+
+            if custom_icon.get(const.CUSTOM_ICON_COLOR):
+                color = custom_icon[const.CUSTOM_ICON_COLOR]
+                color = f'#{int(round(color[0]*255, 0)):02X}{int(round(color[1]*255, 0)):02X}{int(round(color[2]*255, 0)):02X}'
+                title += (f"\n{self.lm.get(const.LABEL_ICON_COLOR)} "
+                         f"{color}")
+
+            if custom_icon.get(const.CUSTOM_ICON_SCALE):
+                title += (f"\n{self.lm.get(const.LABEL_ICON_SCALE)} "
+                         f"{int(custom_icon[const.CUSTOM_ICON_SCALE])}")
+
+            if custom_icon.get(const.CUSTOM_ICON_OPACITY):
+                title += (f"\n{self.lm.get(const.LABEL_ICON_OPACITY)} "
+                         f"{int(custom_icon[const.CUSTOM_ICON_OPACITY])}")
+
             row = ActionRow(
-                title=f"{self.lm.get(const.LABEL_CUSTOMIZATION_IF)} "
-                      f"{self.lm.get(const.LABEL_CUSTOMIZATION_ATTRIBUTE).lower()} "
-                      f"\"{custom_icon['attribute']}\" "
-                      f"{self.lm.get(const.LABEL_CUSTOMIZATION_OPERATORS[custom_icon['operator']])} "
-                      f"\"{custom_icon['value']}\" "
-                      f"{self.lm.get(const.LABEL_CUSTOMIZATION_THEN)} "
-                      f"\"{custom_icon['icon']}\".")
-            row.add_suffix(edit_button)
-            row.add_suffix(delete_button)
+                title=title)
+            row.add_suffix(box_operations)
+            row.add_suffix(box_arrows)
 
             self.icon_custom_icons_expander.add_row(row)
 
@@ -834,11 +922,19 @@ class HomeAssistantAction(ActionBase):
 
     def _on_delete_custom_icon(self, _, index: int):
         self.settings[const.SETTING_CUSTOMIZATION_ICONS].pop(index)
-
         self.set_settings(self.settings)
-
         self._load_custom_icons()
         self._entity_updated()
+
+    def _on_move_up(self, _, index: int):
+        self.settings[const.SETTING_CUSTOMIZATION_ICONS][index], self.settings[const.SETTING_CUSTOMIZATION_ICONS][index-1] = self.settings[const.SETTING_CUSTOMIZATION_ICONS][index-1], self.settings[const.SETTING_CUSTOMIZATION_ICONS][index]
+        self.set_settings(self.settings)
+        self._load_custom_icons()
+
+    def _on_move_down(self, _, index: int):
+        self.settings[const.SETTING_CUSTOMIZATION_ICONS][index], self.settings[const.SETTING_CUSTOMIZATION_ICONS][index+1] = self.settings[const.SETTING_CUSTOMIZATION_ICONS][index+1], self.settings[const.SETTING_CUSTOMIZATION_ICONS][index]
+        self.set_settings(self.settings)
+        self._load_custom_icons()
 
     def _set_enabled_disabled(self) -> None:
         """

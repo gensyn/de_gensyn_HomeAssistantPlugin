@@ -24,9 +24,11 @@
     "actions.home_assistant.service.no_parameters.label": "The selected service accepts no parameters",
 
     "actions.home_assistant.icon.show_icon.label": "Show entity icon:",
+    "actions.home_assistant.icon.icon.label": "Icon:",
+    "actions.home_assistant.icon.color.label": "Color:",
     "actions.home_assistant.icon.opacity.label": "Opacity:",
     "actions.home_assistant.icon.scale.label": "Scale:",
-    "actions.home_assistant.icon.custom_icons.label": "Custom icons:",
+    "actions.home_assistant.icon.custom_icons.label": "Customize:",
     "actions.home_assistant.icon.no_entity.label": "No entity selected",
 
     "actions.home_assistant.text.show_text.label": "Show entity text:",
@@ -42,14 +44,11 @@
 
     "actions.home_assistant.connection.connection_status.label": "Connection status",
 
-    "actions.home_assistant.customization.icon.label": "icon",
-    "actions.home_assistant.customization.icon_color.label": "icon color",
     "actions.home_assistant.customization.title.label": "Customize icon",
     "actions.home_assistant.customization.attribute.label": "Attribute",
     "actions.home_assistant.customization.operator.label": "Operator",
     "actions.home_assistant.customization.value.label": "Value",
     "actions.home_assistant.customization.if.label": "If",
-    "actions.home_assistant.customization.then.label": "then show",
     "actions.home_assistant.customization.add.label": "Add",
     "actions.home_assistant.customization.update.label": "Update",
     "actions.home_assistant.customization.cancel.label": "Cancel",

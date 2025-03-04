@@ -25,9 +25,11 @@ CONNECT_BIND = "bind"
 CONNECT_CHANGED = "changed"
 CONNECT_CLICKED = "clicked"
 CONNECT_ACTIVATE = "activate"
+CONNECT_TOGGLED = "toggled"
 CONNECT_NOTIFY_SELECTED = "notify::selected"
 CONNECT_NOTIFY_ACTIVE = "notify::active"
 CONNECT_NOTIFY_TEXT = "notify::text"
+CONNECT_NOTIFY_COLOR_SET = "color-set"
 CONNECT_NOTIFY_ENABLE_EXPANSION = "notify::enable-expansion"
 
 LABEL_ENTITY_DOMAIN = "actions.home_assistant.entity.domain.label"
@@ -42,6 +44,8 @@ LABEL_SERVICE_PARAMETERS = "actions.home_assistant.service.parameters.label"
 LABEL_SERVICE_NO_PARAMETERS = "actions.home_assistant.service.no_parameters.label"
 
 LABEL_ICON_SHOW_ICON = "actions.home_assistant.icon.show_icon.label"
+LABEL_ICON_ICON = "actions.home_assistant.icon.icon.label"
+LABEL_ICON_COLOR = "actions.home_assistant.icon.color.label"
 LABEL_ICON_OPACITY = "actions.home_assistant.icon.opacity.label"
 LABEL_ICON_SCALE = "actions.home_assistant.icon.scale.label"
 LABEL_ICON_CUSTOM_ICONS = "actions.home_assistant.icon.custom_icons.label"
@@ -64,14 +68,11 @@ LABEL_SETTINGS_ICON = "actions.home_assistant.settings.icon.label"
 LABEL_SETTINGS_TEXT = "actions.home_assistant.settings.text.label"
 LABEL_SETTINGS_CONNECTION = "actions.home_assistant.settings.connection.label"
 
-LABEL_CUSTOMIZATION_ICON = "actions.home_assistant.customization.icon.label"
-LABEL_CUSTOMIZATION_ICON_COLOR = "actions.home_assistant.customization.icon_color.label"
 LABEL_CUSTOMIZATION_TITLE = "actions.home_assistant.customization.title.label"
 LABEL_CUSTOMIZATION_ATTRIBUTE = "actions.home_assistant.customization.attribute.label"
 LABEL_CUSTOMIZATION_OPERATOR = "actions.home_assistant.customization.operator.label"
 LABEL_CUSTOMIZATION_VALUE = "actions.home_assistant.customization.value.label"
 LABEL_CUSTOMIZATION_IF = "actions.home_assistant.customization.if.label"
-LABEL_CUSTOMIZATION_THEN = "actions.home_assistant.customization.then.label"
 LABEL_CUSTOMIZATION_ADD = "actions.home_assistant.customization.add.label"
 LABEL_CUSTOMIZATION_UPDATE = "actions.home_assistant.customization.update.label"
 LABEL_CUSTOMIZATION_CANCEL = "actions.home_assistant.customization.cancel.label"
@@ -94,6 +95,8 @@ SETTING_SERVICE_SERVICE = "service.service"
 SETTING_SERVICE_PARAMETERS = "service.service_parameters"
 
 SETTING_ICON_SHOW_ICON = "icon.show_icon"
+SETTING_ICON_ICON = "icon.icon"
+SETTING_ICON_COLOR = "icon.color"
 SETTING_ICON_OPACITY = "icon.opacity"
 SETTING_ICON_SCALE = "icon.scale"
 
@@ -115,6 +118,14 @@ STATE = "state"
 STATE_ON = "on"
 STATE_HOME = "home"
 
+CUSTOM_ICON_ICON = "icon"
+CUSTOM_ICON_COLOR = "color"
+CUSTOM_ICON_SCALE = "scale"
+CUSTOM_ICON_OPACITY = "opacity"
+CUSTOM_ICON_OPERATOR = "operator"
+CUSTOM_ICON_VALUE = "value"
+CUSTOM_ICON_ATTRIBUTE = "attribute"
+
 ATTRIBUTES = "attributes"
 ATTRIBUTE_FRIENDLY_NAME = "friendly_name"
 ATTRIBUTE_ICON = "icon"
@@ -125,8 +136,6 @@ TEXT_POSITION_TOP = "top"
 TEXT_POSITION_CENTER = "center"
 TEXT_POSITION_BOTTOM = "bottom"
 
-ICON_COLOR_ON = "#eeff1b"
-ICON_COLOR_OFF = "#bebebe"
 ICON_COLOR_RED = "#ff0000"
 
 ICON_NETWORK_OFF = "network-off"
@@ -136,6 +145,7 @@ MDI_SVG_JSON = "assets/mdi-svg.json"
 DEFAULT_SERVICE_CALL_SERVICE = False
 
 DEFAULT_ICON_SHOW_ICON = False
+DEFAULT_ICON_COLOR = [0.93, 1, 0.1]
 DEFAULT_ICON_SCALE = 80
 DEFAULT_ICON_OPACITY = 100
 
