@@ -893,8 +893,7 @@ class HomeAssistantAction(ActionBase):
             title = (f"{self.lm.get(const.LABEL_CUSTOMIZATION_IF)} "
                      f"{self.lm.get(const.LABEL_CUSTOMIZATION_ATTRIBUTE).lower()} "
                      f"\"{custom_icon[const.CUSTOM_ICON_ATTRIBUTE]}\" "
-                     f"{self.lm.get(const.LABEL_CUSTOMIZATION_OPERATORS[
-                                        custom_icon[const.CUSTOM_ICON_OPERATOR]])} "
+                     f"{self.lm.get(const.LABEL_CUSTOMIZATION_OPERATORS[custom_icon[const.CUSTOM_ICON_OPERATOR]])} "
                      f"\"{custom_icon[const.CUSTOM_ICON_VALUE]}\":\n")
 
             if custom_icon.get(const.CUSTOM_ICON_ICON):
