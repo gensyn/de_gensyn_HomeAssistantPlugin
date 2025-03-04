@@ -5,6 +5,8 @@ import sys
 from pathlib import Path
 from typing import Dict, Any
 
+import gi
+gi.require_version("Adw", "1")
 from gi.repository import GLib
 from gi.repository.Adw import EntryRow, SwitchRow, PasswordEntryRow, PreferencesGroup
 
@@ -82,7 +84,6 @@ class HomeAssistant(PluginBase):  # pylint: disable=too-few-public-methods
         self.backend.set_verify_certificate(verify_certificate)
         self.backend.set_token(token)
 
-
     def get_settings_area(self):
         """
         Gets the rows for configuring Home Assistant credentials and base settings.
@@ -107,8 +108,10 @@ class HomeAssistant(PluginBase):  # pylint: disable=too-few-public-methods
                                 const.SETTING_HOST)
         self.port_entry.connect(const.CONNECT_NOTIFY_TEXT, self._on_change_base_entry,
                                 const.SETTING_PORT)
-        self.ssl_switch.connect(const.CONNECT_NOTIFY_ACTIVE, self._on_change_base_switch, const.SETTING_SSL)
-        self.verify_certificate_switch.connect(const.CONNECT_NOTIFY_ACTIVE, self._on_change_base_switch,
+        self.ssl_switch.connect(const.CONNECT_NOTIFY_ACTIVE, self._on_change_base_switch,
+                                const.SETTING_SSL)
+        self.verify_certificate_switch.connect(const.CONNECT_NOTIFY_ACTIVE,
+                                               self._on_change_base_switch,
                                                const.SETTING_VERIFY_CERTIFICATE)
         self.token_entry.connect(const.CONNECT_NOTIFY_TEXT, self._on_change_base_entry,
                                  const.SETTING_TOKEN)
@@ -158,15 +161,14 @@ class HomeAssistant(PluginBase):  # pylint: disable=too-few-public-methods
         settings[args[1]] = bool(switch.get_active())
 
         if args[1] == const.SETTING_SSL and bool(switch.get_active()):
-            self.verify_certificate_switch.set_active(settings.get(const.SETTING_VERIFY_CERTIFICATE, True))
+            self.verify_certificate_switch.set_active(
+                settings.get(const.SETTING_VERIFY_CERTIFICATE, True))
             self.verify_certificate_switch.set_sensitive(True)
         elif args[1] == const.SETTING_SSL:
             self.verify_certificate_switch.set_active(False)
             self.verify_certificate_switch.set_sensitive(False)
 
-
         self.set_settings(settings)
-
 
     def set_status(self, status) -> None:
         """

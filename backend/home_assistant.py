@@ -269,7 +269,7 @@ class HomeAssistantBackend:
             pass
 
         if self._entities:
-            # if the collection was lost we might need to resubscribe to entity events
+            # if the connection was lost we might need to resubscribe to entity events
             for domain, domain_entry in self._entities.items():
                 for entity, entity_settings in domain_entry.items():
                     if entity_settings.get("keys"):
@@ -303,9 +303,8 @@ class HomeAssistantBackend:
 
                 if not new_state:
                     # this can happen if the entity was removed from HA
-                    entity_id = json.loads(message).get(FIELD_EVENT, {}).get("variables", {}).get("trigger",
-                                                                                      {}).get(
-                        "from_state", {}).get(ENTITY_ID)
+                    entity_id = json.loads(message).get(FIELD_EVENT, {}).get("variables", {}).get(
+                        "trigger", {}).get("from_state", {}).get(ENTITY_ID)
                     entity_settings = self._entities[entity_id.split(".")[0]].get(entity_id)
                     actions = entity_settings.get("keys").values()
                     for action_entity_updated in actions:

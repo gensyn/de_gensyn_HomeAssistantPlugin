@@ -27,7 +27,8 @@ def get_icon(state: Dict, settings: Dict) -> (str, float):
     name, color, scale, opacity = _get_icon_settings(state, settings)
 
     # convert RGB color to hex
-    color = f'#{int(round(color[0]*255, 0)):02X}{int(round(color[1]*255, 0)):02X}{int(round(color[2]*255, 0)):02X}'
+    color = (f'#{int(round(color[0] * 255, 0)):02X}{int(round(color[1] * 255, 0)):02X}'
+             f'{int(round(color[2] * 255, 0)):02X}')
 
     icon = _get_icon_svg(name)
 
@@ -39,7 +40,8 @@ def _get_icon_settings(state: Dict, settings: Dict) -> (str, str, str, str):
     name = state.get(const.ATTRIBUTES, {}).get(const.ATTRIBUTE_ICON, const.EMPTY_STRING)
     color = settings[const.SETTING_ICON_COLOR]
     scale = round(settings[const.SETTING_ICON_SCALE] / 100, 2)
-    opacity = str(round(settings.get(const.SETTING_ICON_OPACITY, const.DEFAULT_ICON_OPACITY) / 100, 2))
+    opacity = str(
+        round(settings.get(const.SETTING_ICON_OPACITY, const.DEFAULT_ICON_OPACITY) / 100, 2))
 
     if settings[const.SETTING_ICON_ICON] in MDI_ICONS.keys():
         name = settings[const.SETTING_ICON_ICON]

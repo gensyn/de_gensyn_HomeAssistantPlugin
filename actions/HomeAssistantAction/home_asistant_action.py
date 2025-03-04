@@ -11,7 +11,6 @@ from typing import Any, Dict
 import cairosvg
 import gi
 from PIL import Image
-
 from src.backend.PluginManager.ActionBase import ActionBase
 
 gi.require_version("Gtk", "4.0")
@@ -297,7 +296,8 @@ class HomeAssistantAction(ActionBase):
                                      current=current, index=index)
         window.show()
 
-    def _add_custom_icon(self, attribute: str, operator: str, value: str, icon: str, color: str, scale: int, opacity: int, index: int):
+    def _add_custom_icon(self, attribute: str, operator: str, value: str, icon: str, color: str,
+                         scale: int, opacity: int, index: int):
         custom_icon = {
             const.CUSTOM_ICON_ATTRIBUTE: attribute,
             const.CUSTOM_ICON_OPERATOR: operator,
@@ -316,7 +316,8 @@ class HomeAssistantAction(ActionBase):
         if opacity:
             custom_icon[const.CUSTOM_ICON_OPACITY] = opacity
 
-        custom_icons_to_check_for_duplicates = self.settings[const.SETTING_CUSTOMIZATION_ICONS].copy()
+        custom_icons_to_check_for_duplicates = self.settings[
+            const.SETTING_CUSTOMIZATION_ICONS].copy()
 
         if index > -1:
             # we have to check for duplicates without the item being edited because it may have
@@ -419,8 +420,10 @@ class HomeAssistantAction(ActionBase):
         self.icon_show_icon.connect(const.CONNECT_NOTIFY_ENABLE_EXPANSION,
                                     self._on_change_expansion_switch,
                                     const.SETTING_ICON_SHOW_ICON)
-        self.icon_icon.connect(const.CONNECT_NOTIFY_TEXT, self._on_change_entry, const.SETTING_ICON_ICON)
-        self.icon_color.connect(const.CONNECT_NOTIFY_COLOR_SET, self._on_change_color, const.SETTING_ICON_COLOR)
+        self.icon_icon.connect(const.CONNECT_NOTIFY_TEXT, self._on_change_entry,
+                               const.SETTING_ICON_ICON)
+        self.icon_color.connect(const.CONNECT_NOTIFY_COLOR_SET, self._on_change_color,
+                                const.SETTING_ICON_COLOR)
         self.icon_scale.connect(const.CONNECT_CHANGED, self._on_change_spin,
                                 const.SETTING_ICON_SCALE)
         self.icon_scale.connect(const.CONNECT_CHANGED, self._on_change_spin,
@@ -428,7 +431,7 @@ class HomeAssistantAction(ActionBase):
         self.icon_opacity.connect(const.CONNECT_CHANGED, self._on_change_spin,
                                   const.SETTING_ICON_OPACITY)
         self.icon_opacity.connect(const.CONNECT_CHANGED, self._on_change_spin,
-                                const.SETTING_ICON_OPACITY)
+                                  const.SETTING_ICON_OPACITY)
         self.icon_custom_icon_add.connect(const.CONNECT_CLICKED, self._on_add_custom_icon)
 
         self.text_show_text.connect(const.CONNECT_NOTIFY_ENABLE_EXPANSION,
@@ -880,7 +883,8 @@ class HomeAssistantAction(ActionBase):
             down_button = Button(icon_name="go-down", valign=Align.CENTER)
             down_button.set_size_request(15, 7)
             down_button.connect(const.CONNECT_CLICKED, self._on_move_down, index)
-            down_button.set_sensitive(index != len(self.settings[const.SETTING_CUSTOMIZATION_ICONS])-1)
+            down_button.set_sensitive(
+                index != len(self.settings[const.SETTING_CUSTOMIZATION_ICONS]) - 1)
 
             box_arrows = Box(orientation=Orientation.VERTICAL, spacing=1)
             box_arrows.append(up_button)
@@ -889,7 +893,8 @@ class HomeAssistantAction(ActionBase):
             title = (f"{self.lm.get(const.LABEL_CUSTOMIZATION_IF)} "
                      f"{self.lm.get(const.LABEL_CUSTOMIZATION_ATTRIBUTE).lower()} "
                      f"\"{custom_icon[const.CUSTOM_ICON_ATTRIBUTE]}\" "
-                     f"{self.lm.get(const.LABEL_CUSTOMIZATION_OPERATORS[custom_icon[const.CUSTOM_ICON_OPERATOR]])} "
+                     f"{self.lm.get(const.LABEL_CUSTOMIZATION_OPERATORS[
+                                        custom_icon[const.CUSTOM_ICON_OPERATOR]])} "
                      f"\"{custom_icon[const.CUSTOM_ICON_VALUE]}\":\n")
 
             if custom_icon.get(const.CUSTOM_ICON_ICON):
@@ -898,17 +903,19 @@ class HomeAssistantAction(ActionBase):
 
             if custom_icon.get(const.CUSTOM_ICON_COLOR):
                 color = custom_icon[const.CUSTOM_ICON_COLOR]
-                color = f'#{int(round(color[0]*255, 0)):02X}{int(round(color[1]*255, 0)):02X}{int(round(color[2]*255, 0)):02X}'
+                color = (f'#{int(round(color[0] * 255, 0)):02X}'
+                         f'{int(round(color[1] * 255, 0)):02X}'
+                         f'{int(round(color[2] * 255, 0)):02X}')
                 title += (f"\n{self.lm.get(const.LABEL_ICON_COLOR)} "
-                         f"{color}")
+                          f"{color}")
 
             if custom_icon.get(const.CUSTOM_ICON_SCALE):
                 title += (f"\n{self.lm.get(const.LABEL_ICON_SCALE)} "
-                         f"{int(custom_icon[const.CUSTOM_ICON_SCALE])}")
+                          f"{int(custom_icon[const.CUSTOM_ICON_SCALE])}")
 
             if custom_icon.get(const.CUSTOM_ICON_OPACITY):
                 title += (f"\n{self.lm.get(const.LABEL_ICON_OPACITY)} "
-                         f"{int(custom_icon[const.CUSTOM_ICON_OPACITY])}")
+                          f"{int(custom_icon[const.CUSTOM_ICON_OPACITY])}")
 
             row = ActionRow(
                 title=title)
@@ -927,14 +934,22 @@ class HomeAssistantAction(ActionBase):
         self._entity_updated()
 
     def _on_move_up(self, _, index: int):
-        self.settings[const.SETTING_CUSTOMIZATION_ICONS][index], self.settings[const.SETTING_CUSTOMIZATION_ICONS][index-1] = self.settings[const.SETTING_CUSTOMIZATION_ICONS][index-1], self.settings[const.SETTING_CUSTOMIZATION_ICONS][index]
+        self.settings[const.SETTING_CUSTOMIZATION_ICONS][index], \
+            self.settings[const.SETTING_CUSTOMIZATION_ICONS][index - 1] = \
+            self.settings[const.SETTING_CUSTOMIZATION_ICONS][index - 1], \
+                self.settings[const.SETTING_CUSTOMIZATION_ICONS][index]
         self.set_settings(self.settings)
         self._load_custom_icons()
+        self._entity_updated()
 
     def _on_move_down(self, _, index: int):
-        self.settings[const.SETTING_CUSTOMIZATION_ICONS][index], self.settings[const.SETTING_CUSTOMIZATION_ICONS][index+1] = self.settings[const.SETTING_CUSTOMIZATION_ICONS][index+1], self.settings[const.SETTING_CUSTOMIZATION_ICONS][index]
+        self.settings[const.SETTING_CUSTOMIZATION_ICONS][index], \
+            self.settings[const.SETTING_CUSTOMIZATION_ICONS][index + 1] = \
+            self.settings[const.SETTING_CUSTOMIZATION_ICONS][index + 1], \
+                self.settings[const.SETTING_CUSTOMIZATION_ICONS][index]
         self.set_settings(self.settings)
         self._load_custom_icons()
+        self._entity_updated()
 
     def _set_enabled_disabled(self) -> None:
         """
@@ -987,7 +1002,8 @@ class HomeAssistantAction(ActionBase):
         else:
             self.icon_show_icon.set_sensitive(True)
             self.icon_show_icon.set_subtitle(const.EMPTY_STRING)
-            self.icon_custom_icons_expander.set_expanded(len(self.settings[const.SETTING_CUSTOMIZATION_ICONS]) > 0)
+            self.icon_custom_icons_expander.set_expanded(
+                len(self.settings[const.SETTING_CUSTOMIZATION_ICONS]) > 0)
 
         # Text section
         if not is_entity_set:
