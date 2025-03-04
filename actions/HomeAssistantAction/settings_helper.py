@@ -41,7 +41,7 @@ def fill_defaults(existing: Dict[str, Any]) -> Dict[str, Any]:
     settings = DEFAULT.copy()
 
     for key, value in existing.items():
-        if key in settings.keys():
+        if key in settings:
             settings[key] = value
 
     return settings
@@ -51,7 +51,7 @@ def migrate(settings: Dict[str, Any]) -> Dict[str, Any]:
     """
     Wrapper for all migration calls.
     """
-    result = settings
+    result = settings.copy()
 
     result = migrate_call_service_moved_to_expander(result)
 

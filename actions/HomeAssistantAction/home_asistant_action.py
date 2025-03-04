@@ -17,7 +17,7 @@ from src.backend.PluginManager.ActionBase import ActionBase
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository.Gtk import Align, Button, Label, PropertyExpression, \
-    SignalListItemFactory, StringList, StringObject, Box, Orientation, ColorButton, CheckButton, \
+    SignalListItemFactory, StringList, StringObject, Box, Orientation, ColorButton, \
     EventControllerFocus
 from gi.repository.Adw import ActionRow, ComboRow, EntryRow, \
     ExpanderRow, PreferencesGroup, SpinRow, SwitchRow
@@ -25,7 +25,7 @@ from gi.repository import GLib
 from gi.repository.Gdk import RGBA
 
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction import icon_helper, \
-    text_helper, settings_helper
+    text_helper, settings_helper, service_parameters_helper, helper
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization_window import \
     CustomizationWindow
 from de_gensyn_HomeAssistantPlugin import const
@@ -294,7 +294,7 @@ class HomeAssistantAction(ActionBase):
 
         window = CustomizationWindow(CustomizationWindow.Customization.ICON, self.lm, attributes,
                                      self._add_custom_icon,
-                                     icons=list(icon_helper.MDI_ICONS.keys()),
+                                     icons=list(icon_helper.MDI_ICONS),
                                      current=current, index=index)
         window.show()
 
@@ -373,8 +373,8 @@ class HomeAssistantAction(ActionBase):
         self.text_position_combo.set_factory(self.combo_factory)
         self.text_position_combo.set_model(self.text_position_model)
 
-        _set_value_in_combo(self.text_position_combo, self.text_position_model,
-                            self.settings[const.SETTING_TEXT_POSITION])
+        helper.set_value_in_combo(self.text_position_combo, self.text_position_model,
+                                  self.settings[const.SETTING_TEXT_POSITION])
 
         self.text_adaptive_size = SwitchRow(title=self.lm.get(const.LABEL_TEXT_ADAPTIVE_SIZE))
         self.text_adaptive_size.set_active(self.settings[const.SETTING_TEXT_ADAPTIVE_SIZE])
@@ -455,18 +455,22 @@ class HomeAssistantAction(ActionBase):
         # the EventControllerFocus is a workaround because SpinRows don't yield the new value
         # when the value is entered with a keyboard (not using the buttons)
         icon_scale_focus_controller = EventControllerFocus()
-        icon_scale_focus_controller.connect(const.CONNECT_LEAVE, self._on_change_spin_event_controller, self.icon_scale,
-                                 const.SETTING_ICON_SCALE)
+        icon_scale_focus_controller.connect(const.CONNECT_LEAVE,
+                                            self._on_change_spin_event_controller, self.icon_scale,
+                                            const.SETTING_ICON_SCALE)
         self.icon_scale.add_controller(icon_scale_focus_controller)
 
         icon_opacity_focus_controller = EventControllerFocus()
-        icon_opacity_focus_controller.connect(const.CONNECT_LEAVE, self._on_change_spin_event_controller, self.icon_opacity,
-                                 const.SETTING_ICON_OPACITY)
+        icon_opacity_focus_controller.connect(const.CONNECT_LEAVE,
+                                              self._on_change_spin_event_controller,
+                                              self.icon_opacity,
+                                              const.SETTING_ICON_OPACITY)
         self.icon_opacity.add_controller(icon_opacity_focus_controller)
 
         text_size_focus_controller = EventControllerFocus()
-        text_size_focus_controller.connect(const.CONNECT_LEAVE, self._on_change_spin_event_controller, self.text_size,
-                                 const.SETTING_TEXT_SIZE)
+        text_size_focus_controller.connect(const.CONNECT_LEAVE,
+                                           self._on_change_spin_event_controller, self.text_size,
+                                           const.SETTING_TEXT_SIZE)
         self.text_size.add_controller(text_size_focus_controller)
 
     def _on_change_entry(self, entry, *args):
@@ -585,7 +589,7 @@ class HomeAssistantAction(ActionBase):
             self.plugin_base.backend.add_tracked_entity(entity, self.uuid, self._entity_updated)
 
             self._load_attributes()
-            self._load_service_parameters()
+            service_parameters_helper.load_service_parameters(self)
 
         self._entity_updated()
 
@@ -601,94 +605,11 @@ class HomeAssistantAction(ActionBase):
 
         self.set_settings(self.settings)
 
-        self._load_service_parameters()
+        service_parameters_helper.load_service_parameters(self)
 
         self._set_enabled_disabled()
 
         self._entity_updated()
-
-    def _on_change_parameters_combo(self, combo, *args):
-        """
-        Execute when a new selection is made in a combo row for a service parameter.
-        """
-        if not args[1].get_active():
-            # CheckButton is not checked - don't save value
-            return
-
-        value = combo.get_selected_item().get_string()
-        if value:
-            self.settings[const.SETTING_SERVICE_PARAMETERS][args[2]] = value
-        else:
-            self.settings[const.SETTING_SERVICE_PARAMETERS].pop(args[2], None)
-        self.set_settings(self.settings)
-
-    def _on_change_parameters_switch(self, switch, *args):
-        """
-        Execute when a switch is changed in a combo row for a service parameter.
-        """
-        if not args[1].get_active():
-            # CheckButton is not checked - don't save value
-            return
-
-        self.settings[const.SETTING_SERVICE_PARAMETERS][args[2]] = switch.get_active()
-        self.set_settings(self.settings)
-
-    def _on_change_parameters_entry(self, entry, *args):
-        """
-        Execute when the text is changed in an entry row for a service parameter.
-        """
-        if not args[1].get_active():
-            # CheckButton is not checked - don't save value
-            return
-
-        value = entry.get_text()
-        if value:
-            self.settings[const.SETTING_SERVICE_PARAMETERS][args[2]] = value
-        else:
-            self.settings[const.SETTING_SERVICE_PARAMETERS].pop(args[2], None)
-        self.set_settings(self.settings)
-
-    def _on_change_parameters_spin(self, spin, *args):
-        """
-        Execute when the number is changed in a spin row for a service parameter.
-        """
-        if not args[0].get_active():
-            # CheckButton is not checked - don't save value
-            return
-
-        self.settings[const.SETTING_SERVICE_PARAMETERS][args[1]] = spin.get_value()
-        self.set_settings(self.settings)
-
-    def _on_change_parameters_spin_event_controller(self, _, *args):
-        """
-        Execute when the number is changed in a spin row for a service parameter.
-        """
-        if not args[0].get_active():
-            # CheckButton is not checked - don't save value
-            return
-
-        self.settings[const.SETTING_SERVICE_PARAMETERS][args[2]] = args[1].get_value()
-        self.set_settings(self.settings)
-
-    def _on_change_parameters_check(self, check, *args):
-        """
-        Execute when the number is changed in a spin row for a service parameter.
-        """
-        if check.get_active():
-            if isinstance(args[0], ComboRow):
-                value = args[0].get_selected_item().get_string()
-            elif isinstance(args[0], SwitchRow):
-                value = args[0].get_active()
-            elif isinstance(args[0], SpinRow):
-                value = args[0].get_value()
-            else:
-                value = args[0].get_text()
-
-            self.settings[const.SETTING_SERVICE_PARAMETERS][args[1]] = value
-        else:
-            self.settings[const.SETTING_SERVICE_PARAMETERS].pop(args[1], None)
-
-        self.set_settings(self.settings)
 
     def _on_change_combo(self, combo, *args):
         """
@@ -804,7 +725,7 @@ class HomeAssistantAction(ActionBase):
         for domain in domains:
             self.entity_domain_model.append(domain)
 
-        _set_value_in_combo(self.entity_domain_combo, self.entity_domain_model, old_domain)
+        helper.set_value_in_combo(self.entity_domain_combo, self.entity_domain_model, old_domain)
         self._load_entities()
         self._load_services()
 
@@ -827,7 +748,7 @@ class HomeAssistantAction(ActionBase):
         for entity in entities:
             self.entity_entity_model.append(entity)
 
-        _set_value_in_combo(self.entity_entity_combo, self.entity_entity_model, old_entity)
+        helper.set_value_in_combo(self.entity_entity_combo, self.entity_entity_model, old_entity)
 
     def _load_services(self):
         """
@@ -841,102 +762,12 @@ class HomeAssistantAction(ActionBase):
         services = self.plugin_base.backend.get_services(
             self.entity_domain_combo.get_selected_item().get_string())
 
-        for service in services.keys():
+        for service in services:
             self.service_service_model.append(service)
 
-        _set_value_in_combo(self.service_service_combo, self.service_service_model, old_service)
-        self._load_service_parameters()
-
-    def _load_service_parameters(self):
-        """
-        Load service parameters from Home Assistant.
-        """
-        self.service_parameters.clear()
-
-        ha_entity = self.plugin_base.backend.get_entity(self.settings[const.SETTING_ENTITY_ENTITY])
-        # supported_parameters = ha_entity.get(ATTRIBUTES, {}).keys()
-
-        service = self.settings[const.SETTING_SERVICE_SERVICE]
-
-        if not ha_entity or not service:
-            return
-
-        fields = self.plugin_base.backend.get_services(
-            self.entity_domain_combo.get_selected_item().get_string()).get(
-            service, {}).get(const.ATTRIBUTE_FIELDS, {})
-
-        fields.update(fields.get("advanced_fields", {}).get(const.ATTRIBUTE_FIELDS, {}))
-        fields.pop("advanced_fields", None)
-
-        for field in fields:
-            check = CheckButton()
-
-            setting_value = self.settings[const.SETTING_SERVICE_PARAMETERS].get(field)
-
-            selector = list(fields[field]["selector"].keys())[0]
-
-            if selector == "select" or f"{field}_list" in ha_entity.get(const.ATTRIBUTES,
-                                                                        {}).keys():
-                if selector == "select":
-                    options = fields[field]["selector"]["select"]["options"]
-                else:
-                    options = ha_entity.get(const.ATTRIBUTES, {})[f"{field}_list"]
-
-                if not isinstance(options[0], str):
-                    options = [opt["value"] for opt in options]
-
-                model = StringList.new([const.EMPTY_STRING, *options])
-
-                row = ComboRow(title=field)
-                row.set_model(model)
-                row.connect(const.CONNECT_NOTIFY_SELECTED, self._on_change_parameters_combo, check,
-                            field)
-
-                if setting_value:
-                    _set_value_in_combo(row, model, setting_value)
-            elif selector == "boolean":
-                row = SwitchRow(title=field)
-                row.connect(const.CONNECT_NOTIFY_ACTIVE, self._on_change_parameters_switch, check,
-                            field)
-
-                if setting_value:
-                    row.set_active(bool(setting_value))
-                else:
-                    default_value = fields[field].get("default")
-                    if default_value:
-                        row.set_active(bool(default_value))
-            elif selector == "number":
-                number_min = fields[field]["selector"]["number"]["min"]
-                number_max = fields[field]["selector"]["number"]["max"]
-                number_step = fields[field]["selector"]["number"].get("step", 1)
-
-                row = SpinRow.new_with_range(number_min, number_max, number_step)
-                row.set_title(field)
-                row.connect(const.CONNECT_CHANGED, self._on_change_parameters_spin, check, field)
-
-                focus_controller = EventControllerFocus()
-                focus_controller.connect(const.CONNECT_LEAVE, self._on_change_parameters_spin_event_controller, check, row, field)
-                row.add_controller(focus_controller)
-
-                if setting_value:
-                    row.set_value(setting_value)
-                else:
-                    default_value = fields[field].get("default")
-                    if default_value:
-                        row.set_value(default_value)
-            else:
-                row = EntryRow(title=field)
-                row.connect(const.CONNECT_NOTIFY_TEXT, self._on_change_parameters_entry, check,
-                            field)
-
-                if setting_value:
-                    row.set_text(str(setting_value))
-
-            check.set_active(field in self.settings[const.SETTING_SERVICE_PARAMETERS].keys())
-            check.connect(const.CONNECT_TOGGLED, self._on_change_parameters_check, row, field)
-
-            row.add_prefix(check)
-            self.service_parameters.add_row(row)
+        helper.set_value_in_combo(self.service_service_combo, self.service_service_model,
+                                  old_service)
+        service_parameters_helper.load_service_parameters(self)
 
     def _load_attributes(self):
         """
@@ -948,12 +779,13 @@ class HomeAssistantAction(ActionBase):
 
         self.text_attribute_model = StringList.new([const.STATE])
 
-        for attribute in ha_entity.get(const.ATTRIBUTES, {}).keys():
+        for attribute in ha_entity.get(const.ATTRIBUTES, {}):
             self.text_attribute_model.append(attribute)
 
         self.text_attribute_combo.set_model(self.text_attribute_model)
 
-        _set_value_in_combo(self.text_attribute_combo, self.text_attribute_model, old_attribute)
+        helper.set_value_in_combo(self.text_attribute_combo, self.text_attribute_model,
+                                  old_attribute)
 
     def _load_custom_icons(self):
         self.icon_custom_icons_expander.clear()
@@ -1145,17 +977,3 @@ class HomeAssistantAction(ActionBase):
         """
         self.settings[key] = value
         self.set_settings(self.settings)
-
-
-def _set_value_in_combo(combo: ComboRow, model: StringList, value: str):
-    """
-    Select the entry in the combo row corresponding to the index of the model equalling the given
-    value. Does nothing if the value does not exist in the model.
-    """
-    if not value:
-        return
-
-    for i in range(model.get_n_items()):
-        if model.get_string(i) == value:
-            combo.set_selected(i)
-            return
