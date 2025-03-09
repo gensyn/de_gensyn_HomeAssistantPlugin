@@ -255,7 +255,7 @@ class HomeAssistantBackend:
                 f" 'websocket_api' is enabled in your Home Assistant configuration."
             )
             return None
-        except (WebSocketException, WebSocketAddressException, ValueError) as e:
+        except (WebSocketException, WebSocketAddressException, ValueError, ConnectionResetError, BrokenPipeError) as e:
             log.error(
                 f"Could not connect to {websocket_host}: {e}"
             )
@@ -284,8 +284,8 @@ class HomeAssistantBackend:
         while self._changes_websocket.connected:
             try:
                 message = self._changes_websocket.recv()
-            except WebSocketException as e:
-                log.info("Connection closed; quitting recv() loop: %s", e)
+            except (WebSocketException, WebSocketAddressException, ValueError, ConnectionResetError, BrokenPipeError) as e:
+                log.info(f"Connection closed; quitting recv() loop: {e}")
                 break
 
             if not message:
@@ -339,7 +339,6 @@ class HomeAssistantBackend:
             self._websocket.close()
 
         self._connection_status_callback(const.NOT_CONNECTED)
-        log.info("Disconnected from Home Assistant: Connection closed")
 
         for _, actions in self._tracked_entities.items():
             for action in actions:
@@ -600,7 +599,7 @@ class HomeAssistantBackend:
 
             try:
                 self._websocket.ping()
-            except WebSocketException as e:
+            except (WebSocketException, WebSocketAddressException, ValueError, ConnectionResetError, BrokenPipeError) as e:
                 self._connection_status_callback(const.NOT_CONNECTED)
                 log.info(f"Disconnected from Home Assistant: {e}")
                 return
