@@ -5,6 +5,19 @@ from typing import Dict, Any
 
 from de_gensyn_HomeAssistantPlugin import const
 
+VALID_KEYS_CUSTOM_BASE = [
+    const.CUSTOM_ATTRIBUTE,
+    const.CUSTOM_OPERATOR,
+    const.CUSTOM_VALUE
+]
+
+VALID_KEYS_CUSTOM_ICON = [
+    const.CUSTOM_ICON_ICON,
+    const.CUSTOM_ICON_COLOR,
+    const.CUSTOM_ICON_SCALE,
+    const.CUSTOM_ICON_OPACITY
+]
+
 DEFAULT = {
     const.SETTING_ENTITY_DOMAIN: const.EMPTY_STRING,
     const.SETTING_ENTITY_ENTITY: const.EMPTY_STRING,
@@ -23,8 +36,9 @@ DEFAULT = {
     const.SETTING_TEXT_ATTRIBUTE: const.STATE,
     const.SETTING_TEXT_ROUND: const.DEFAULT_TEXT_ROUND,
     const.SETTING_TEXT_ROUND_PRECISION: const.DEFAULT_TEXT_ROUND_PRECISION,
+    const.SETTING_TEXT_TEXT_COLOR: const.DEFAULT_TEXT_TEXT_COLOR,
+    const.SETTING_TEXT_OUTLINE_COLOR: const.DEFAULT_TEXT_OUTLINE_COLOR,
     const.SETTING_TEXT_POSITION: const.DEFAULT_TEXT_POSITION,
-    const.SETTING_TEXT_ADAPTIVE_SIZE: const.DEFAULT_TEXT_ADAPTIVE_SIZE,
     const.SETTING_TEXT_SIZE: const.DEFAULT_TEXT_SIZE,
     const.SETTING_TEXT_SHOW_UNIT: const.DEFAULT_TEXT_SHOW_UNIT,
     const.SETTING_TEXT_UNIT_LINE_BREAK: const.DEFAULT_TEXT_UNIT_LINE_BREAK,
@@ -43,6 +57,13 @@ def fill_defaults(existing: Dict[str, Any]) -> Dict[str, Any]:
     for key, value in existing.items():
         if key in settings:
             settings[key] = value
+
+    # remove unused keys in customizations
+    for custom_icon in settings[const.SETTING_CUSTOMIZATION_ICONS]:
+        for key in custom_icon:
+            if key not in VALID_KEYS_CUSTOM_BASE and key not in VALID_KEYS_CUSTOM_ICON:
+                settings[const.SETTING_CUSTOMIZATION_ICONS].pop(key)
+
 
     return settings
 

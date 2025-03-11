@@ -12,13 +12,13 @@ def get_text(state: Dict, settings: Dict):
     Determine text, position and font size to show on StreamDeck.
     """
     position = settings.get(const.SETTING_TEXT_POSITION)
+    text_color = [int(c*255) for c in settings.get(const.SETTING_TEXT_TEXT_COLOR)]
+    outline_color = [int(c*255) for c in settings.get(const.SETTING_TEXT_OUTLINE_COLOR)]
 
     if not state["connected"]:
-        return "N/A", position, 30
+        return "N/A", text_color, outline_color, position, 30
 
     text = str(state.get(const.STATE))
-    text_length = len(text)
-    text_height = 1
     attribute = settings.get(const.SETTING_TEXT_ATTRIBUTE)
 
     if attribute == const.STATE:
@@ -29,35 +29,16 @@ def get_text(state: Dict, settings: Dict):
                                                        const.EMPTY_STRING)
 
             if settings.get(const.SETTING_TEXT_UNIT_LINE_BREAK):
-                text_length = max(len(text), len(unit))
                 text = f"{text}\n{unit}"
-                text_height = 2
             else:
                 text = f"{text} {unit}"
-                text_length = len(text)
     else:
         text = str(state.get(const.ATTRIBUTES, {}).get(attribute, const.EMPTY_STRING))
         text = _round_value(text, settings)
-        text_length = len(text)
 
     font_size = settings.get(const.SETTING_TEXT_SIZE)
 
-    if settings.get(const.SETTING_TEXT_ADAPTIVE_SIZE):
-        if text_length == 1:
-            font_size = 50
-        elif text_length == 2:
-            font_size = 40
-        else:
-            font_size = 30 - 3 * (text_length - 3)
-
-        if text_height > 1:
-            # account for text with line break
-            font_size = min(font_size, 35)
-
-        # set minimal font size, smaller is not readable
-        font_size = max(font_size, 10)
-
-    return text, position, font_size
+    return text, text_color, outline_color, position, font_size
 
 
 def _round_value(text: str, settings: Dict) -> str:

@@ -29,6 +29,8 @@ RECV_LOOP_TIMEOUT = 300
 
 PING_INTERVAL = 30
 
+ERRORS_TO_EXCEPT = (WebSocketException, WebSocketAddressException, ValueError, ConnectionResetError, BrokenPipeError)
+
 
 class HomeAssistantBackend:
     """
@@ -255,7 +257,7 @@ class HomeAssistantBackend:
                 f" 'websocket_api' is enabled in your Home Assistant configuration."
             )
             return None
-        except (WebSocketException, WebSocketAddressException, ValueError, ConnectionResetError, BrokenPipeError) as e:
+        except ERRORS_TO_EXCEPT as e:
             log.error(
                 f"Could not connect to {websocket_host}: {e}"
             )
@@ -284,7 +286,7 @@ class HomeAssistantBackend:
         while self._changes_websocket.connected:
             try:
                 message = self._changes_websocket.recv()
-            except (WebSocketException, WebSocketAddressException, ValueError, ConnectionResetError, BrokenPipeError) as e:
+            except ERRORS_TO_EXCEPT as e:
                 log.info(f"Connection closed; quitting recv() loop: {e}")
                 break
 
@@ -576,16 +578,19 @@ class HomeAssistantBackend:
         with self._websocket_semaphore:
             try:
                 self._websocket.send(json.dumps(message))
-            except BrokenPipeError:
+            except ERRORS_TO_EXCEPT as e:
                 connected = self._reconnect()
 
                 if connected:
                     self._websocket.send(json.dumps(message))
                 else:
-                    log.error("(BrokenPipeError) Cannot send message %s", str(message))
+                    log.error(f"({e}) Cannot send message {message}")
                     return const.EMPTY_STRING
-
-            return self._websocket.recv()
+            try:
+                return self._websocket.recv()
+            except ERRORS_TO_EXCEPT as e:
+                log.error(f"({e}) Cannot send message {message}")
+                return const.EMPTY_STRING
 
     def _keep_alive(self):
         """
@@ -599,7 +604,7 @@ class HomeAssistantBackend:
 
             try:
                 self._websocket.ping()
-            except (WebSocketException, WebSocketAddressException, ValueError, ConnectionResetError, BrokenPipeError) as e:
+            except ERRORS_TO_EXCEPT as e:
                 self._connection_status_callback(const.NOT_CONNECTED)
                 log.info(f"Disconnected from Home Assistant: {e}")
                 return

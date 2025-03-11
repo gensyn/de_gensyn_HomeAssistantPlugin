@@ -5,11 +5,12 @@ import gi
 
 from de_gensyn_HomeAssistantPlugin import const
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction import helper
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.scale_row import ScaleRow
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository.Gtk import StringList, CheckButton, EventControllerFocus
-from gi.repository.Adw import ComboRow, EntryRow, SpinRow, SwitchRow
+from gi.repository.Gtk import CheckButton, StringList, Scale
+from gi.repository.Adw import ActionRow, ComboRow, EntryRow, SwitchRow
 
 
 def load_service_parameters(action):
@@ -59,44 +60,41 @@ def load_service_parameters(action):
             if setting_value:
                 helper.set_value_in_combo(row, model, setting_value)
         elif selector == "boolean":
-            row = SwitchRow(title=field)
-            row.connect(const.CONNECT_NOTIFY_ACTIVE, _on_change_parameters_switch, action, check,
-                        field)
+            value = False
 
             if setting_value:
-                row.set_active(bool(setting_value))
+                value = setting_value
             else:
                 default_value = fields[field].get("default")
                 if default_value:
-                    row.set_active(bool(default_value))
+                    value = bool(default_value)
+
+            row = SwitchRow(title=field, active=value)
+            row.connect(const.CONNECT_NOTIFY_ACTIVE, _on_change_parameters_switch, action, check,
+                        field)
         elif selector == "number":
             number_min = fields[field]["selector"]["number"]["min"]
             number_max = fields[field]["selector"]["number"]["max"]
             number_step = fields[field]["selector"]["number"].get("step", 1)
 
-            row = SpinRow.new_with_range(number_min, number_max, number_step)
-            row.set_title(field)
-            row.connect(const.CONNECT_CHANGED, _on_change_parameters_spin, action, check, field)
-
-            focus_controller = EventControllerFocus()
-            focus_controller.connect(const.CONNECT_LEAVE,
-                                     _on_change_parameters_spin_event_controller, action, check,
-                                     row, field)
-            row.add_controller(focus_controller)
+            value = number_min
 
             if setting_value:
-                row.set_value(setting_value)
+                value = setting_value
             else:
                 default_value = fields[field].get("default")
                 if default_value:
-                    row.set_value(default_value)
+                    value = default_value
+
+            row = ScaleRow(field, int(value), number_min, number_max, number_step)
+            row.connect(const.CONNECT_VALUE_CHANGED, _on_change_parameters_scale, action, check,
+                        field)
         else:
-            row = EntryRow(title=field)
+            value = str(setting_value) if setting_value else const.EMPTY_STRING
+
+            row = EntryRow(title=field, text=value)
             row.connect(const.CONNECT_NOTIFY_TEXT, _on_change_parameters_entry, action, check,
                         field)
-
-            if setting_value:
-                row.set_text(str(setting_value))
 
         check.set_active(field in action.settings[const.SETTING_SERVICE_PARAMETERS].keys())
         check.connect(const.CONNECT_TOGGLED, _on_change_parameters_check, action, row, field)
@@ -164,38 +162,20 @@ def _on_change_parameters_entry(entry, *args):
     action.set_settings(action.settings)
 
 
-def _on_change_parameters_spin(spin, *args):
+def _on_change_parameters_scale(scale, *args):
     """
-    Execute when the number is changed in a spin row for a service parameter.
+    Execute when the value is changed in a scale for a service parameter.
     """
-    check = args[1]
+    check = args[2]
 
     if not check.get_active():
         # CheckButton is not checked - don't save value
         return
 
-    action = args[0]
-    field = args[2]
-
-    action.settings[const.SETTING_SERVICE_PARAMETERS][field] = spin.get_value()
-    action.set_settings(action.settings)
-
-
-def _on_change_parameters_spin_event_controller(_, *args):
-    """
-    Execute when a spin row for a service parameter loses focus.
-    """
-    check = args[1]
-
-    if not check.get_active():
-        # CheckButton is not checked - don't save value
-        return
-
-    action = args[0]
-    row = args[2]
+    action = args[1]
     field = args[3]
 
-    action.settings[const.SETTING_SERVICE_PARAMETERS][field] = row.get_value()
+    action.settings[const.SETTING_SERVICE_PARAMETERS][field] = int(scale.get_value())
     action.set_settings(action.settings)
 
 
@@ -213,7 +193,7 @@ def _on_change_parameters_check(check, *args):
             value = row.get_selected_item().get_string()
         elif isinstance(row, SwitchRow):
             value = row.get_active()
-        elif isinstance(row, SpinRow):
+        elif isinstance(row, ScaleRow):
             value = row.get_value()
         else:
             value = row.get_text()

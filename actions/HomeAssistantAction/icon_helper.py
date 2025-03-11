@@ -20,9 +20,9 @@ def get_icon(state: Dict, settings: Dict) -> (str, float):
     Get the item corresponding to the given state.
     """
     if not state["connected"]:
-        return _get_icon_svg(const.ICON_NETWORK_OFF).replace("<color>",
+        return (_get_icon_svg(const.ICON_NETWORK_OFF).replace("<color>",
                                                              const.ICON_COLOR_RED).replace(
-            "<opacity>", "1.0")
+            "<opacity>", "1.0")), round(const.DEFAULT_ICON_SCALE / 100, 2)
 
     name, color, scale, opacity = _get_icon_settings(state, settings)
 
@@ -49,12 +49,12 @@ def _get_icon_settings(state: Dict, settings: Dict) -> (str, str, str, str):
     custom_icons = settings[const.SETTING_CUSTOMIZATION_ICONS]
 
     for custom_icon in custom_icons:
-        if custom_icon[const.CUSTOM_ICON_ATTRIBUTE] == const.STATE:
+        if custom_icon[const.CUSTOM_ATTRIBUTE] == const.STATE:
             value = state[const.STATE]
         else:
-            value = state[const.ATTRIBUTES].get(custom_icon[const.CUSTOM_ICON_ATTRIBUTE])
+            value = state[const.ATTRIBUTES].get(custom_icon[const.CUSTOM_ATTRIBUTE])
 
-        custom_icon_value = custom_icon[const.CUSTOM_ICON_VALUE]
+        custom_icon_value = custom_icon[const.CUSTOM_VALUE]
 
         try:
             # if both values are numbers, convert them both to float
@@ -64,7 +64,7 @@ def _get_icon_settings(state: Dict, settings: Dict) -> (str, str, str, str):
         except (ValueError, TypeError):
             pass
 
-        operator = custom_icon[const.CUSTOM_ICON_OPERATOR]
+        operator = custom_icon[const.CUSTOM_OPERATOR]
 
         if ((operator == "==" and str(value) == str(custom_icon_value))
                 or (operator == "!=" and str(value) != str(custom_icon_value))):

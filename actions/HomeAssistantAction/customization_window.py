@@ -3,11 +3,12 @@ The module for the Home Assistant customization window.
 """
 
 from enum import Enum
+from functools import partial
 from typing import Callable, List, Dict
 
 from gi.repository.Gdk import RGBA
 from gi.repository.Gtk import Align, Box, Button, CellRendererText, ComboBox, CssProvider, Entry, \
-    Grid, Label, ListStore, Window, ColorButton, SpinButton, CheckButton
+    Grid, Label, ListStore, Window, ColorButton, CheckButton, Scale, Orientation
 
 from de_gensyn_HomeAssistantPlugin import const
 
@@ -31,6 +32,8 @@ class CustomizationWindow(Window):
     Window to customize icons and colors.
     """
     callback: Callable
+
+    connect_rows: List = []
 
     class Customization(Enum):
         """
@@ -69,7 +72,7 @@ class CustomizationWindow(Window):
             const.LABEL_CUSTOMIZATION_UPDATE))
         add_button.connect(const.CONNECT_CLICKED, self._on_add_button)
 
-        self._set_margins(
+        _set_margins(
             [label_attribute, label_operator, label_value, label_if,
              self.combo_attribute,
              self.combo_operator, self.entry_value, cancel_button,
@@ -111,6 +114,7 @@ class CustomizationWindow(Window):
         grid.attach(box_buttons, 0, 1, 1, 1)
 
         self.set_child(grid)
+        self._connect_rows()
 
     def _add_icon_fields(self, lm):
         self.check_icon = CheckButton()
@@ -135,14 +139,34 @@ class CustomizationWindow(Window):
 
         self.button_color = ColorButton(use_alpha=False)
 
-        self.spin_scale = SpinButton.new_with_range(1, 100, 1)
+        self.scale_scale = Scale.new_with_range(Orientation.HORIZONTAL, 0, 100, 1)
 
-        self.spin_opacity = SpinButton.new_with_range(1, 100, 1)
+        self.entry_scale = self._create_scale_entry()
+        self.entry_scale.set_halign(Align.START)
 
-        self._set_margins(
+        self.connect_rows.append(
+            partial(self.scale_scale.connect, const.CONNECT_VALUE_CHANGED,
+                    _on_change_scale, self.entry_scale, 0, 100))
+        self.connect_rows.append(
+            partial(self.entry_scale.connect, const.CONNECT_CHANGED,
+                    _on_change_scale_entry, self.scale_scale, 0, 100))
+
+        self.scale_opacity = Scale.new_with_range(Orientation.HORIZONTAL, 0, 100, 1)
+
+        self.entry_opacity = self._create_scale_entry()
+        self.entry_opacity.set_halign(Align.START)
+
+        self.connect_rows.append(
+            partial(self.scale_opacity.connect, const.CONNECT_VALUE_CHANGED,
+                    _on_change_scale, self.entry_opacity, 0, 100))
+        self.connect_rows.append(
+            partial(self.entry_opacity.connect, const.CONNECT_CHANGED,
+                    _on_change_scale_entry, self.scale_opacity, 0, 100))
+
+        _set_margins(
             [self.check_icon, self.check_color, self.check_scale, self.check_opacity, label_icon,
              label_color, label_scale, label_opacity, self.entry_icon, self.button_color,
-             self.spin_scale, self.spin_opacity])
+             self.scale_scale, self.scale_opacity])
 
         self.grid_fields.attach(self.check_icon, 2, 2, 1, 1)
         self.grid_fields.attach(label_icon, 3, 2, 1, 1)
@@ -154,16 +178,18 @@ class CustomizationWindow(Window):
 
         self.grid_fields.attach(self.check_scale, 2, 4, 1, 1)
         self.grid_fields.attach(label_scale, 3, 4, 1, 1)
-        self.grid_fields.attach(self.spin_scale, 4, 4, 1, 1)
+        self.grid_fields.attach(self.scale_scale, 4, 4, 1, 1)
+        self.grid_fields.attach(self.entry_scale, 5, 4, 1, 1)
 
         self.grid_fields.attach(self.check_opacity, 2, 5, 1, 1)
         self.grid_fields.attach(label_opacity, 3, 5, 1, 1)
-        self.grid_fields.attach(self.spin_opacity, 4, 5, 1, 1)
+        self.grid_fields.attach(self.scale_opacity, 4, 5, 1, 1)
+        self.grid_fields.attach(self.entry_opacity, 5, 5, 1, 1)
 
     def _set_default_values(self):
         if self.customization == CustomizationWindow.Customization.ICON:
             rgba_list = const.DEFAULT_ICON_COLOR
-            rgba = RGBA(use_alpha=False)
+            rgba = RGBA()
             rgba.red = rgba_list[0]
             rgba.green = rgba_list[1]
 
@@ -171,8 +197,11 @@ class CustomizationWindow(Window):
             rgba.alpha = 1
             self.button_color.set_rgba(rgba)
 
-            self.spin_scale.set_value(const.DEFAULT_ICON_SCALE)
-            self.spin_opacity.set_value(const.DEFAULT_ICON_OPACITY)
+            self.scale_scale.set_value(const.DEFAULT_ICON_SCALE)
+            self.entry_scale.set_text(str(const.DEFAULT_ICON_SCALE))
+
+            self.scale_opacity.set_value(const.DEFAULT_ICON_OPACITY)
+            self.entry_opacity.set_text(str(const.DEFAULT_ICON_OPACITY))
 
     def _set_current_values(self, current: Dict):
         self._set_default_values()
@@ -181,16 +210,16 @@ class CustomizationWindow(Window):
             return
 
         for i in range(len(self.combo_attribute.get_model())):
-            if self.combo_attribute.get_model()[i][0] == current[const.CUSTOM_ICON_ATTRIBUTE]:
+            if self.combo_attribute.get_model()[i][0] == current[const.CUSTOM_ATTRIBUTE]:
                 self.combo_attribute.set_active(i)
                 break
 
         for i in range(len(self.combo_operator.get_model())):
-            if self.combo_operator.get_model()[i][0] == current[const.CUSTOM_ICON_OPERATOR]:
+            if self.combo_operator.get_model()[i][0] == current[const.CUSTOM_OPERATOR]:
                 self.combo_operator.set_active(i)
                 break
 
-        self.entry_value.set_text(current[const.CUSTOM_ICON_VALUE])
+        self.entry_value.set_text(current[const.CUSTOM_VALUE])
 
         if self.customization == CustomizationWindow.Customization.ICON:
             self.entry_icon.set_text(current.get(const.CUSTOM_ICON_ICON, const.EMPTY_STRING))
@@ -198,7 +227,7 @@ class CustomizationWindow(Window):
 
             if current.get(const.CUSTOM_ICON_COLOR):
                 rgba_list = current[const.CUSTOM_ICON_COLOR]
-                rgba = RGBA(use_alpha=False)
+                rgba = RGBA()
                 rgba.red = rgba_list[0]
                 rgba.green = rgba_list[1]
 
@@ -207,20 +236,17 @@ class CustomizationWindow(Window):
                 self.button_color.set_rgba(rgba)
             self.check_color.set_active(const.CUSTOM_ICON_COLOR in current.keys())
 
-            self.spin_scale.set_value(
+            self.scale_scale.set_value(
                 current.get(const.CUSTOM_ICON_SCALE, const.DEFAULT_ICON_SCALE))
             self.check_scale.set_active(const.CUSTOM_ICON_SCALE in current.keys())
+            self.entry_scale.set_text(
+                str(int(current.get(const.CUSTOM_ICON_SCALE, const.DEFAULT_ICON_SCALE))))
 
-            self.spin_opacity.set_value(
+            self.scale_opacity.set_value(
                 current.get(const.CUSTOM_ICON_OPACITY, const.DEFAULT_ICON_OPACITY))
             self.check_opacity.set_active(const.CUSTOM_ICON_OPACITY in current.keys())
-
-    def _set_margins(self, elements: List) -> None:
-        for element in elements:
-            element.set_margin_top(3)
-            element.set_margin_bottom(3)
-            element.set_margin_start(3)
-            element.set_margin_end(3)
+            self.entry_opacity.set_text(
+                str(int(current.get(const.CUSTOM_ICON_OPACITY, const.DEFAULT_ICON_OPACITY))))
 
     def _create_combo_attribute(self, attributes: List) -> ComboBox:
         combo = ComboBox()
@@ -262,10 +288,19 @@ class CustomizationWindow(Window):
 
         return combo
 
-    def _create_entry(self):
+    def _create_entry(self) -> Entry:
         entry = Entry()
         entry.set_size_request(200, -1)
         entry.connect(const.CONNECT_CHANGED, self._on_widget_changed)
+        entry.connect(const.CONNECT_ACTIVATE, self._on_add_button)
+        return entry
+
+    def _create_scale_entry(self) -> Entry:
+        entry = Entry()
+        entry.set_max_width_chars(4)
+        entry.set_width_chars(4)
+        entry.set_margin_top(10)
+        entry.set_margin_bottom(10)
         entry.connect(const.CONNECT_ACTIVATE, self._on_add_button)
         return entry
 
@@ -317,8 +352,9 @@ class CustomizationWindow(Window):
             icon = self.entry_icon.get_text() if self.check_icon.get_active() else None
             color = self.button_color.get_rgba() if self.check_color.get_active() else None
             color_list = [color.red, color.green, color.blue] if color else None
-            scale = self.spin_scale.get_value() if self.check_scale.get_active() else None
-            opacity = self.spin_opacity.get_value() if self.check_opacity.get_active() else None
+            scale = int(self.scale_scale.get_value()) if self.check_scale.get_active() else None
+            opacity = int(
+                self.scale_opacity.get_value()) if self.check_opacity.get_active() else None
 
             self.callback(
                 attribute=self.combo_attribute.get_model()[self.combo_attribute.get_active()][0],
@@ -339,3 +375,61 @@ class CustomizationWindow(Window):
             self.check_color.get_style_context().remove_class(const.ERROR)
             self.check_scale.get_style_context().remove_class(const.ERROR)
             self.check_opacity.get_style_context().remove_class(const.ERROR)
+
+    def _connect_rows(self) -> None:
+        """
+        Connect all input fields to functions to be called on changes.
+        """
+        for connect in self.connect_rows:
+            connect()
+
+
+def _set_margins(elements: List) -> None:
+    for element in elements:
+        element.set_margin_top(3)
+        element.set_margin_bottom(3)
+        element.set_margin_start(3)
+        element.set_margin_end(3)
+
+
+def _on_change_scale(scale, *args):
+    entry: Entry = args[0]
+    min_value = args[1]
+    max_value = args[2]
+
+    value = scale.get_value()
+    value_in_range = min(max(value, min_value), max_value)
+
+    if value != value_in_range:
+        scale.disconnect_by_func(_on_change_scale)
+        scale.set_value(value_in_range)
+        scale.connect(const.CONNECT_VALUE_CHANGED, _on_change_scale, entry, min_value, max_value)
+
+    entry.disconnect_by_func(_on_change_scale_entry)
+    entry.set_text(str(int(value)))
+    entry.connect(const.CONNECT_CHANGED, _on_change_scale_entry, scale, min_value, max_value)
+
+
+def _on_change_scale_entry(entry, *args):
+    scale: Scale = args[0]
+    min_value = args[1]
+    max_value = args[2]
+
+    text = entry.get_text()
+    # remove all non-digits
+    text_digits = ''.join([char for char in text if char.isdigit()])
+
+    if not text_digits:
+        text_digits = min_value
+
+    value = int(text_digits)
+    value_in_range = min(max(value, min_value), max_value)
+
+    if text != str(value_in_range):
+        entry.disconnect_by_func(_on_change_scale_entry)
+        entry.set_text(str(value_in_range))
+        entry.connect(const.CONNECT_CHANGED, _on_change_scale_entry, scale, min_value, max_value)
+
+    scale.disconnect_by_func(_on_change_scale)
+    scale.set_value(value_in_range)
+    scale.connect(const.CONNECT_VALUE_CHANGED, _on_change_scale, entry, min_value, max_value)

@@ -5,20 +5,21 @@ The module for the Home Assistant action that is loaded in StreamController.
 import io
 import json
 import uuid
+from functools import partial
 from json import JSONDecodeError
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import cairosvg
 import gi
 from PIL import Image
 
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.scale_row import ScaleRow
 from src.backend.PluginManager.ActionBase import ActionBase
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository.Gtk import Align, Button, Label, PropertyExpression, \
-    SignalListItemFactory, StringList, StringObject, Box, Orientation, ColorButton, \
-    EventControllerFocus
+    SignalListItemFactory, StringList, StringObject, Box, Orientation, ColorButton
 from gi.repository.Adw import ActionRow, ComboRow, EntryRow, \
     ExpanderRow, PreferencesGroup, SpinRow, SwitchRow
 from gi.repository import GLib
@@ -38,6 +39,8 @@ class HomeAssistantAction(ActionBase):
     """
     Action to be loaded by StreamController.
     """
+    initialized: bool = False
+
     settings: Dict[str, Any]
 
     uuid: uuid.UUID
@@ -59,26 +62,21 @@ class HomeAssistantAction(ActionBase):
     service_parameters: BetterExpander
 
     icon_show_icon: ExpanderRow
-    icon_icon: EntryRow
-    icon_color: ColorButton
-    icon_scale: SpinRow
-    icon_opacity: SpinRow
     icon_custom_icons_expander: BetterExpander
-    icon_custom_icon_add: Button
 
     text_show_text: ExpanderRow
     text_attribute_combo: ComboRow
-    text_round: ExpanderRow
     text_round_precision: SpinRow
+    text_text_color: ColorButton
+    text_outline_color: ColorButton
     text_attribute_model: StringList
     text_position_combo: ComboRow
-    text_position_model: StringList
-    text_adaptive_size: SwitchRow
-    text_size: SpinRow
     text_show_unit: SwitchRow
     text_unit_line_break: SwitchRow
 
-    connection_status: EntryRow
+    connection_status: ActionRow
+
+    connect_rows: List = []
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -134,7 +132,7 @@ class HomeAssistantAction(ActionBase):
             try:
                 # try to create a dict or list from the value
                 value = json.loads(value)
-            except JSONDecodeError:
+            except (JSONDecodeError, TypeError):
                 # if it doesn't work just keep it as is
                 pass
 
@@ -149,13 +147,16 @@ class HomeAssistantAction(ActionBase):
         self.lm = self.plugin_base.locale_manager
 
         self.combo_factory = SignalListItemFactory()
-        self.combo_factory.connect(const.CONNECT_BIND, self._factory_bind)
+        self.connect_rows.append(
+            partial(self.combo_factory.connect, const.CONNECT_BIND, self._factory_bind))
 
         entity_group = self._get_entity_group()
         service_group = self._get_service_group()
         icon_group = self._get_icon_group()
         text_group = self._get_text_group()
         connection_group = self._get_connection_group()
+
+        self.initialized = True
 
         self._load_domains()
 
@@ -173,11 +174,17 @@ class HomeAssistantAction(ActionBase):
         self.entity_domain_combo = ComboRow(title=self.lm.get(const.LABEL_ENTITY_DOMAIN))
         self.entity_domain_combo.set_enable_search(True)
         self.entity_domain_combo.set_expression(self.combo_expression)
+        self.connect_rows.append(
+            partial(self.entity_domain_combo.connect, const.CONNECT_NOTIFY_SELECTED,
+                    self._on_change_domain))
 
         self.entity_entity_combo = ComboRow(title=self.lm.get(const.LABEL_ENTITY_ENTITY))
         self.entity_entity_combo.set_factory(self.combo_factory)
         self.entity_entity_combo.set_enable_search(True)
         self.entity_entity_combo.set_expression(self.combo_expression)
+        self.connect_rows.append(
+            partial(self.entity_entity_combo.connect, const.CONNECT_NOTIFY_SELECTED,
+                    self._on_change_entity))
 
         group = PreferencesGroup()
         group.set_title(self.lm.get(const.LABEL_SETTINGS_ENTITY))
@@ -195,11 +202,18 @@ class HomeAssistantAction(ActionBase):
         self.service_call_service.set_show_enable_switch(True)
         self.service_call_service.set_enable_expansion(
             self.settings[const.SETTING_SERVICE_CALL_SERVICE])
+        self.connect_rows.append(
+            partial(self.service_call_service.connect, const.CONNECT_NOTIFY_ENABLE_EXPANSION,
+                    self._on_change_expansion_switch,
+                    const.SETTING_SERVICE_CALL_SERVICE))
 
         self.service_service_combo = ComboRow(title=self.lm.get(const.LABEL_SERVICE_SERVICE))
         self.service_service_combo.set_factory(self.combo_factory)
         self.service_service_combo.set_enable_search(True)
         self.service_service_combo.set_expression(self.combo_expression)
+        self.connect_rows.append(
+            partial(self.service_service_combo.connect, const.CONNECT_NOTIFY_SELECTED,
+                    self._on_change_service))
 
         self.service_parameters = BetterExpander(title=self.lm.get(const.LABEL_SERVICE_PARAMETERS))
 
@@ -217,43 +231,84 @@ class HomeAssistantAction(ActionBase):
         """
         Get all icon rows.
         """
+
+        """
+        Icon show icon
+        """
         self.icon_show_icon = ExpanderRow(title=self.lm.get(const.LABEL_ICON_SHOW_ICON))
         self.icon_show_icon.set_show_enable_switch(True)
         self.icon_show_icon.set_enable_expansion(self.settings[const.SETTING_ICON_SHOW_ICON])
+        self.connect_rows.append(
+            partial(self.icon_show_icon.connect, const.CONNECT_NOTIFY_ENABLE_EXPANSION,
+                    self._on_change_expansion_switch,
+                    const.SETTING_ICON_SHOW_ICON))
 
-        self.icon_color = ColorButton()
+        """
+        Icon icon
+        """
+        icon_icon = EntryRow(title=self.lm.get(const.LABEL_ICON_ICON))
+        icon_icon.set_text(self.settings[const.SETTING_ICON_ICON])
+        self.connect_rows.append(
+            partial(icon_icon.connect, const.CONNECT_NOTIFY_TEXT, self._on_change_entry,
+                    const.SETTING_ICON_ICON))
+
+        """
+        Icon icon color
+        """
+        icon_color = ColorButton()
         rgba_list = self.settings[const.SETTING_ICON_COLOR]
-        rgba = RGBA(use_alpha=False)
+        rgba = RGBA()
         rgba.red = rgba_list[0]
         rgba.green = rgba_list[1]
         rgba.blue = rgba_list[2]
         rgba.alpha = 1
-        self.icon_color.set_rgba(rgba)
+        icon_color.set_rgba(rgba)
+        self.connect_rows.append(
+            partial(icon_color.connect, const.CONNECT_NOTIFY_COLOR_SET, self._on_change_color,
+                    const.SETTING_ICON_COLOR))
 
-        self.icon_icon = EntryRow(title=self.lm.get(const.LABEL_ICON_ICON))
-        self.icon_icon.add_suffix(self.icon_color)
-        self.icon_icon.set_text(self.settings[const.SETTING_ICON_ICON])
+        icon_color_row = ActionRow(title=self.lm.get(const.LABEL_ICON_COLOR))
+        icon_color_row.add_suffix(icon_color)
 
-        self.icon_scale = SpinRow.new_with_range(1, 100, 1)
-        self.icon_scale.set_title(self.lm.get(const.LABEL_ICON_SCALE))
-        self.icon_scale.set_value(self.settings[const.SETTING_ICON_SCALE])
+        """
+        Icon scale
+        """
+        icon_scale_row: ScaleRow = ScaleRow(self.lm.get(const.LABEL_ICON_SCALE),
+                                            self.settings[const.SETTING_ICON_SCALE],
+                                            0, 100, 1)
+        self.connect_rows.append(
+            partial(icon_scale_row.connect, const.CONNECT_VALUE_CHANGED, self._on_change_scale,
+                    const.SETTING_ICON_SCALE))
 
-        self.icon_opacity = SpinRow.new_with_range(1, 100, 1)
-        self.icon_opacity.set_title(self.lm.get(const.LABEL_ICON_OPACITY))
-        self.icon_opacity.set_value(self.settings[const.SETTING_ICON_OPACITY])
+        """
+        Icon opacity
+        """
+        icon_opacity_row: ScaleRow = ScaleRow(self.lm.get(const.LABEL_ICON_OPACITY),
+                                              self.settings[const.SETTING_ICON_OPACITY],
+                                              0, 100, 1)
+        self.connect_rows.append(
+            partial(icon_opacity_row.connect, const.CONNECT_VALUE_CHANGED, self._on_change_scale,
+                    const.SETTING_ICON_OPACITY))
 
-        self.icon_custom_icon_add = Button(icon_name="list-add", valign=Align.CENTER)
-        self.icon_custom_icon_add.set_size_request(15, 15)
+
+        """
+        Icon custom icon
+        """
+        icon_custom_icon_add = Button(icon_name="list-add", valign=Align.CENTER)
+        icon_custom_icon_add.set_size_request(15, 15)
+        self.connect_rows.append(
+            partial(icon_custom_icon_add.connect, const.CONNECT_CLICKED, self._on_add_custom_icon))
 
         self.icon_custom_icons_expander = BetterExpander(
             title=self.lm.get(const.LABEL_ICON_CUSTOM_ICONS))
-        self.icon_custom_icons_expander.add_suffix(self.icon_custom_icon_add)
+        self.icon_custom_icons_expander.add_suffix(icon_custom_icon_add)
 
         self._load_custom_icons()
 
-        self.icon_show_icon.add_row(self.icon_icon)
-        self.icon_show_icon.add_row(self.icon_scale)
-        self.icon_show_icon.add_row(self.icon_opacity)
+        self.icon_show_icon.add_row(icon_icon)
+        self.icon_show_icon.add_row(icon_color_row)
+        self.icon_show_icon.add_row(icon_scale_row)
+        self.icon_show_icon.add_row(icon_opacity_row)
         self.icon_show_icon.add_row(self.icon_custom_icons_expander)
 
         group = PreferencesGroup()
@@ -267,9 +322,12 @@ class HomeAssistantAction(ActionBase):
         """
         Get all connection rows.
         """
-        self.connection_status = EntryRow(title=self.lm.get(const.SETTING_CONNECTION_STATUS))
-        self.connection_status.set_editable(False)
-        self.connection_status.set_text(
+
+        """
+        Connection status
+        """
+        self.connection_status = ActionRow(title=self.lm.get(const.SETTING_CONNECTION_STATUS))
+        self.connection_status.set_title(
             const.CONNECTED if self.plugin_base.backend.is_connected() else const.NOT_CONNECTED)
 
         self.plugin_base.backend.set_connection_status_callback(self.set_connection_status)
@@ -301,9 +359,9 @@ class HomeAssistantAction(ActionBase):
     def _add_custom_icon(self, attribute: str, operator: str, value: str, icon: str, color: str,
                          scale: int, opacity: int, index: int):
         custom_icon = {
-            const.CUSTOM_ICON_ATTRIBUTE: attribute,
-            const.CUSTOM_ICON_OPERATOR: operator,
-            const.CUSTOM_ICON_VALUE: value
+            const.CUSTOM_ATTRIBUTE: attribute,
+            const.CUSTOM_OPERATOR: operator,
+            const.CUSTOM_VALUE: value
         }
 
         if icon:
@@ -349,54 +407,142 @@ class HomeAssistantAction(ActionBase):
         """
         Get all text rows.
         """
+
+        """
+        Text show text
+        """
         self.text_show_text = ExpanderRow(title=self.lm.get(const.LABEL_TEXT_SHOW_TEXT))
         self.text_show_text.set_show_enable_switch(True)
         self.text_show_text.set_enable_expansion(self.settings[const.SETTING_TEXT_SHOW_TEXT])
+        self.connect_rows.append(
+            partial(self.text_show_text.connect, const.CONNECT_NOTIFY_ENABLE_EXPANSION,
+                    self._on_change_expansion_switch,
+                    const.SETTING_TEXT_SHOW_TEXT))
 
-        self.text_attribute_combo = ComboRow(title=self.lm.get(const.LABEL_TEXT_VALUE))
+        """
+        Text attribute
+        """
+        self.text_attribute_combo = ComboRow(title=self.lm.get(const.LABEL_TEXT_ATTRIBUTE))
         self.text_attribute_combo.set_factory(self.combo_factory)
+        self.connect_rows.append(
+            partial(self.text_attribute_combo.connect, const.CONNECT_NOTIFY_SELECTED,
+                    self._on_change_combo,
+                    const.SETTING_TEXT_ATTRIBUTE))
 
-        self.text_round = ExpanderRow(title=self.lm.get(const.LABEL_TEXT_ROUND))
-        self.text_round.set_show_enable_switch(True)
-        self.text_round.set_enable_expansion(self.settings[const.SETTING_TEXT_ROUND])
+        """
+        Text round
+        """
+        text_round = ExpanderRow(title=self.lm.get(const.LABEL_TEXT_ROUND))
+        text_round.set_show_enable_switch(True)
+        text_round.set_enable_expansion(self.settings[const.SETTING_TEXT_ROUND])
+        self.connect_rows.append(partial(text_round.connect, const.CONNECT_NOTIFY_ENABLE_EXPANSION,
+                                         self._on_change_expansion_switch,
+                                         const.SETTING_TEXT_ROUND))
 
-        self.text_round_precision = SpinRow.new_with_range(0, 20, 1)
-        self.text_round_precision.set_title(self.lm.get(const.LABEL_TEXT_ROUND_PRECISION))
-        self.text_round_precision.set_value(self.settings[const.SETTING_TEXT_ROUND_PRECISION])
+        """
+        Text round precision
+        """
+        text_round_precision = SpinRow.new_with_range(0, 20, 1)
+        text_round_precision.set_title(self.lm.get(const.LABEL_TEXT_ROUND_PRECISION))
+        text_round_precision.set_value(self.settings[const.SETTING_TEXT_ROUND_PRECISION])
+        self.connect_rows.append(
+            partial(text_round_precision.connect, const.CONNECT_CHANGED, self._on_change_spin,
+                    const.SETTING_TEXT_ROUND_PRECISION))
 
-        self.text_round.add_row(self.text_round_precision)
+        text_round.add_row(text_round_precision)
 
-        self.text_position_model = StringList.new(
+        """
+        Text color
+        """
+        text_rgba_list = self.settings[const.SETTING_TEXT_TEXT_COLOR]
+        text_rgba = RGBA()
+        text_rgba.red = text_rgba_list[0]
+        text_rgba.green = text_rgba_list[1]
+        text_rgba.blue = text_rgba_list[2]
+        text_rgba.alpha = 1
+
+        text_text_color = ColorButton()
+        text_text_color.set_rgba(text_rgba)
+        self.connect_rows.append(
+            partial(text_text_color.connect, const.CONNECT_NOTIFY_COLOR_SET, self._on_change_color,
+                    const.SETTING_TEXT_TEXT_COLOR))
+
+        text_color_row = ActionRow(title=self.lm.get(const.LABEL_TEXT_TEXT_COLOR))
+        text_color_row.add_suffix(text_text_color)
+
+        """
+        Text outline color
+        """
+        self.text_outline_color = ColorButton()
+        outline_rgba_list = self.settings[const.SETTING_TEXT_OUTLINE_COLOR]
+        outline_rgba = RGBA()
+        outline_rgba.red = outline_rgba_list[0]
+        outline_rgba.green = outline_rgba_list[1]
+        outline_rgba.blue = outline_rgba_list[2]
+        outline_rgba.alpha = 1
+        self.text_outline_color.set_rgba(outline_rgba)
+        self.connect_rows.append(
+            partial(self.text_outline_color.connect, const.CONNECT_NOTIFY_COLOR_SET,
+                    self._on_change_color,
+                    const.SETTING_TEXT_OUTLINE_COLOR))
+
+        outline_color_row = ActionRow(title=self.lm.get(const.LABEL_TEXT_OUTLINE_COLOR))
+        outline_color_row.add_suffix(self.text_outline_color)
+
+        """
+        Text position
+        """
+        text_position_model = StringList.new(
             [const.TEXT_POSITION_TOP, const.TEXT_POSITION_CENTER, const.TEXT_POSITION_BOTTOM])
 
         self.text_position_combo = ComboRow(title=self.lm.get(const.LABEL_TEXT_POSITION))
         self.text_position_combo.set_factory(self.combo_factory)
-        self.text_position_combo.set_model(self.text_position_model)
+        self.text_position_combo.set_model(text_position_model)
+        self.connect_rows.append(
+            partial(self.text_position_combo.connect, const.CONNECT_NOTIFY_SELECTED,
+                    self._on_change_combo,
+                    const.SETTING_TEXT_POSITION))
 
-        helper.set_value_in_combo(self.text_position_combo, self.text_position_model,
+        helper.set_value_in_combo(self.text_position_combo, text_position_model,
                                   self.settings[const.SETTING_TEXT_POSITION])
 
-        self.text_adaptive_size = SwitchRow(title=self.lm.get(const.LABEL_TEXT_ADAPTIVE_SIZE))
-        self.text_adaptive_size.set_active(self.settings[const.SETTING_TEXT_ADAPTIVE_SIZE])
+        """
+        Text size
+        """
+        text_size = ScaleRow(self.lm.get(const.LABEL_TEXT_SIZE),
+                             self.settings[const.SETTING_TEXT_SIZE], 0, 100, 1)
+        self.connect_rows.append(
+            partial(text_size.connect, const.CONNECT_VALUE_CHANGED, self._on_change_scale,
+                    const.SETTING_TEXT_SIZE))
 
-        self.text_size = SpinRow.new_with_range(0, 100, 1)
-        self.text_size.set_title(self.lm.get(const.LABEL_TEXT_SIZE))
-        self.text_size.set_value(self.settings[const.SETTING_TEXT_SIZE])
-
+        """
+        Text show unit
+        """
         self.text_show_unit = SwitchRow(title=self.lm.get(const.LABEL_TEXT_SHOW_UNIT))
         self.text_show_unit.set_active(self.settings[const.SETTING_TEXT_SHOW_UNIT])
+        self.connect_rows.append(partial(self.text_show_unit.connect, const.CONNECT_NOTIFY_ACTIVE,
+                                         self._on_change_switch,
+                                         const.SETTING_TEXT_SHOW_UNIT))
 
+        """
+        Text unit line break
+        """
         self.text_unit_line_break = SwitchRow(title=self.lm.get(const.LABEL_TEXT_UNIT_LINE_BREAK))
         self.text_unit_line_break.set_active(
             self.settings[const.SETTING_TEXT_UNIT_LINE_BREAK])
+        self.connect_rows.append(
+            partial(self.text_unit_line_break.connect, const.CONNECT_NOTIFY_ACTIVE,
+                    self._on_change_switch,
+                    const.SETTING_TEXT_UNIT_LINE_BREAK))
 
         self._load_attributes()
 
         self.text_show_text.add_row(self.text_attribute_combo)
-        self.text_show_text.add_row(self.text_round)
+        self.text_show_text.add_row(text_round)
+        self.text_show_text.add_row(text_color_row)
+        self.text_show_text.add_row(outline_color_row)
         self.text_show_text.add_row(self.text_position_combo)
-        self.text_show_text.add_row(self.text_adaptive_size)
-        self.text_show_text.add_row(self.text_size)
+        self.text_show_text.add_row(text_size)
         self.text_show_text.add_row(self.text_show_unit)
         self.text_show_text.add_row(self.text_unit_line_break)
 
@@ -411,67 +557,8 @@ class HomeAssistantAction(ActionBase):
         """
         Connect all input fields to functions to be called on changes.
         """
-        self.entity_domain_combo.connect(const.CONNECT_NOTIFY_SELECTED, self._on_change_domain)
-        self.entity_entity_combo.connect(const.CONNECT_NOTIFY_SELECTED, self._on_change_entity)
-
-        self.service_call_service.connect(const.CONNECT_NOTIFY_ENABLE_EXPANSION,
-                                          self._on_change_expansion_switch,
-                                          const.SETTING_SERVICE_CALL_SERVICE)
-        self.service_service_combo.connect(const.CONNECT_NOTIFY_SELECTED, self._on_change_service)
-
-        self.icon_show_icon.connect(const.CONNECT_NOTIFY_ENABLE_EXPANSION,
-                                    self._on_change_expansion_switch,
-                                    const.SETTING_ICON_SHOW_ICON)
-        self.icon_icon.connect(const.CONNECT_NOTIFY_TEXT, self._on_change_entry,
-                               const.SETTING_ICON_ICON)
-        self.icon_color.connect(const.CONNECT_NOTIFY_COLOR_SET, self._on_change_color,
-                                const.SETTING_ICON_COLOR)
-        self.icon_scale.connect(const.CONNECT_CHANGED, self._on_change_spin,
-                                const.SETTING_ICON_SCALE)
-        self.icon_opacity.connect(const.CONNECT_CHANGED, self._on_change_spin,
-                                  const.SETTING_ICON_OPACITY)
-        self.icon_custom_icon_add.connect(const.CONNECT_CLICKED, self._on_add_custom_icon)
-
-        self.text_show_text.connect(const.CONNECT_NOTIFY_ENABLE_EXPANSION,
-                                    self._on_change_expansion_switch,
-                                    const.SETTING_TEXT_SHOW_TEXT)
-        self.text_attribute_combo.connect(const.CONNECT_NOTIFY_SELECTED, self._on_change_combo,
-                                          const.SETTING_TEXT_ATTRIBUTE)
-        self.text_round.connect(const.CONNECT_NOTIFY_ENABLE_EXPANSION,
-                                self._on_change_expansion_switch,
-                                const.SETTING_TEXT_ROUND)
-        self.text_round_precision.connect(const.CONNECT_CHANGED, self._on_change_spin,
-                                          const.SETTING_TEXT_ROUND_PRECISION)
-        self.text_position_combo.connect(const.CONNECT_NOTIFY_SELECTED, self._on_change_combo,
-                                         const.SETTING_TEXT_POSITION)
-        self.text_adaptive_size.connect(const.CONNECT_NOTIFY_ACTIVE, self._on_change_switch,
-                                        const.SETTING_TEXT_ADAPTIVE_SIZE)
-        self.text_size.connect(const.CONNECT_CHANGED, self._on_change_spin, const.SETTING_TEXT_SIZE)
-        self.text_show_unit.connect(const.CONNECT_NOTIFY_ACTIVE, self._on_change_switch,
-                                    const.SETTING_TEXT_SHOW_UNIT)
-        self.text_unit_line_break.connect(const.CONNECT_NOTIFY_ACTIVE, self._on_change_switch,
-                                          const.SETTING_TEXT_UNIT_LINE_BREAK)
-
-        # the EventControllerFocus is a workaround because SpinRows don't yield the new value
-        # when the value is entered with a keyboard (not using the buttons)
-        icon_scale_focus_controller = EventControllerFocus()
-        icon_scale_focus_controller.connect(const.CONNECT_LEAVE,
-                                            self._on_change_spin_event_controller, self.icon_scale,
-                                            const.SETTING_ICON_SCALE)
-        self.icon_scale.add_controller(icon_scale_focus_controller)
-
-        icon_opacity_focus_controller = EventControllerFocus()
-        icon_opacity_focus_controller.connect(const.CONNECT_LEAVE,
-                                              self._on_change_spin_event_controller,
-                                              self.icon_opacity,
-                                              const.SETTING_ICON_OPACITY)
-        self.icon_opacity.add_controller(icon_opacity_focus_controller)
-
-        text_size_focus_controller = EventControllerFocus()
-        text_size_focus_controller.connect(const.CONNECT_LEAVE,
-                                           self._on_change_spin_event_controller, self.text_size,
-                                           const.SETTING_TEXT_SIZE)
-        self.text_size.add_controller(text_size_focus_controller)
+        for connect in self.connect_rows:
+            connect()
 
     def _on_change_entry(self, entry, *args):
         """
@@ -633,6 +720,16 @@ class HomeAssistantAction(ActionBase):
 
         self._entity_updated()
 
+    def _on_change_scale(self, scale, *args):
+        """
+        Execute when the value is changed in a scale.
+        """
+        size = scale.get_value()
+        self.settings[args[1]] = size
+        self.set_settings(self.settings)
+
+        self._entity_updated()
+
     def _on_change_spin_event_controller(self, _, *args):
         """
         Execute when the number is changed in a spin row.
@@ -693,19 +790,23 @@ class HomeAssistantAction(ActionBase):
             self.set_bottom_label(const.EMPTY_STRING)
             return
 
-        text, position, font_size = text_helper.get_text(state, self.settings)
+        text, text_color, outline_color, position, font_size = text_helper.get_text(state,
+                                                                                    self.settings)
 
         if position == const.TEXT_POSITION_TOP:
-            self.set_top_label(text, font_size=font_size)
+            self.set_top_label(text, color=text_color, outline_color=outline_color,
+                               font_size=font_size)
             self.set_center_label(const.EMPTY_STRING)
             self.set_bottom_label(const.EMPTY_STRING)
         elif position == const.TEXT_POSITION_BOTTOM:
             self.set_top_label(const.EMPTY_STRING)
             self.set_center_label(const.EMPTY_STRING)
-            self.set_bottom_label(text, font_size=font_size)
+            self.set_bottom_label(text, color=text_color, outline_color=outline_color,
+                                  font_size=font_size)
         else:
             self.set_top_label(const.EMPTY_STRING)
-            self.set_center_label(text, font_size=font_size)
+            self.set_center_label(text, color=text_color, outline_color=outline_color,
+                                  font_size=font_size)
             self.set_bottom_label(const.EMPTY_STRING)
 
     def _load_domains(self):
@@ -820,9 +921,9 @@ class HomeAssistantAction(ActionBase):
 
             title = (f"{self.lm.get(const.LABEL_CUSTOMIZATION_IF)} "
                      f"{self.lm.get(const.LABEL_CUSTOMIZATION_ATTRIBUTE).lower()} "
-                     f"\"{custom_icon[const.CUSTOM_ICON_ATTRIBUTE]}\" "
-                     f"{self.lm.get(const.LABEL_CUSTOMIZATION_OPERATORS[custom_icon[const.CUSTOM_ICON_OPERATOR]])} "
-                     f"\"{custom_icon[const.CUSTOM_ICON_VALUE]}\":\n")
+                     f"\"{custom_icon[const.CUSTOM_ATTRIBUTE]}\" "
+                     f"{self.lm.get(const.LABEL_CUSTOMIZATION_OPERATORS[custom_icon[const.CUSTOM_OPERATOR]])} "
+                     f"\"{custom_icon[const.CUSTOM_VALUE]}\":\n")
 
             if custom_icon.get(const.CUSTOM_ICON_ICON):
                 title += (f"\n{self.lm.get(const.LABEL_ICON_ICON)} "
@@ -882,8 +983,7 @@ class HomeAssistantAction(ActionBase):
         """
         Set the active/inactive state for all rows.
         """
-        if not hasattr(self, "entity_domain_combo") or self.entity_domain_combo is None:
-            # check any attribute to see if rows are initialized and need to be updated
+        if not self.initialized:
             return
 
         # Entity section
@@ -946,8 +1046,6 @@ class HomeAssistantAction(ActionBase):
 
             self.text_attribute_combo.set_sensitive(self.text_attribute_model.get_n_items() > 1)
             self.text_position_combo.set_sensitive(True)
-            self.text_adaptive_size.set_sensitive(True)
-            self.text_size.set_sensitive(not self.text_adaptive_size.get_active())
 
             has_unit = bool(
                 ha_entity.get(const.ATTRIBUTES, {}).get(const.ATTRIBUTE_UNIT_OF_MEASUREMENT, False))
@@ -969,7 +1067,7 @@ class HomeAssistantAction(ActionBase):
         """
         Callback function to be executed when the Home Assistant connection status changes.
         """
-        GLib.idle_add(self.connection_status.set_text, status)
+        GLib.idle_add(self.connection_status.set_title, status)
 
     def set_setting(self, key, value) -> None:
         """
