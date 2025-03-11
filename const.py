@@ -55,13 +55,14 @@ LABEL_ICON_CUSTOM_ICONS = "actions.home_assistant.icon.custom_icons.label"
 LABEL_ICON_NO_ENTITY = "actions.home_assistant.icon.no_entity.label"
 
 LABEL_TEXT_SHOW_TEXT = "actions.home_assistant.text.show_text.label"
+LABEL_TEXT_POSITION = "actions.home_assistant.text.position.label"
 LABEL_TEXT_ATTRIBUTE = "actions.home_assistant.text.attribute.label"
 LABEL_TEXT_ROUND = "actions.home_assistant.text.round.label"
 LABEL_TEXT_ROUND_PRECISION = "actions.home_assistant.text.round_precision.label"
+LABEL_TEXT_TEXT_SIZE = "actions.home_assistant.text.text_size.label"
+LABEL_TEXT_OUTLINE_SIZE = "actions.home_assistant.text.outline_size.label"
 LABEL_TEXT_TEXT_COLOR = "actions.home_assistant.text.text_color.label"
 LABEL_TEXT_OUTLINE_COLOR = "actions.home_assistant.text.outline_color.label"
-LABEL_TEXT_POSITION = "actions.home_assistant.text.position.label"
-LABEL_TEXT_SIZE = "actions.home_assistant.text.size.label"
 LABEL_TEXT_SHOW_UNIT = "actions.home_assistant.text.show_unit.label"
 LABEL_TEXT_UNIT_LINE_BREAK = "actions.home_assistant.text.unit_line_break.label"
 LABEL_TEXT_NO_ENTITY = "actions.home_assistant.text.no_entity.label"
@@ -105,13 +106,14 @@ SETTING_ICON_OPACITY = "icon.opacity"
 SETTING_ICON_SCALE = "icon.scale"
 
 SETTING_TEXT_SHOW_TEXT = "text.show_text"
+SETTING_TEXT_POSITION = "text.position"
 SETTING_TEXT_ATTRIBUTE = "text.attribute"
 SETTING_TEXT_ROUND = "text.round"
 SETTING_TEXT_ROUND_PRECISION = "text.round_precision"
+SETTING_TEXT_TEXT_SIZE = "text.text_size"
 SETTING_TEXT_TEXT_COLOR = "text.text_color"
+SETTING_TEXT_OUTLINE_SIZE = "text.outline_size"
 SETTING_TEXT_OUTLINE_COLOR = "text.outline_color"
-SETTING_TEXT_POSITION = "text.position"
-SETTING_TEXT_SIZE = "text.size"
 SETTING_TEXT_SHOW_UNIT = "text.show_unit"
 SETTING_TEXT_UNIT_LINE_BREAK = "text.unit_line_break"
 
@@ -156,14 +158,27 @@ DEFAULT_ICON_SCALE = 80
 DEFAULT_ICON_OPACITY = 100
 
 DEFAULT_TEXT_SHOW_TEXT = False
+DEFAULT_TEXT_POSITION = TEXT_POSITION_CENTER
 DEFAULT_TEXT_ROUND = False
 DEFAULT_TEXT_ROUND_PRECISION = 2
+DEFAULT_TEXT_TEXT_SIZE = 20
 DEFAULT_TEXT_TEXT_COLOR = [1, 1, 1]
+DEFAULT_TEXT_OUTLINE_SIZE = 2
 DEFAULT_TEXT_OUTLINE_COLOR = [0, 0, 0]
-DEFAULT_TEXT_POSITION = TEXT_POSITION_CENTER
-DEFAULT_TEXT_SIZE = 20
 DEFAULT_TEXT_SHOW_UNIT = False
 DEFAULT_TEXT_UNIT_LINE_BREAK = False
+
+ICON_MIN_SCALE = 0
+ICON_MAX_SCALE = 100
+ICON_MIN_OPACITY = 0
+ICON_MAX_OPACITY = 100
+
+TEXT_ROUND_MIN_PRECISION = 0
+TEXT_ROUND_MAX_PRECISION = 10
+TEXT_TEXT_MIN_SIZE = 0
+TEXT_TEXT_MAX_SIZE = 50
+TEXT_OUTLINE_MIN_SIZE = 0
+TEXT_OUTLINE_MAX_SIZE = 10
 
 CONNECTED = "Connected"
 CONNECTING = "Connecting"

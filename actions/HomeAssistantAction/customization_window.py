@@ -139,29 +139,34 @@ class CustomizationWindow(Window):
 
         self.button_color = ColorButton(use_alpha=False)
 
-        self.scale_scale = Scale.new_with_range(Orientation.HORIZONTAL, 0, 100, 1)
+        self.scale_scale = Scale.new_with_range(Orientation.HORIZONTAL, const.ICON_MIN_SCALE,
+                                                const.ICON_MAX_SCALE, 1)
 
         self.entry_scale = self._create_scale_entry()
         self.entry_scale.set_halign(Align.START)
 
         self.connect_rows.append(
             partial(self.scale_scale.connect, const.CONNECT_VALUE_CHANGED,
-                    _on_change_scale, self.entry_scale, 0, 100))
+                    _on_change_scale, self.entry_scale, const.ICON_MIN_SCALE, const.ICON_MAX_SCALE))
         self.connect_rows.append(
             partial(self.entry_scale.connect, const.CONNECT_CHANGED,
-                    _on_change_scale_entry, self.scale_scale, 0, 100))
+                    _on_change_scale_entry, self.scale_scale, const.ICON_MIN_SCALE,
+                    const.ICON_MAX_SCALE))
 
-        self.scale_opacity = Scale.new_with_range(Orientation.HORIZONTAL, 0, 100, 1)
+        self.scale_opacity = Scale.new_with_range(Orientation.HORIZONTAL, const.ICON_MIN_OPACITY,
+                                                  const.ICON_MAX_OPACITY, 1)
 
         self.entry_opacity = self._create_scale_entry()
         self.entry_opacity.set_halign(Align.START)
 
         self.connect_rows.append(
             partial(self.scale_opacity.connect, const.CONNECT_VALUE_CHANGED,
-                    _on_change_scale, self.entry_opacity, 0, 100))
+                    _on_change_scale, self.entry_opacity, const.ICON_MIN_OPACITY,
+                    const.ICON_MAX_OPACITY))
         self.connect_rows.append(
             partial(self.entry_opacity.connect, const.CONNECT_CHANGED,
-                    _on_change_scale_entry, self.scale_opacity, 0, 100))
+                    _on_change_scale_entry, self.scale_opacity, const.ICON_MIN_OPACITY,
+                    const.ICON_MAX_OPACITY))
 
         _set_margins(
             [self.check_icon, self.check_color, self.check_scale, self.check_opacity, label_icon,

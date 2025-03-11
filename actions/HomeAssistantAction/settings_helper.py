@@ -33,13 +33,14 @@ DEFAULT = {
     const.SETTING_ICON_OPACITY: const.DEFAULT_ICON_OPACITY,
 
     const.SETTING_TEXT_SHOW_TEXT: const.DEFAULT_TEXT_SHOW_TEXT,
+    const.SETTING_TEXT_POSITION: const.DEFAULT_TEXT_POSITION,
     const.SETTING_TEXT_ATTRIBUTE: const.STATE,
     const.SETTING_TEXT_ROUND: const.DEFAULT_TEXT_ROUND,
     const.SETTING_TEXT_ROUND_PRECISION: const.DEFAULT_TEXT_ROUND_PRECISION,
+    const.SETTING_TEXT_TEXT_SIZE: const.DEFAULT_TEXT_TEXT_SIZE,
     const.SETTING_TEXT_TEXT_COLOR: const.DEFAULT_TEXT_TEXT_COLOR,
+    const.SETTING_TEXT_OUTLINE_SIZE: const.DEFAULT_TEXT_OUTLINE_SIZE,
     const.SETTING_TEXT_OUTLINE_COLOR: const.DEFAULT_TEXT_OUTLINE_COLOR,
-    const.SETTING_TEXT_POSITION: const.DEFAULT_TEXT_POSITION,
-    const.SETTING_TEXT_SIZE: const.DEFAULT_TEXT_SIZE,
     const.SETTING_TEXT_SHOW_UNIT: const.DEFAULT_TEXT_SHOW_UNIT,
     const.SETTING_TEXT_UNIT_LINE_BREAK: const.DEFAULT_TEXT_UNIT_LINE_BREAK,
 
@@ -75,8 +76,20 @@ def migrate(settings: Dict[str, Any]) -> Dict[str, Any]:
     result = settings.copy()
 
     result = migrate_call_service_moved_to_expander(result)
+    result = migrate_setting_text_size_moved_to_text_text_size(result)
 
     return result
+
+
+def migrate_setting_text_size_moved_to_text_text_size(settings: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Checks if the text size is set under the old key and moves it to the new one.
+    Added 2025/03/11
+    """
+    if settings.get("text.size"):
+        settings[const.SETTING_TEXT_TEXT_SIZE] = settings["text.size"]
+
+    return settings
 
 
 def migrate_call_service_moved_to_expander(settings: Dict[str, Any]) -> Dict[str, Any]:

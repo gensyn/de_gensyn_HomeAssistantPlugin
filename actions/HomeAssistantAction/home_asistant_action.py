@@ -275,7 +275,7 @@ class HomeAssistantAction(ActionBase):
         """
         icon_scale_row: ScaleRow = ScaleRow(self.lm.get(const.LABEL_ICON_SCALE),
                                             self.settings[const.SETTING_ICON_SCALE],
-                                            0, 100, 1)
+                                            const.ICON_MIN_SCALE, const.ICON_MAX_SCALE, 1)
         self.connect_rows.append(
             partial(icon_scale_row.connect, const.CONNECT_VALUE_CHANGED, self._on_change_scale,
                     const.SETTING_ICON_SCALE))
@@ -285,11 +285,10 @@ class HomeAssistantAction(ActionBase):
         """
         icon_opacity_row: ScaleRow = ScaleRow(self.lm.get(const.LABEL_ICON_OPACITY),
                                               self.settings[const.SETTING_ICON_OPACITY],
-                                              0, 100, 1)
+                                              const.ICON_MIN_OPACITY, const.ICON_MAX_OPACITY, 1)
         self.connect_rows.append(
             partial(icon_opacity_row.connect, const.CONNECT_VALUE_CHANGED, self._on_change_scale,
                     const.SETTING_ICON_OPACITY))
-
 
         """
         Icon custom icon
@@ -315,27 +314,6 @@ class HomeAssistantAction(ActionBase):
         group.set_title(self.lm.get(const.LABEL_SETTINGS_ICON))
         group.set_margin_top(20)
         group.add(self.icon_show_icon)
-
-        return group
-
-    def _get_connection_group(self) -> PreferencesGroup:
-        """
-        Get all connection rows.
-        """
-
-        """
-        Connection status
-        """
-        self.connection_status = ActionRow(title=self.lm.get(const.SETTING_CONNECTION_STATUS))
-        self.connection_status.set_title(
-            const.CONNECTED if self.plugin_base.backend.is_connected() else const.NOT_CONNECTED)
-
-        self.plugin_base.backend.set_connection_status_callback(self.set_connection_status)
-
-        group = PreferencesGroup()
-        group.set_title(self.lm.get(const.LABEL_SETTINGS_CONNECTION))
-        group.set_margin_top(20)
-        group.add(self.connection_status)
 
         return group
 
@@ -420,6 +398,23 @@ class HomeAssistantAction(ActionBase):
                     const.SETTING_TEXT_SHOW_TEXT))
 
         """
+        Text position
+        """
+        text_position_model = StringList.new(
+            [const.TEXT_POSITION_TOP, const.TEXT_POSITION_CENTER, const.TEXT_POSITION_BOTTOM])
+
+        self.text_position_combo = ComboRow(title=self.lm.get(const.LABEL_TEXT_POSITION))
+        self.text_position_combo.set_factory(self.combo_factory)
+        self.text_position_combo.set_model(text_position_model)
+        self.connect_rows.append(
+            partial(self.text_position_combo.connect, const.CONNECT_NOTIFY_SELECTED,
+                    self._on_change_combo,
+                    const.SETTING_TEXT_POSITION))
+
+        helper.set_value_in_combo(self.text_position_combo, text_position_model,
+                                  self.settings[const.SETTING_TEXT_POSITION])
+
+        """
         Text attribute
         """
         self.text_attribute_combo = ComboRow(title=self.lm.get(const.LABEL_TEXT_ATTRIBUTE))
@@ -442,14 +437,23 @@ class HomeAssistantAction(ActionBase):
         """
         Text round precision
         """
-        text_round_precision = SpinRow.new_with_range(0, 20, 1)
-        text_round_precision.set_title(self.lm.get(const.LABEL_TEXT_ROUND_PRECISION))
-        text_round_precision.set_value(self.settings[const.SETTING_TEXT_ROUND_PRECISION])
+        text_round_precision = ScaleRow(self.lm.get(const.LABEL_TEXT_ROUND_PRECISION),
+                                        self.settings[const.SETTING_TEXT_ROUND_PRECISION], const.TEXT_ROUND_MIN_PRECISION, const.TEXT_ROUND_MAX_PRECISION, 1)
         self.connect_rows.append(
-            partial(text_round_precision.connect, const.CONNECT_CHANGED, self._on_change_spin,
+            partial(text_round_precision.connect, const.CONNECT_VALUE_CHANGED, self._on_change_scale,
                     const.SETTING_TEXT_ROUND_PRECISION))
 
         text_round.add_row(text_round_precision)
+
+        """
+        Text size
+        """
+        text_size = ScaleRow(self.lm.get(const.LABEL_TEXT_TEXT_SIZE),
+                             self.settings[const.SETTING_TEXT_TEXT_SIZE], const.TEXT_TEXT_MIN_SIZE,
+                             const.TEXT_TEXT_MAX_SIZE, 1)
+        self.connect_rows.append(
+            partial(text_size.connect, const.CONNECT_VALUE_CHANGED, self._on_change_scale,
+                    const.SETTING_TEXT_TEXT_SIZE))
 
         """
         Text color
@@ -471,6 +475,16 @@ class HomeAssistantAction(ActionBase):
         text_color_row.add_suffix(text_text_color)
 
         """
+        Text outline size
+        """
+        text_outline_size = ScaleRow(self.lm.get(const.LABEL_TEXT_OUTLINE_SIZE),
+                                     self.settings[const.SETTING_TEXT_OUTLINE_SIZE],
+                                     const.TEXT_OUTLINE_MIN_SIZE, const.TEXT_OUTLINE_MAX_SIZE, 1)
+        self.connect_rows.append(
+            partial(text_outline_size.connect, const.CONNECT_VALUE_CHANGED, self._on_change_scale,
+                    const.SETTING_TEXT_OUTLINE_SIZE))
+
+        """
         Text outline color
         """
         self.text_outline_color = ColorButton()
@@ -488,32 +502,6 @@ class HomeAssistantAction(ActionBase):
 
         outline_color_row = ActionRow(title=self.lm.get(const.LABEL_TEXT_OUTLINE_COLOR))
         outline_color_row.add_suffix(self.text_outline_color)
-
-        """
-        Text position
-        """
-        text_position_model = StringList.new(
-            [const.TEXT_POSITION_TOP, const.TEXT_POSITION_CENTER, const.TEXT_POSITION_BOTTOM])
-
-        self.text_position_combo = ComboRow(title=self.lm.get(const.LABEL_TEXT_POSITION))
-        self.text_position_combo.set_factory(self.combo_factory)
-        self.text_position_combo.set_model(text_position_model)
-        self.connect_rows.append(
-            partial(self.text_position_combo.connect, const.CONNECT_NOTIFY_SELECTED,
-                    self._on_change_combo,
-                    const.SETTING_TEXT_POSITION))
-
-        helper.set_value_in_combo(self.text_position_combo, text_position_model,
-                                  self.settings[const.SETTING_TEXT_POSITION])
-
-        """
-        Text size
-        """
-        text_size = ScaleRow(self.lm.get(const.LABEL_TEXT_SIZE),
-                             self.settings[const.SETTING_TEXT_SIZE], 0, 100, 1)
-        self.connect_rows.append(
-            partial(text_size.connect, const.CONNECT_VALUE_CHANGED, self._on_change_scale,
-                    const.SETTING_TEXT_SIZE))
 
         """
         Text show unit
@@ -537,12 +525,13 @@ class HomeAssistantAction(ActionBase):
 
         self._load_attributes()
 
+        self.text_show_text.add_row(self.text_position_combo)
         self.text_show_text.add_row(self.text_attribute_combo)
         self.text_show_text.add_row(text_round)
-        self.text_show_text.add_row(text_color_row)
-        self.text_show_text.add_row(outline_color_row)
-        self.text_show_text.add_row(self.text_position_combo)
         self.text_show_text.add_row(text_size)
+        self.text_show_text.add_row(text_color_row)
+        self.text_show_text.add_row(text_outline_size)
+        self.text_show_text.add_row(outline_color_row)
         self.text_show_text.add_row(self.text_show_unit)
         self.text_show_text.add_row(self.text_unit_line_break)
 
@@ -550,6 +539,27 @@ class HomeAssistantAction(ActionBase):
         group.set_title(self.lm.get(const.LABEL_SETTINGS_TEXT))
         group.set_margin_top(20)
         group.add(self.text_show_text)
+
+        return group
+
+    def _get_connection_group(self) -> PreferencesGroup:
+        """
+        Get all connection rows.
+        """
+
+        """
+        Connection status
+        """
+        self.connection_status = ActionRow(title=self.lm.get(const.SETTING_CONNECTION_STATUS))
+        self.connection_status.set_title(
+            const.CONNECTED if self.plugin_base.backend.is_connected() else const.NOT_CONNECTED)
+
+        self.plugin_base.backend.set_connection_status_callback(self.set_connection_status)
+
+        group = PreferencesGroup()
+        group.set_title(self.lm.get(const.LABEL_SETTINGS_CONNECTION))
+        group.set_margin_top(20)
+        group.add(self.connection_status)
 
         return group
 
@@ -790,23 +800,23 @@ class HomeAssistantAction(ActionBase):
             self.set_bottom_label(const.EMPTY_STRING)
             return
 
-        text, text_color, outline_color, position, font_size = text_helper.get_text(state,
-                                                                                    self.settings)
+        text, position, text_size, text_color, outline_size, outline_color = text_helper.get_text(
+            state, self.settings)
 
         if position == const.TEXT_POSITION_TOP:
             self.set_top_label(text, color=text_color, outline_color=outline_color,
-                               font_size=font_size)
+                               font_size=text_size, outline_width=outline_size)
             self.set_center_label(const.EMPTY_STRING)
             self.set_bottom_label(const.EMPTY_STRING)
         elif position == const.TEXT_POSITION_BOTTOM:
             self.set_top_label(const.EMPTY_STRING)
             self.set_center_label(const.EMPTY_STRING)
             self.set_bottom_label(text, color=text_color, outline_color=outline_color,
-                                  font_size=font_size)
+                                  font_size=text_size, outline_width=outline_size)
         else:
             self.set_top_label(const.EMPTY_STRING)
             self.set_center_label(text, color=text_color, outline_color=outline_color,
-                                  font_size=font_size)
+                                  font_size=text_size, outline_width=outline_size)
             self.set_bottom_label(const.EMPTY_STRING)
 
     def _load_domains(self):

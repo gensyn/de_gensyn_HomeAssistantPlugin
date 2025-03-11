@@ -7,16 +7,18 @@ from typing import Dict
 from de_gensyn_HomeAssistantPlugin import const
 
 
-def get_text(state: Dict, settings: Dict):
+def get_text(state: Dict, settings: Dict) -> (str, str, int, str, int, str):
     """
     Determine text, position and font size to show on StreamDeck.
     """
     position = settings.get(const.SETTING_TEXT_POSITION)
+    text_size = settings.get(const.SETTING_TEXT_TEXT_SIZE)
     text_color = [int(c*255) for c in settings.get(const.SETTING_TEXT_TEXT_COLOR)]
+    outline_size = settings.get(const.SETTING_TEXT_OUTLINE_SIZE)
     outline_color = [int(c*255) for c in settings.get(const.SETTING_TEXT_OUTLINE_COLOR)]
 
     if not state["connected"]:
-        return "N/A", text_color, outline_color, position, 30
+        return "N/A", position, text_size, text_color, outline_size, outline_color
 
     text = str(state.get(const.STATE))
     attribute = settings.get(const.SETTING_TEXT_ATTRIBUTE)
@@ -36,9 +38,7 @@ def get_text(state: Dict, settings: Dict):
         text = str(state.get(const.ATTRIBUTES, {}).get(attribute, const.EMPTY_STRING))
         text = _round_value(text, settings)
 
-    font_size = settings.get(const.SETTING_TEXT_SIZE)
-
-    return text, text_color, outline_color, position, font_size
+    return text, position, text_size, text_color, outline_size, outline_color
 
 
 def _round_value(text: str, settings: Dict) -> str:
