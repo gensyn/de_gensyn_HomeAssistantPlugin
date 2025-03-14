@@ -8,9 +8,10 @@ from threading import Thread, Semaphore
 from time import sleep
 from typing import Dict, Callable, Any, List, Set
 
-from de_gensyn_HomeAssistantPlugin import const
 from loguru import logger as log
 from websocket import create_connection, WebSocket, WebSocketException, WebSocketAddressException
+
+from de_gensyn_HomeAssistantPlugin import const
 
 HASS_WEBSOCKET_API = "/api/websocket?latest"
 
@@ -28,6 +29,9 @@ BUTTON_ENCODE_SYMBOL = "-"
 RECV_LOOP_TIMEOUT = 300
 
 PING_INTERVAL = 30
+
+ERRORS_TO_EXCEPT = (WebSocketException, WebSocketAddressException, ValueError,
+                    ConnectionResetError, BrokenPipeError)
 
 
 class HomeAssistantBackend:
@@ -217,13 +221,13 @@ class HomeAssistantBackend:
         websocket_host = (f'{"wss://" if self._ssl else "ws://"}{self._host}:{self._port}'
                           f'{HASS_WEBSOCKET_API}')
 
-        sslopt = {}
+        ssl_opt = {}
 
         if not self._verify_certificate:
-            sslopt["cert_reqs"] = CERT_NONE
+            ssl_opt["cert_reqs"] = CERT_NONE
 
         try:
-            new_websocket = create_connection(websocket_host, sslopt=sslopt)
+            new_websocket = create_connection(websocket_host, sslopt=ssl_opt)
 
             auth_required = new_websocket.recv()
             auth_required = _get_field_from_message(auth_required, FIELD_TYPE)
@@ -255,7 +259,7 @@ class HomeAssistantBackend:
                 f" 'websocket_api' is enabled in your Home Assistant configuration."
             )
             return None
-        except (WebSocketException, WebSocketAddressException, ValueError) as e:
+        except ERRORS_TO_EXCEPT as e:
             log.error(
                 f"Could not connect to {websocket_host}: {e}"
             )
@@ -269,7 +273,7 @@ class HomeAssistantBackend:
             pass
 
         if self._entities:
-            # if the collection was lost we might need to resubscribe to entity events
+            # if the connection was lost we might need to resubscribe to entity events
             for domain, domain_entry in self._entities.items():
                 for entity, entity_settings in domain_entry.items():
                     if entity_settings.get("keys"):
@@ -284,8 +288,8 @@ class HomeAssistantBackend:
         while self._changes_websocket.connected:
             try:
                 message = self._changes_websocket.recv()
-            except WebSocketException as e:
-                log.info("Connection closed; quitting recv() loop: %s", e)
+            except ERRORS_TO_EXCEPT as e:
+                log.info(f"Connection closed; quitting recv() loop: {e}")
                 break
 
             if not message:
@@ -303,9 +307,8 @@ class HomeAssistantBackend:
 
                 if not new_state:
                     # this can happen if the entity was removed from HA
-                    entity_id = json.loads(message).get(FIELD_EVENT, {}).get("variables", {}).get("trigger",
-                                                                                      {}).get(
-                        "from_state", {}).get(ENTITY_ID)
+                    entity_id = json.loads(message).get(FIELD_EVENT, {}).get("variables", {}).get(
+                        "trigger", {}).get("from_state", {}).get(ENTITY_ID)
                     entity_settings = self._entities[entity_id.split(".")[0]].get(entity_id)
                     actions = entity_settings.get("keys").values()
                     for action_entity_updated in actions:
@@ -336,11 +339,14 @@ class HomeAssistantBackend:
                 for action_entity_updated in actions:
                     action_entity_updated(update_state)
 
+        if self._connect():
+            # The connection was closed and also already reestablished
+            return
+
         if self._websocket:
             self._websocket.close()
 
         self._connection_status_callback(const.NOT_CONNECTED)
-        log.info("Disconnected from Home Assistant: Connection closed")
 
         for _, actions in self._tracked_entities.items():
             for action in actions:
@@ -578,16 +584,19 @@ class HomeAssistantBackend:
         with self._websocket_semaphore:
             try:
                 self._websocket.send(json.dumps(message))
-            except BrokenPipeError:
+            except ERRORS_TO_EXCEPT as e:
                 connected = self._reconnect()
 
                 if connected:
                     self._websocket.send(json.dumps(message))
                 else:
-                    log.error("(BrokenPipeError) Cannot send message %s", str(message))
+                    log.error(f"({e}) Cannot send message {message}")
                     return const.EMPTY_STRING
-
-            return self._websocket.recv()
+            try:
+                return self._websocket.recv()
+            except ERRORS_TO_EXCEPT as e:
+                log.error(f"({e}) Cannot send message {message}")
+                return const.EMPTY_STRING
 
     def _keep_alive(self):
         """
@@ -601,7 +610,7 @@ class HomeAssistantBackend:
 
             try:
                 self._websocket.ping()
-            except WebSocketException as e:
+            except ERRORS_TO_EXCEPT as e:
                 self._connection_status_callback(const.NOT_CONNECTED)
                 log.info(f"Disconnected from Home Assistant: {e}")
                 return
@@ -611,16 +620,14 @@ class HomeAssistantBackend:
         Periodically try to connect to the Home Assistant server.
         """
         log.info("Trying to reconnect to Home Assistant")
-        self._connection_status_callback(const.WAITING_FOR_RETRY)
-        sleep(10)
 
         count = 1
 
         while not self._connect():
             self._connection_status_callback(const.WAITING_FOR_RETRY)
-            if count < 13:
+            if count < 14:
                 sleep(10)
-            elif count < 70:
+            elif count < 71:
                 sleep(60)
             else:
                 sleep(300)
