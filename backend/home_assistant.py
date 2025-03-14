@@ -221,13 +221,13 @@ class HomeAssistantBackend:
         websocket_host = (f'{"wss://" if self._ssl else "ws://"}{self._host}:{self._port}'
                           f'{HASS_WEBSOCKET_API}')
 
-        sslopt = {}
+        ssl_opt = {}
 
         if not self._verify_certificate:
-            sslopt["cert_reqs"] = CERT_NONE
+            ssl_opt["cert_reqs"] = CERT_NONE
 
         try:
-            new_websocket = create_connection(websocket_host, sslopt=sslopt)
+            new_websocket = create_connection(websocket_host, sslopt=ssl_opt)
 
             auth_required = new_websocket.recv()
             auth_required = _get_field_from_message(auth_required, FIELD_TYPE)
@@ -338,6 +338,10 @@ class HomeAssistantBackend:
 
                 for action_entity_updated in actions:
                     action_entity_updated(update_state)
+
+        if self._connect():
+            # The connection was closed and also already reestablished
+            return
 
         if self._websocket:
             self._websocket.close()
@@ -616,16 +620,14 @@ class HomeAssistantBackend:
         Periodically try to connect to the Home Assistant server.
         """
         log.info("Trying to reconnect to Home Assistant")
-        self._connection_status_callback(const.WAITING_FOR_RETRY)
-        sleep(10)
 
         count = 1
 
         while not self._connect():
             self._connection_status_callback(const.WAITING_FOR_RETRY)
-            if count < 13:
+            if count < 14:
                 sleep(10)
-            elif count < 70:
+            elif count < 71:
                 sleep(60)
             else:
                 sleep(300)
