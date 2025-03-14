@@ -2,13 +2,16 @@
 The module for the Home Assistant action that is loaded in StreamController.
 """
 
+import io
 import json
 import uuid
 from functools import partial
 from json import JSONDecodeError
 from typing import Any, Dict, List
 
+import cairosvg
 import gi
+from PIL import Image
 
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.row.customization_icon_row import CustomizationIconRow
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.window.customization_icon_window import CustomizationIconWindow
@@ -722,7 +725,7 @@ class HomeAssistantAction(ActionBase):
 
             self.entity_entity_combo.set_model(None)
             self.service_service_combo.set_model(None)
-            self.set_media(image=None)
+            self.set_media()
 
             self._load_icon_settings()
             self._load_text_settings()
@@ -819,10 +822,8 @@ class HomeAssistantAction(ActionBase):
         show_text = self.settings[const.SETTING_TEXT_SHOW_TEXT]
 
         if not show_icon and not show_text:
-            self.set_media(image=None)
-            self.set_top_label(const.EMPTY_STRING)
-            self.set_center_label(const.EMPTY_STRING)
-            self.set_bottom_label(const.EMPTY_STRING)
+            self.set_media()
+            self._clear_labels()
             return
 
         entity = self.settings[const.SETTING_ENTITY_ENTITY]
@@ -843,23 +844,23 @@ class HomeAssistantAction(ActionBase):
         Update the icon to reflect the entity state.
         """
         if not show_icon or not state:
-            self.set_media(image=None)
+            self.set_media()
             return
 
         icon, scale = icon_helper.get_icon(state, self.settings)
 
         if icon:
-            self.set_media(media_path=icon, size=scale)
+            png_data = cairosvg.svg2png(bytestring=icon, dpi=600)
+            image = Image.open(io.BytesIO(png_data))
+            self.set_media(image=image, size=scale)
         else:
-            self.set_media(image=None)
+            self.set_media()
 
     def _update_labels(self, show_text: bool, state: dict):
         """
         Update the labels to reflect the entity state.
         """
-        self.set_top_label(const.EMPTY_STRING)
-        self.set_center_label(const.EMPTY_STRING)
-        self.set_bottom_label(const.EMPTY_STRING)
+        self._clear_labels()
 
         if not show_text or not state:
             return
@@ -869,6 +870,11 @@ class HomeAssistantAction(ActionBase):
 
         self.set_label(text, position, text_color, None, text_size, outline_size, outline_color,
                        None, None, True)
+
+    def _clear_labels(self):
+        self.set_top_label(const.EMPTY_STRING)
+        self.set_center_label(const.EMPTY_STRING)
+        self.set_bottom_label(const.EMPTY_STRING)
 
     def _load_domains(self):
         """
