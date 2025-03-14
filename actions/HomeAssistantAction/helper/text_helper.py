@@ -20,7 +20,8 @@ def get_text(state: Dict, settings: Dict) -> (str, str, int, str, int, str):
     outline_color_converted = [int(c * 255) for c in outline_color]
 
     if not state["connected"]:
-        return "N/A", position, text_size, text_color, text_color_converted, outline_color_converted
+        return ("N/A", position, text_size, text_color_converted, outline_size,
+                outline_color_converted)
 
     attribute = settings[const.SETTING_TEXT_ATTRIBUTE]
     text_round = settings[const.SETTING_TEXT_ROUND]

@@ -23,7 +23,7 @@ def get_icon(state: Dict, settings: Dict) -> (str, float):
     if not state["connected"]:
         return (_get_icon_svg(const.ICON_NETWORK_OFF).replace("<color>",
                                                               const.ICON_COLOR_RED).replace(
-            "<opacity>", "1.0")), round(const.DEFAULT_ICON_SCALE / 100, 2), const.DEFAULT_ICON_SCALE
+            "<opacity>", "1.0")), round(const.DEFAULT_ICON_SCALE / 100, 2)
 
     name, color, scale, opacity = _get_icon_settings(state, settings)
 

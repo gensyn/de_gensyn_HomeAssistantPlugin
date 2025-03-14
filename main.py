@@ -18,6 +18,7 @@ from src.backend.PluginManager.PluginBase import PluginBase
 
 from de_gensyn_HomeAssistantPlugin import const
 
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.helper import settings_helper
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.home_asistant_action import \
     HomeAssistantAction
 from de_gensyn_HomeAssistantPlugin.backend.home_assistant import HomeAssistantBackend
@@ -117,8 +118,6 @@ class HomeAssistant(PluginBase):  # pylint: disable=too-few-public-methods
                                  const.SETTING_TOKEN)
 
         group = PreferencesGroup()
-        group.set_title(self.locale_manager.get(const.LABEL_BASE_SETTINGS_HEADER))
-        group.set_margin_top(20)
         group.add(self.host_entry)
         group.add(self.port_entry)
         group.add(self.ssl_switch)
@@ -132,46 +131,43 @@ class HomeAssistant(PluginBase):  # pylint: disable=too-few-public-methods
         """
         Loads Home Assistant base settings from the disk.
         """
-        settings = self.get_settings()
-        host = settings.get(const.SETTING_HOST, "")
-        port = settings.get(const.SETTING_PORT, "")
-        ssl = settings.get(const.SETTING_SSL, True)
-        verify_certificate = settings.get(const.SETTING_VERIFY_CERTIFICATE, True)
-        token = settings.get(const.SETTING_TOKEN, "")
+        self.settings = settings_helper.get_connection_settings(self.get_settings())
+        self.set_settings(self.settings)
 
-        self.host_entry.set_text(host)
-        self.port_entry.set_text(port)
-        self.ssl_switch.set_active(ssl)
-        self.verify_certificate_switch.set_active(verify_certificate)
-        self.token_entry.set_text(token)
+        self.host_entry.set_text(self.settings[const.SETTING_HOST])
+        self.port_entry.set_text(self.settings[const.SETTING_PORT])
+        self.ssl_switch.set_active(self.settings[const.SETTING_SSL])
+        self.verify_certificate_switch.set_active(self.settings[const.SETTING_VERIFY_CERTIFICATE])
+        self.token_entry.set_text(self.settings[const.SETTING_TOKEN])
 
     def _on_change_base_entry(self, entry, *args) -> None:
         """
         Executed when an entry row is changed.
         """
-        settings = self.get_settings()
-        settings[args[1]] = entry.get_text()
-        self.set_settings(settings)
+        self.set_setting(args[1], entry.get_text())
 
     def _on_change_base_switch(self, switch, *args) -> None:
         """
         Executed when a switch row is changed.
         """
-        settings = self.get_settings()
-        settings[args[1]] = bool(switch.get_active())
+        self.set_setting(args[1], switch.get_active())
 
-        if args[1] == const.SETTING_SSL and bool(switch.get_active()):
-            self.verify_certificate_switch.set_active(
-                settings.get(const.SETTING_VERIFY_CERTIFICATE, True))
+        if args[1] == const.SETTING_SSL and switch.get_active():
             self.verify_certificate_switch.set_sensitive(True)
+            self.verify_certificate_switch.set_active(self.settings[const.SETTING_VERIFY_CERTIFICATE])
         elif args[1] == const.SETTING_SSL:
-            self.verify_certificate_switch.set_active(False)
             self.verify_certificate_switch.set_sensitive(False)
-
-        self.set_settings(settings)
+            self.verify_certificate_switch.set_active(False)
 
     def set_status(self, status) -> None:
         """
         Callback function to be executed when the Home Assistant connection status changes.
         """
         GLib.idle_add(self.connection_status.set_text, status)
+
+    def set_setting(self, key, value) -> None:
+        """
+        Sets the setting in the local copy and also writes it to the disk.
+        """
+        self.settings[key] = value
+        self.set_settings(self.settings)

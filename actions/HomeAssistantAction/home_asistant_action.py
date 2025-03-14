@@ -100,10 +100,8 @@ class HomeAssistantAction(ActionBase):
         Set up action when StreamController has finished loading.
         """
         settings = settings_helper.migrate(self.get_settings())
-        settings = settings_helper.fill_defaults(settings)
-        self.set_settings(settings)
-
-        self.settings = settings
+        self.settings = settings_helper.get_action_settings(settings)
+        self.set_settings(self.settings)
 
         if not self.plugin_base.backend.is_connected():
             self.plugin_base.backend.register_action(self.on_ready)
@@ -720,7 +718,8 @@ class HomeAssistantAction(ActionBase):
             if old_entity:
                 self.plugin_base.backend.remove_tracked_entity(old_entity, self.uuid)
 
-            self.settings = settings_helper.fill_defaults({const.SETTING_ENTITY_DOMAIN: domain})
+            self.settings = settings_helper.get_action_settings(
+                {const.SETTING_ENTITY_DOMAIN: domain})
             self.set_settings(self.settings)
 
             self.entity_entity_combo.set_model(None)

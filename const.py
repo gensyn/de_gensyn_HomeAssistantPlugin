@@ -12,7 +12,6 @@ LABEL_BASE_PORT = "actions.base.port.label"
 LABEL_BASE_SSL = "actions.base.ssl.label"
 LABEL_BASE_VERIFY_CERTIFICATE = "actions.base.verify_certificate.label"
 LABEL_BASE_TOKEN = "actions.base.token.label"
-LABEL_BASE_SETTINGS_HEADER = "actions.base.settings_header.label"
 
 SETTING_HOST = "host"
 SETTING_PORT = "port"

@@ -33,7 +33,15 @@ VALID_KEYS_CUSTOM_TEXT = [
     const.CUSTOM_TEXT_LINE_BREAK,
 ]
 
-DEFAULT = {
+DEFAULT_CONNECTION = {
+    const.SETTING_HOST: const.EMPTY_STRING,
+    const.SETTING_PORT: const.EMPTY_STRING,
+    const.SETTING_SSL: True,
+    const.SETTING_VERIFY_CERTIFICATE: True,
+    const.SETTING_TOKEN: const.EMPTY_STRING
+}
+
+DEFAULT_ACTION = {
     const.SETTING_ENTITY_DOMAIN: const.EMPTY_STRING,
     const.SETTING_ENTITY_ENTITY: const.EMPTY_STRING,
 
@@ -64,12 +72,12 @@ DEFAULT = {
 }
 
 
-def fill_defaults(existing: Dict[str, Any]) -> Dict[str, Any]:
+def get_action_settings(existing: Dict[str, Any]) -> Dict[str, Any]:
     """
-    This method takes a settings dict and fills all missing settings with default values.
+    This method takes an action settings dict and fills all missing settings with default values.
     Settings present in the existing settings dict, which are not needed anymore, are removed.
     """
-    settings = copy.deepcopy(DEFAULT)
+    settings = copy.deepcopy(DEFAULT_ACTION)
 
     for key, value in existing.items():
         if key in settings:
@@ -85,6 +93,20 @@ def fill_defaults(existing: Dict[str, Any]) -> Dict[str, Any]:
         for key in custom_text:
             if key not in VALID_KEYS_CUSTOM_BASE and key not in VALID_KEYS_CUSTOM_TEXT:
                 custom_text.pop(key)
+
+    return settings
+
+
+def get_connection_settings(existing: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    This method takes a connection settings dict and fills all missing settings with default values.
+    Settings present in the existing settings dict, which are not needed anymore, are removed.
+    """
+    settings = copy.deepcopy(DEFAULT_CONNECTION)
+
+    for key, value in existing.items():
+        if key in settings:
+            settings[key] = value
 
     return settings
 
