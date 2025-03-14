@@ -1,16 +1,18 @@
 """
 Module for service parameter operations.
 """
+from typing import Dict
+
 import gi
 
 from de_gensyn_HomeAssistantPlugin import const
-from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction import helper
-from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.scale_row import ScaleRow
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.helper import helper
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.helper.scale_row import ScaleRow
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository.Gtk import CheckButton, StringList, Scale
-from gi.repository.Adw import ActionRow, ComboRow, EntryRow, SwitchRow
+from gi.repository.Gtk import CheckButton, StringList
+from gi.repository.Adw import ComboRow, EntryRow, SwitchRow
 
 
 def load_service_parameters(action):
@@ -42,59 +44,14 @@ def load_service_parameters(action):
 
         if selector == "select" or f"{field}_list" in ha_entity.get(const.ATTRIBUTES,
                                                                     {}).keys():
-            if selector == "select":
-                options = fields[field]["selector"]["select"]["options"]
-            else:
-                options = ha_entity.get(const.ATTRIBUTES, {})[f"{field}_list"]
-
-            if not isinstance(options[0], str):
-                options = [opt["value"] for opt in options]
-
-            model = StringList.new([const.EMPTY_STRING, *options])
-
-            row = ComboRow(title=field)
-            row.set_model(model)
-            row.connect(const.CONNECT_NOTIFY_SELECTED, _on_change_parameters_combo, action, check,
-                        field)
-
-            if setting_value:
-                helper.set_value_in_combo(row, model, setting_value)
+            row = _create_combo_row(selector, fields, field, ha_entity, action, check,
+                                    setting_value)
         elif selector == "boolean":
-            value = False
-
-            if setting_value:
-                value = setting_value
-            else:
-                default_value = fields[field].get("default")
-                if default_value:
-                    value = bool(default_value)
-
-            row = SwitchRow(title=field, active=value)
-            row.connect(const.CONNECT_NOTIFY_ACTIVE, _on_change_parameters_switch, action, check,
-                        field)
+            row = _create_switch_row(fields, field, action, check, setting_value)
         elif selector == "number":
-            number_min = fields[field]["selector"]["number"]["min"]
-            number_max = fields[field]["selector"]["number"]["max"]
-            number_step = fields[field]["selector"]["number"].get("step", 1)
-
-            value = number_min
-
-            if setting_value:
-                value = setting_value
-            else:
-                default_value = fields[field].get("default")
-                if default_value:
-                    value = default_value
-
-            row = ScaleRow(field, int(value), number_min, number_max, number_step)
-            row.connect(const.CONNECT_VALUE_CHANGED, _on_change_parameters_scale, action, check,
-                        field)
+            row = _create_scale_row(fields, field, action, check, setting_value)
         else:
-            value = str(setting_value) if setting_value else const.EMPTY_STRING
-
-            row = EntryRow(title=field, text=value)
-            row.connect(const.CONNECT_NOTIFY_TEXT, _on_change_parameters_entry, action, check,
-                        field)
+            row = _create_entry_row(field, action, check, setting_value)
 
         check.set_active(field in action.settings[const.SETTING_SERVICE_PARAMETERS].keys())
         check.connect(const.CONNECT_TOGGLED, _on_change_parameters_check, action, row, field)
@@ -203,3 +160,89 @@ def _on_change_parameters_check(check, *args):
         action.settings[const.SETTING_SERVICE_PARAMETERS].pop(field, None)
 
     action.set_settings(action.settings)
+
+
+def _create_combo_row(selector: str, fields: Dict, field: str, ha_entity, action,
+                      check: CheckButton,
+                      setting_value) -> ComboRow:
+    if selector == "select":
+        options = fields[field]["selector"]["select"]["options"]
+    else:
+        options = ha_entity.get(const.ATTRIBUTES, {})[f"{field}_list"]
+
+    if not isinstance(options[0], str):
+        options = [opt["value"] for opt in options]
+
+    model = StringList.new([const.EMPTY_STRING, *options])
+
+    row = ComboRow(title=field)
+    row.set_model(model)
+    row.connect(const.CONNECT_NOTIFY_SELECTED, _on_change_parameters_combo, action, check,
+                field)
+    row.connect(const.CONNECT_NOTIFY_SELECTED, lambda _, __: check.set_active(True))
+
+    if setting_value:
+        helper.set_value_in_combo(row, setting_value)
+
+    return row
+
+
+def _create_switch_row(fields: Dict, field: str, action, check: CheckButton,
+                       setting_value) -> SwitchRow:
+    value = False
+
+    if setting_value:
+        value = setting_value
+    else:
+        default_value = fields[field].get("default")
+        if default_value:
+            value = bool(default_value)
+
+    row = SwitchRow(title=field, active=value)
+    row.connect(const.CONNECT_NOTIFY_ACTIVE, _on_change_parameters_switch, action, check,
+                field)
+    row.connect(const.CONNECT_NOTIFY_ACTIVE, lambda _, __: check.set_active(True))
+
+    return row
+
+
+def _create_scale_row(fields: Dict, field: str, action, check: CheckButton,
+                      setting_value) -> ScaleRow:
+    number_min = fields[field]["selector"]["number"]["min"]
+    number_max = fields[field]["selector"]["number"]["max"]
+    number_step = fields[field]["selector"]["number"].get("step", 1)
+
+    value = number_min
+
+    if setting_value:
+        value = setting_value
+    else:
+        default_value = fields[field].get("default")
+        if default_value:
+            value = default_value
+
+    row = ScaleRow(field, number_min, number_max, number_step)
+    row.set_value(int(value))
+    row.connect(const.CONNECT_VALUE_CHANGED, _on_change_parameters_scale, action, check,
+                field)
+    row.connect(const.CONNECT_VALUE_CHANGED, lambda _, __: check.set_active(True))
+
+    return row
+
+
+def _create_entry_row(field: str, action, check: CheckButton, setting_value) -> EntryRow:
+    value = str(setting_value) if setting_value else const.EMPTY_STRING
+
+    row = EntryRow(title=field, text=value)
+    row.connect(const.CONNECT_NOTIFY_TEXT, _on_change_parameters_entry, action, check,
+                field)
+    row.connect(const.CONNECT_NOTIFY_TEXT, lambda _, __: check.set_active(True))
+
+    value = str(setting_value) if setting_value else const.EMPTY_STRING
+
+    row = EntryRow(title=field, text=value)
+    row.connect(const.CONNECT_NOTIFY_TEXT, _on_change_parameters_entry, action, check,
+                field)
+    row.connect(const.CONNECT_NOTIFY_TEXT, lambda _, __: check.set_active(bool(row.get_text())))
+
+    return row

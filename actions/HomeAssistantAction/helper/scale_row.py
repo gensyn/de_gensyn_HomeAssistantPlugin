@@ -8,17 +8,20 @@ from de_gensyn_HomeAssistantPlugin import const
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository.GObject import SignalFlags
-from gi.repository.Gtk import Box, CheckButton, Entry, Label, Orientation, Scale
+from gi.repository.Gtk import Box, Entry, Label, Orientation, Scale
 from gi.repository.Adw import PreferencesRow
 
 
 class ScaleRow(PreferencesRow):
+    """
+    A row with a scale and an entry to pick numbers.
+    """
     __gtype_name__ = "ScaleRow"
     __gsignals__ = {
         const.CONNECT_VALUE_CHANGED: (SignalFlags.RUN_FIRST, None, (str,)),
     }
 
-    def __init__(self, title: str, value: float, min_value: int, max_value: int, step: int):
+    def __init__(self, title: str, min_value: int, max_value: int, step: int):
         super().__init__()
 
         self.min_value = min_value
@@ -28,14 +31,13 @@ class ScaleRow(PreferencesRow):
         label.set_size_request(60, 0)
         label.set_xalign(0.0)
 
-        self.entry: Entry = Entry(text=str(value))
+        self.entry: Entry = Entry()
         self.entry.set_max_width_chars(5)
         self.entry.set_width_chars(5)
         self.entry.set_margin_top(10)
         self.entry.set_margin_bottom(10)
 
         self.scale: Scale = Scale.new_with_range(Orientation.HORIZONTAL, min_value, max_value, step)
-        self.scale.set_value(value)
         self.scale.set_hexpand(True)
 
         self.box: Box = Box(orientation=Orientation.HORIZONTAL)
@@ -52,14 +54,29 @@ class ScaleRow(PreferencesRow):
         self._connect_signals()
 
     def add_prefix(self, widget):
+        """
+        Adds the widget to the start of the row.
+        """
         widget.set_margin_start(2)
         widget.set_margin_end(12)
         self.box.insert_child_after(widget, None)
 
     def get_value(self) -> int:
+        """
+        Gets the current value of the scale.
+        """
         return int(self.scale.get_value())
 
-    def _on_change_scale(self, _):
+    def set_value(self, value: int) -> None:
+        """
+        Sets the value of the scale.
+        """
+        self._disconnect_signals()
+        self.scale.set_value(value)
+        self.entry.set_text(str(value))
+        self._connect_signals()
+
+    def _on_change_scale(self, _) -> None:
         self._disconnect_signals()
 
         value = self.scale.get_value()

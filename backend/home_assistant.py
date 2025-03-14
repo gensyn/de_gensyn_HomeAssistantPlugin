@@ -8,9 +8,10 @@ from threading import Thread, Semaphore
 from time import sleep
 from typing import Dict, Callable, Any, List, Set
 
-from de_gensyn_HomeAssistantPlugin import const
 from loguru import logger as log
 from websocket import create_connection, WebSocket, WebSocketException, WebSocketAddressException
+
+from de_gensyn_HomeAssistantPlugin import const
 
 HASS_WEBSOCKET_API = "/api/websocket?latest"
 
@@ -29,7 +30,8 @@ RECV_LOOP_TIMEOUT = 300
 
 PING_INTERVAL = 30
 
-ERRORS_TO_EXCEPT = (WebSocketException, WebSocketAddressException, ValueError, ConnectionResetError, BrokenPipeError)
+ERRORS_TO_EXCEPT = (WebSocketException, WebSocketAddressException, ValueError,
+                    ConnectionResetError, BrokenPipeError)
 
 
 class HomeAssistantBackend:

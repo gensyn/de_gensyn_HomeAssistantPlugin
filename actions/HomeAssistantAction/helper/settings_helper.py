@@ -1,6 +1,7 @@
 """
 The module for settings control.
 """
+import copy
 from typing import Dict, Any
 
 from de_gensyn_HomeAssistantPlugin import const
@@ -16,6 +17,20 @@ VALID_KEYS_CUSTOM_ICON = [
     const.CUSTOM_ICON_COLOR,
     const.CUSTOM_ICON_SCALE,
     const.CUSTOM_ICON_OPACITY
+]
+
+VALID_KEYS_CUSTOM_TEXT = [
+    const.CUSTOM_TEXT_POSITION,
+    const.CUSTOM_TEXT_ATTRIBUTE,
+    const.CUSTOM_TEXT_CUSTOM_TEXT,
+    const.CUSTOM_TEXT_ROUND,
+    const.CUSTOM_TEXT_ROUND_PRECISION,
+    const.CUSTOM_TEXT_TEXT_SIZE,
+    const.CUSTOM_TEXT_TEXT_COLOR,
+    const.CUSTOM_TEXT_OUTLINE_SIZE,
+    const.CUSTOM_TEXT_OUTLINE_COLOR,
+    const.CUSTOM_TEXT_SHOW_UNIT,
+    const.CUSTOM_TEXT_LINE_BREAK,
 ]
 
 DEFAULT = {
@@ -44,7 +59,8 @@ DEFAULT = {
     const.SETTING_TEXT_SHOW_UNIT: const.DEFAULT_TEXT_SHOW_UNIT,
     const.SETTING_TEXT_UNIT_LINE_BREAK: const.DEFAULT_TEXT_UNIT_LINE_BREAK,
 
-    const.SETTING_CUSTOMIZATION_ICONS: []
+    const.SETTING_CUSTOMIZATION_ICON: [],
+    const.SETTING_CUSTOMIZATION_TEXT: []
 }
 
 
@@ -53,18 +69,22 @@ def fill_defaults(existing: Dict[str, Any]) -> Dict[str, Any]:
     This method takes a settings dict and fills all missing settings with default values.
     Settings present in the existing settings dict, which are not needed anymore, are removed.
     """
-    settings = DEFAULT.copy()
+    settings = copy.deepcopy(DEFAULT)
 
     for key, value in existing.items():
         if key in settings:
             settings[key] = value
 
     # remove unused keys in customizations
-    for custom_icon in settings[const.SETTING_CUSTOMIZATION_ICONS]:
+    for custom_icon in settings[const.SETTING_CUSTOMIZATION_ICON]:
         for key in custom_icon:
             if key not in VALID_KEYS_CUSTOM_BASE and key not in VALID_KEYS_CUSTOM_ICON:
-                settings[const.SETTING_CUSTOMIZATION_ICONS].pop(key)
+                custom_icon.pop(key)
 
+    for custom_text in settings[const.SETTING_CUSTOMIZATION_TEXT]:
+        for key in custom_text:
+            if key not in VALID_KEYS_CUSTOM_BASE and key not in VALID_KEYS_CUSTOM_TEXT:
+                custom_text.pop(key)
 
     return settings
 
@@ -77,8 +97,20 @@ def migrate(settings: Dict[str, Any]) -> Dict[str, Any]:
 
     result = migrate_call_service_moved_to_expander(result)
     result = migrate_setting_text_size_moved_to_text_text_size(result)
+    result = migrate_setting_customization_icons_to_icon(result)
 
     return result
+
+
+def migrate_setting_customization_icons_to_icon(settings: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Checks if the key "customization.icons" is present and moves it to the new "customization.icon".
+    Added 2025/03/11
+    """
+    if settings.get("customization.icons"):
+        settings[const.SETTING_CUSTOMIZATION_ICON] = settings["customization.icons"]
+
+    return settings
 
 
 def migrate_setting_text_size_moved_to_text_text_size(settings: Dict[str, Any]) -> Dict[str, Any]:
