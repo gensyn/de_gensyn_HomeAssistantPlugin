@@ -22,7 +22,7 @@
     "actions.home_assistant.service.parameters.label": "Parameter:",
     "actions.home_assistant.service.no_parameters.label": "Der ausgewählte Service akzeptiert keine Parameter",
 
-    "actions.home_assistant.icon.show_icon.label": "Icon der Entität anzeigen:",
+    "actions.home_assistant.icon.show_icon.label": "Icon anzeigen:",
     "actions.home_assistant.icon.icon.label": "Icon:",
     "actions.home_assistant.icon.color.label": "Farbe:",
     "actions.home_assistant.icon.opacity.label": "Deckkraft:",
@@ -30,7 +30,7 @@
     "actions.home_assistant.icon.custom_icon.label": "Anpassen:",
     "actions.home_assistant.icon.no_entity.label": "Keine Entität ausgewählt",
 
-    "actions.home_assistant.text.show_text.label": "Entitättext anzeigen:",
+    "actions.home_assistant.text.show_text.label": "Text anzeigen:",
     "actions.home_assistant.text.attribute.label": "Attribut:",
     "actions.home_assistant.text.round.label": "Wert runden:",
     "actions.home_assistant.text.round_precision.label": "Nachkommastellen:",
