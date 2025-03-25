@@ -12,7 +12,7 @@
         "de_DE": "Steuere Home Assistant"
     },
     "tags": ["Utilities"],
-    "minimum-app-version": "1.0.0",
+    "minimum-app-version": "1.0.1",
     "app-version": "1.5.0-beta",
     "description": "Control your Home Assistant instance from your StreamDeck.",
     "short-description": "Control Home Assistant"
