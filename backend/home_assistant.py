@@ -3,7 +3,7 @@ Module for the Home Assistant backend.
 """
 
 import json
-from ssl import CERT_NONE, SSLError
+from ssl import CERT_NONE, SSLError, SSLEOFError
 from threading import Thread, Semaphore
 from time import sleep
 from typing import Dict, Callable, Any, List, Set
@@ -31,7 +31,7 @@ RECV_LOOP_TIMEOUT = 300
 PING_INTERVAL = 30
 
 ERRORS_TO_EXCEPT = (WebSocketException, WebSocketAddressException, ValueError,
-                    ConnectionResetError, BrokenPipeError)
+                    ConnectionResetError, BrokenPipeError, SSLEOFError)
 
 
 class HomeAssistantBackend:
@@ -168,7 +168,7 @@ class HomeAssistantBackend:
             return False
 
         message = self._create_message("get_config")
-        config = self._send_and_wait_for_response(message)
+        config = self._send_and_wait_for_response_with_semaphore(message)
 
         result: Dict[str, dict] = _get_field_from_message(config, FIELD_RESULT)
 
@@ -211,9 +211,14 @@ class HomeAssistantBackend:
 
         if self._websocket and self._websocket.connected:
             self._websocket.close()
+            self._websocket = None
 
         if self._changes_websocket and self._changes_websocket.connected:
             self._changes_websocket.close()
+            self._changes_websocket = None
+
+        self._websocket_semaphore = Semaphore(1)
+        self._entities_update_semaphore = Semaphore(1)
 
         self._connection_status_callback(const.NOT_CONNECTED)
 
@@ -339,14 +344,7 @@ class HomeAssistantBackend:
                 for action_entity_updated in actions:
                     action_entity_updated(update_state)
 
-        if self._connect():
-            # The connection was closed and also already reestablished
-            return
-
-        if self._websocket:
-            self._websocket.close()
-
-        self._connection_status_callback(const.NOT_CONNECTED)
+        self._disconnect()
 
         for _, actions in self._tracked_entities.items():
             for action in actions:
@@ -406,7 +404,7 @@ class HomeAssistantBackend:
         """
         message = self._create_message("get_states")
 
-        response = self._send_and_wait_for_response(message)
+        response = self._send_and_wait_for_response_with_semaphore(message)
 
         success = _get_field_from_message(response, FIELD_SUCCESS)
 
@@ -461,7 +459,7 @@ class HomeAssistantBackend:
 
         message = self._create_message("get_services")
 
-        response = self._send_and_wait_for_response(message)
+        response = self._send_and_wait_for_response_with_semaphore(message)
 
         success = _get_field_from_message(response, FIELD_SUCCESS)
 
@@ -490,18 +488,21 @@ class HomeAssistantBackend:
         message["target"] = {ENTITY_ID: entity_id}
         message["service_data"] = data if data else {}
 
-        response = self._send_and_wait_for_response(message)
-
+        response = self._send_and_wait_for_response_with_semaphore(message)
         success = _get_field_from_message(response, FIELD_SUCCESS)
 
         if not success:
-            log.error(f"Error calling service {service} for entity {entity_id}.")
+            # try one more time
+            response = self._send_and_wait_for_response_with_semaphore(message)
+            success = _get_field_from_message(response, FIELD_SUCCESS)
+
+            if not success:
+                log.error(f"Error calling service {service} for entity {entity_id}.")
 
     def _create_message(self, message_type: str) -> Dict[str, Any]:
         """
         Create a message that can be sent to the Home Assistant websocket.
         """
-        self._message_id += 1
         return {ID: self._message_id, FIELD_TYPE: message_type}
 
     def add_tracked_entity(self, entity_id: str, action_uid: str,
@@ -577,26 +578,41 @@ class HomeAssistantBackend:
         """
         return self._websocket and self._websocket.connected
 
-    def _send_and_wait_for_response(self, message: Dict[str, str | int]) -> str:
+    def _send_and_wait_for_response_with_semaphore(self, message: Dict[str, str | int], try_count: int=0) -> str:
+        """
+        Send a websocket message to Home Assistant and return the response using a semaphore.
+        """
+        with self._websocket_semaphore:
+            return self._send_and_wait_for_response(message, try_count)
+
+    def _send_and_wait_for_response(self, message: Dict[str, str | int], try_count: int) -> str:
         """
         Send a websocket message to Home Assistant and return the response.
         """
-        with self._websocket_semaphore:
-            try:
-                self._websocket.send(json.dumps(message))
-            except ERRORS_TO_EXCEPT as e:
-                connected = self._reconnect()
+        self._message_id += 1
+        message[ID] = self._message_id
 
-                if connected:
-                    self._websocket.send(json.dumps(message))
-                else:
-                    log.error(f"({e}) Cannot send message {message}")
-                    return const.EMPTY_STRING
-            try:
-                return self._websocket.recv()
-            except ERRORS_TO_EXCEPT as e:
+        try:
+            self._websocket.send(json.dumps(message))
+        except ERRORS_TO_EXCEPT as e:
+            connected = self._reconnect()
+
+            if connected:
+                self._websocket.send(json.dumps(message))
+            else:
                 log.error(f"({e}) Cannot send message {message}")
                 return const.EMPTY_STRING
+        try:
+            return self._websocket.recv()
+        except ERRORS_TO_EXCEPT as e:
+            log.error(f"Error: {e}")
+            self._reconnect()
+
+            if try_count < 3:
+                return self._send_and_wait_for_response(message, try_count + 1)
+
+        log.error(f"Cannot send message {message}")
+        return const.EMPTY_STRING
 
     def _keep_alive(self):
         """
