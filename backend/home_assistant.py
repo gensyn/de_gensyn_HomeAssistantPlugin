@@ -220,6 +220,8 @@ class HomeAssistantBackend:
         self._websocket_semaphore = Semaphore(1)
         self._entities_update_semaphore = Semaphore(1)
 
+        self._message_id = 0
+
         self._connection_status_callback(const.NOT_CONNECTED)
 
     def _auth(self):
@@ -503,6 +505,7 @@ class HomeAssistantBackend:
         """
         Create a message that can be sent to the Home Assistant websocket.
         """
+        self._message_id += 1
         return {ID: self._message_id, FIELD_TYPE: message_type}
 
     def add_tracked_entity(self, entity_id: str, action_uid: str,
