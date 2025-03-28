@@ -15,7 +15,7 @@ from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.win
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.row.customization_text_row import CustomizationTextRow
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.window.customization_text_window import CustomizationTextWindow
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.helper.scale_row import ScaleRow
-from src.backend.PluginManager.ActionBase import ActionBase
+from src.backend.PluginManager.ActionBase import ActionCore
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
@@ -34,7 +34,7 @@ from GtkHelper.GtkHelper import BetterExpander
 from locales.LegacyLocaleManager import LegacyLocaleManager
 
 
-class HomeAssistantAction(ActionBase):
+class HomeAssistantAction(ActionCore):
     """
     Action to be loaded by StreamController.
     """
