@@ -2,16 +2,13 @@
 The module for the Home Assistant action that is loaded in StreamController.
 """
 
-import io
 import json
 import uuid
 from functools import partial
 from json import JSONDecodeError
 from typing import Any, Dict, List
 
-import cairosvg
 import gi
-from PIL import Image
 
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.row.customization_icon_row import CustomizationIconRow
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.window.customization_icon_window import CustomizationIconWindow
@@ -848,12 +845,7 @@ class HomeAssistantAction(ActionBase):
 
         icon, scale = icon_helper.get_icon(state, self.settings)
 
-        if icon:
-            png_data = cairosvg.svg2png(bytestring=icon, dpi=600)
-            image = Image.open(io.BytesIO(png_data))
-            self.set_media(image=image, size=scale)
-        else:
-            self.set_media()
+        self.set_media(media_path=icon, size=scale)
 
     def _update_labels(self, show_text: bool, state: dict):
         """
