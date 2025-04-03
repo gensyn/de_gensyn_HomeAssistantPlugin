@@ -6,7 +6,8 @@ from typing import List, Dict
 from de_gensyn_HomeAssistantPlugin import const
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.row.customization_row \
     import CustomizationRow
-from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.helper import text_helper
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.settings.settings import Settings
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.helper import text_helper, helper
 
 
 class CustomizationTextRow(CustomizationRow):
@@ -15,7 +16,7 @@ class CustomizationTextRow(CustomizationRow):
     """
 
     def __init__(self, lm, customization: Dict, customizations: List, index: int, attributes: List,
-                 state: Dict, settings: Dict):
+                 state: Dict, settings: Settings):
         super().__init__(lm, customizations, index, attributes, state, settings)
 
         current_value = text_helper.get_value(self.state, self.settings, customization)
@@ -45,10 +46,7 @@ class CustomizationTextRow(CustomizationRow):
                       f"{customization[const.CUSTOM_TEXT_TEXT_SIZE]}")
 
         if customization.get(const.CUSTOM_TEXT_TEXT_COLOR) is not None:
-            color = customization[const.CUSTOM_TEXT_TEXT_COLOR]
-            color = (f'#{int(round(color[0] * 255, 0)):02X}'
-                     f'{int(round(color[1] * 255, 0)):02X}'
-                     f'{int(round(color[2] * 255, 0)):02X}')
+            color = helper.convert_color_list_to_hex(customization[const.CUSTOM_TEXT_TEXT_COLOR])
             title += (f"\n{self.lm.get(const.LABEL_TEXT_TEXT_COLOR)} "
                       f"{color}")
 
@@ -57,10 +55,7 @@ class CustomizationTextRow(CustomizationRow):
                       f"{customization[const.CUSTOM_TEXT_OUTLINE_SIZE]}")
 
         if customization.get(const.CUSTOM_TEXT_OUTLINE_COLOR) is not None:
-            color = customization[const.CUSTOM_TEXT_OUTLINE_COLOR]
-            color = (f'#{int(round(color[0] * 255, 0)):02X}'
-                     f'{int(round(color[1] * 255, 0)):02X}'
-                     f'{int(round(color[2] * 255, 0)):02X}')
+            color = helper.convert_color_list_to_hex(customization[const.CUSTOM_TEXT_OUTLINE_COLOR])
             title += (f"\n{self.lm.get(const.LABEL_TEXT_OUTLINE_COLOR)} "
                       f"{color}")
 

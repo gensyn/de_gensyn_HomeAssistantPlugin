@@ -36,3 +36,6 @@ def convert_color_list_to_rgba(color: List) -> RGBA:
     rgba.blue = color[2]
     rgba.alpha = 1
     return rgba
+
+def convert_color_list_to_hex(c: List) -> str:
+    return f'#{int(c[0]):02X}{int(c[1]):02X}{int(c[2]):02X}'

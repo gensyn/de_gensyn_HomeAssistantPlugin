@@ -8,6 +8,8 @@ import os
 from typing import Dict
 
 from de_gensyn_HomeAssistantPlugin import const
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.settings.settings import Settings
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.helper import helper
 
 MDI_FILENAME = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../..",
                             const.MDI_SVG_JSON)
@@ -16,7 +18,7 @@ with open(MDI_FILENAME, "r", encoding="utf-8") as f:
     MDI_ICONS: Dict[str, str] = json.loads(f.read())
 
 
-def get_icon(state: Dict, settings: Dict) -> (str, float):
+def get_icon(state: Dict, settings: Settings) -> (str, float):
     """
     Get the item corresponding to the given state.
     """
@@ -28,29 +30,28 @@ def get_icon(state: Dict, settings: Dict) -> (str, float):
     name, color, scale, opacity = _get_icon_settings(state, settings)
 
     # convert RGB color to hex
-    color = (f'#{int(round(color[0] * 255, 0)):02X}{int(round(color[1] * 255, 0)):02X}'
-             f'{int(round(color[2] * 255, 0)):02X}')
+    color = helper.convert_color_list_to_hex(color)
 
     icon = _get_icon_svg(name)
 
     return (icon.replace("<color>", color).replace("<opacity>", str(opacity))), scale
 
 
-def _get_icon_settings(state: Dict, settings: Dict) -> (str, str, str, str):
+def _get_icon_settings(state: Dict, settings: Settings) -> (str, str, str, str):
     # default value for the icon is the icon set in HA
     name = state.get(const.ATTRIBUTES, {}).get(const.ATTRIBUTE_ICON, const.EMPTY_STRING)
-    color = settings[const.SETTING_ICON_COLOR]
-    scale = round(settings[const.SETTING_ICON_SCALE] / 100, 2)
-    opacity = str(round(settings[const.SETTING_ICON_OPACITY] / 100, 2))
+    color = settings.get_icon_color()
+    scale = round(settings.get_icon_scale() / 100, 2)
+    opacity = str(settings.get_icon_opacity())
 
-    if settings[const.SETTING_ICON_ICON] in MDI_ICONS.keys():
-        name = settings[const.SETTING_ICON_ICON]
+    if settings.get_icon() in MDI_ICONS.keys():
+        name = settings.get_icon()
 
     #
     # Begin custom icon
     #
 
-    customizations = settings[const.SETTING_CUSTOMIZATION_ICON]
+    customizations = settings.get_icon_customizations()
 
     for customization in customizations:
         value = get_value(state, customization)
@@ -122,10 +123,10 @@ def _replace_values(name: str, color: str, scale: float, opacity: str, customiza
         ret_color = customization[const.CUSTOM_ICON_COLOR]
 
     if customization.get(const.CUSTOM_ICON_SCALE) is not None:
-        ret_scale = round(customization[const.CUSTOM_ICON_SCALE] / 100, 2)
+        ret_scale = customization[const.CUSTOM_ICON_SCALE]
 
     if customization.get(const.CUSTOM_ICON_OPACITY) is not None:
-        ret_opacity = round(customization[const.CUSTOM_ICON_OPACITY] / 100, 2)
+        ret_opacity = customization[const.CUSTOM_ICON_OPACITY]
 
     return ret_name, ret_color, ret_scale, ret_opacity
 

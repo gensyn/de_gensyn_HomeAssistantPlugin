@@ -161,7 +161,7 @@ class CustomizationIconWindow(CustomizationWindow):
 
         icon = self.entry_icon.get_text() if self.check_icon.get_active() else None
         color = self.button_color.get_rgba() if self.check_color.get_active() else None
-        color_list = [color.red, color.green, color.blue] if color else None
+        color_list = [int(color.red*255), int(color.green*255), int(color.blue*255), 255] if color else None
         scale = int(self.scale_scale.get_value()) if self.check_scale.get_active() else None
         opacity = int(
             self.scale_opacity.get_value()) if self.check_opacity.get_active() else None

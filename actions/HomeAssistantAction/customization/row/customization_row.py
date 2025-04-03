@@ -6,6 +6,7 @@ from typing import List, Dict, Any
 import gi
 
 from de_gensyn_HomeAssistantPlugin import const
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.settings.settings import Settings
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
@@ -19,7 +20,7 @@ class CustomizationRow(ActionRow):
     """
 
     def __init__(self, lm, customizations: List, index: int, attributes: List, state: Dict,
-                 settings: Dict):
+                 settings: Settings):
         super().__init__()
 
         self.lm = lm

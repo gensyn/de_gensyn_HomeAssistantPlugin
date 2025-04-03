@@ -5,29 +5,27 @@ import logging
 from typing import Dict, List, Any
 
 from de_gensyn_HomeAssistantPlugin import const
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.settings.settings import Settings
 
 
-def get_text(state: Dict, settings: Dict) -> (str, str, int, str, int, str):
+def get_text(state: Dict, settings: Settings) -> (str, str, int, str, int, str):
     """
     Determine text, position and font size to show on StreamDeck.
     """
-    position = settings[const.SETTING_TEXT_POSITION]
-    text_size = settings[const.SETTING_TEXT_TEXT_SIZE]
-    text_color = settings[const.SETTING_TEXT_TEXT_COLOR]
-    text_color_converted = [int(c * 255) for c in text_color]
-    outline_size = settings[const.SETTING_TEXT_OUTLINE_SIZE]
-    outline_color = settings[const.SETTING_TEXT_OUTLINE_COLOR]
-    outline_color_converted = [int(c * 255) for c in outline_color]
+    position = settings.get_text_position()
+    text_size = settings.get_text_text_size()
+    text_color = settings.get_text_text_color()
+    outline_size = settings.get_text_outline_size()
+    outline_color = settings.get_text_outline_color()
 
     if not state["connected"]:
-        return ("N/A", position, text_size, text_color_converted, outline_size,
-                outline_color_converted)
+        return "N/A", position, text_size, text_color, outline_size, outline_color
 
-    attribute = settings[const.SETTING_TEXT_ATTRIBUTE]
-    text_round = settings[const.SETTING_TEXT_ROUND]
-    round_precision = settings[const.SETTING_TEXT_ROUND_PRECISION]
-    show_unit = settings[const.SETTING_TEXT_SHOW_UNIT]
-    line_break = settings[const.SETTING_TEXT_UNIT_LINE_BREAK]
+    attribute = settings.get_text_attribute()
+    text_round = settings.get_text_round()
+    round_precision = settings.get_text_round_precision()
+    show_unit = settings.get_text_show_unit()
+    line_break = settings.get_text_unit_line_break()
 
     text = _get_text(state, attribute, text_round, round_precision, show_unit, line_break)
 
@@ -35,7 +33,7 @@ def get_text(state: Dict, settings: Dict) -> (str, str, int, str, int, str):
     # Begin custom text
     #
 
-    customizations = settings[const.SETTING_CUSTOMIZATION_TEXT]
+    customizations = settings.get_text_customizations()
 
     for customization in customizations:
         value = get_value(state, settings, customization)
@@ -87,20 +85,17 @@ def get_text(state: Dict, settings: Dict) -> (str, str, int, str, int, str):
         # get text a second time based on the customizations but only if no custom text is defined
         text = _get_text(state, attribute, text_round, round_precision, show_unit, line_break)
 
-    text_color_converted = [int(c * 255) for c in text_color]
-    outline_color_converted = [int(c * 255) for c in outline_color]
-
-    return text, position, text_size, text_color_converted, outline_size, outline_color_converted
+    return text, position, text_size, text_color, outline_size, outline_color
 
 
-def get_value(state: Dict, settings: Dict, customization: Dict) -> Any:
+def get_value(state: Dict, settings: Settings, customization: Dict) -> Any:
     """
     Gets the current value that the customization references.
     """
-    attribute = settings[const.SETTING_TEXT_ATTRIBUTE]
-    text_round = settings[const.SETTING_TEXT_ROUND]
-    round_precision = settings[const.SETTING_TEXT_ROUND_PRECISION]
-    show_unit = settings[const.SETTING_TEXT_SHOW_UNIT]
+    attribute = settings.get_text_attribute()
+    text_round = settings.get_text_round()
+    round_precision = settings.get_text_round_precision()
+    show_unit = settings.get_text_show_unit()
 
     # get text without line break to calculate the correct length
     text = _get_text(state, attribute, text_round, round_precision, show_unit, False)

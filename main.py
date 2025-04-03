@@ -18,7 +18,7 @@ from src.backend.PluginManager.PluginBase import PluginBase
 
 from de_gensyn_HomeAssistantPlugin import const
 
-from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.helper import settings_helper
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.settings import settings_helper
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.home_asistant_action import \
     HomeAssistantAction
 from de_gensyn_HomeAssistantPlugin.backend.home_assistant import HomeAssistantBackend
