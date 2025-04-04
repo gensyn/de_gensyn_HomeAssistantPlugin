@@ -5,11 +5,12 @@ Module for icon related operations.
 import json
 import logging
 import os
-from typing import Dict
+from typing import Dict, List
 
 from de_gensyn_HomeAssistantPlugin import const
-from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.settings.settings import Settings
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.icon_customization import IconCustomization
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.helper import helper
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.settings.settings import Settings
 
 MDI_FILENAME = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../..",
                             const.MDI_SVG_JSON)
@@ -51,12 +52,12 @@ def _get_icon_settings(state: Dict, settings: Settings) -> (str, str, str, str):
     # Begin custom icon
     #
 
-    customizations = settings.get_icon_customizations()
+    customizations: List[IconCustomization] = settings.get_icon_customizations()
 
     for customization in customizations:
         value = get_value(state, customization)
 
-        custom_icon_value = customization[const.CUSTOM_VALUE]
+        custom_icon_value = customization.get_value()
 
         try:
             # if both values are numbers, convert them both to float
@@ -66,7 +67,7 @@ def _get_icon_settings(state: Dict, settings: Settings) -> (str, str, str, str):
         except (ValueError, TypeError):
             pass
 
-        operator = customization[const.CUSTOM_OPERATOR]
+        operator = customization.get_operator()
 
         if ((operator == "==" and str(value) == str(custom_icon_value))
                 or (operator == "!=" and str(value) != str(custom_icon_value))):
@@ -98,35 +99,35 @@ def _get_icon_settings(state: Dict, settings: Settings) -> (str, str, str, str):
     return name, color, scale, opacity
 
 
-def get_value(state: Dict, customization: Dict):
+def get_value(state: Dict, customization: IconCustomization):
     """
     Gets the current value that the customization references.
     """
-    if customization[const.CUSTOM_ATTRIBUTE] == const.STATE:
+    if customization.get_attribute() == const.STATE:
         value = state[const.STATE]
     else:
-        value = state[const.ATTRIBUTES].get(customization[const.CUSTOM_ATTRIBUTE])
+        value = state[const.ATTRIBUTES].get(customization.get_attribute())
 
     return value
 
 
-def _replace_values(name: str, color: str, scale: float, opacity: str, customization: dict):
+def _replace_values(name: str, color: str, scale: float, opacity: str, customization: IconCustomization):
     ret_name = name
     ret_color = color
     ret_scale = scale
     ret_opacity = opacity
 
-    if customization.get(const.CUSTOM_ICON_ICON) is not None:
-        ret_name = customization[const.CUSTOM_ICON_ICON]
+    if customization.get_icon() is not None:
+        ret_name = customization.get_icon()
 
-    if customization.get(const.CUSTOM_ICON_COLOR) is not None:
-        ret_color = customization[const.CUSTOM_ICON_COLOR]
+    if customization.get_color() is not None:
+        ret_color = customization.get_color()
 
-    if customization.get(const.CUSTOM_ICON_SCALE) is not None:
-        ret_scale = customization[const.CUSTOM_ICON_SCALE]
+    if customization.get_scale() is not None:
+        ret_scale = customization.get_scale()
 
-    if customization.get(const.CUSTOM_ICON_OPACITY) is not None:
-        ret_opacity = customization[const.CUSTOM_ICON_OPACITY]
+    if customization.get_opacity() is not None:
+        ret_opacity = customization.get_opacity()
 
     return ret_name, ret_color, ret_scale, ret_opacity
 

@@ -581,7 +581,7 @@ class HomeAssistantBackend:
         """
         return self._websocket and self._websocket.connected
 
-    def _send_and_wait_for_response_with_semaphore(self, message: Dict[str, str | int], try_count: int=0) -> str:
+    def _send_and_wait_for_response_with_semaphore(self, message: Dict[str, str | int], try_count: int = 0) -> str:
         """
         Send a websocket message to Home Assistant and return the response using a semaphore.
         """

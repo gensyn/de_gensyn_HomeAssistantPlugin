@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Dict, Any
 
 import gi
+
 gi.require_version("Adw", "1")
 from gi.repository import GLib
 from gi.repository.Adw import EntryRow, SwitchRow, PasswordEntryRow, PreferencesGroup
@@ -53,12 +54,12 @@ class HomeAssistant(PluginBase):  # pylint: disable=too-few-public-methods
             app_version="1.5.0-beta"
         )
 
-        settings = self.get_settings()
-        host = settings.get(const.SETTING_HOST, const.EMPTY_STRING)
-        port = settings.get(const.SETTING_PORT, const.EMPTY_STRING)
-        ssl = settings.get(const.SETTING_SSL, True)
-        verify_certificate = settings.get(const.SETTING_VERIFY_CERTIFICATE, True)
-        token = settings.get(const.SETTING_TOKEN, const.EMPTY_STRING)
+        self.settings = settings_helper.get_connection_settings(self.get_settings())
+        host = self.settings.get(const.SETTING_HOST, const.EMPTY_STRING)
+        port = self.settings.get(const.SETTING_PORT, const.EMPTY_STRING)
+        ssl = self.settings.get(const.SETTING_SSL, True)
+        verify_certificate = self.settings.get(const.SETTING_VERIFY_CERTIFICATE, True)
+        token = self.settings.get(const.SETTING_TOKEN, const.EMPTY_STRING)
 
         self.backend = HomeAssistantBackend()
         self.backend.set_host(host)
@@ -131,9 +132,6 @@ class HomeAssistant(PluginBase):  # pylint: disable=too-few-public-methods
         """
         Loads Home Assistant base settings from the disk.
         """
-        self.settings = settings_helper.get_connection_settings(self.get_settings())
-        self.set_settings(self.settings)
-
         self.host_entry.set_text(self.settings[const.SETTING_HOST])
         self.port_entry.set_text(self.settings[const.SETTING_PORT])
         self.ssl_switch.set_active(self.settings[const.SETTING_SSL])

@@ -1,7 +1,7 @@
 """
 Module for helper functions.
 """
-from typing import List
+from typing import List, Tuple
 
 import gi
 from gi.repository.Gdk import RGBA
@@ -29,6 +29,8 @@ def convert_color_list_to_rgba(color: List) -> RGBA:
     """
     Converts a list with RGB values to an RGBA object.
     The alpha value is always set to 1.
+    :param color: the color list to convert
+    :return: the RGBA color
     """
     rgba = RGBA()
     rgba.red = color[0]
@@ -37,5 +39,10 @@ def convert_color_list_to_rgba(color: List) -> RGBA:
     rgba.alpha = 1
     return rgba
 
-def convert_color_list_to_hex(c: List) -> str:
-    return f'#{int(c[0]):02X}{int(c[1]):02X}{int(c[2]):02X}'
+def convert_color_list_to_hex(color: Tuple[int, int, int, int]) -> str:
+    """
+    Converts a tuple with RGBA values to a hex string representation.
+    :param color: the color to convert
+    :return: the color as a hex string
+    """
+    return f'#{int(color[0]):02X}{int(color[1]):02X}{int(color[2]):02X}'

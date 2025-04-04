@@ -1,38 +1,38 @@
 """
 Module for the ParameterSwitchRow.
 """
-from GtkHelper import GenerativeUI
-from de_gensyn_HomeAssistantPlugin import const
+from GtkHelper.GenerativeUI.SwitchRow import SwitchRow
 
-import gi
-gi.require_version("Gtk", "4.0")
-from gi.repository.Gtk import CheckButton
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.service_parameters.parameter_row import ParameterRow
 
-class ParameterSwitchRow(GenerativeUI.SwitchRow.SwitchRow):
+
+class ParameterSwitchRow(ParameterRow, SwitchRow):
     """
     SwitchRow to display service call parameters with a check button.
     """
+
     def __init__(self, action_core, var_name: str, field_name: str, default_value: bool):
-        super().__init__(action_core, var_name, default_value, title=field_name, can_reset=False, complex_var_name=True)
+        ParameterRow.__init__(self, action_core, field_name)
+        SwitchRow.__init__(self, action_core, var_name, default_value, title=field_name,
+                           can_reset=False, complex_var_name=True)
 
-        self.field_name = field_name
-
-        self.check = CheckButton()
-        is_active = self.field_name in self.action_core.settings[const.SETTING_SERVICE][const.SETTING_PARAMETERS]
-        self.check.set_active(is_active)
-        self.check.connect(const.CONNECT_TOGGLED, self._on_change_check)
         self.widget.add_prefix(self.check)
 
-    def set_value(self, value: bool) -> None:
-        if self.check.get_active():
-            super().set_value(value)
+    def get_parameter_value(self) -> bool:
+        """
+        Get the value of the row.
+        :return: the value
+        """
+        return self.get_active()
 
-    def _on_change_check(self, _) -> None:
+    def set_value(self, value: bool) -> None:
+        """
+        Set the value for the row.
+        :param value: the new value
+        """
         if self.check.get_active():
-            self.action_core.settings.set_service_parameter(self.field_name, self.get_active())
-        else:
-            self.action_core.settings.remove_service_parameter(self.field_name)
+            SwitchRow.set_value(self, value)
 
     def _value_changed(self, switch, _) -> None:
         self.check.set_active(True)
-        super()._value_changed(switch, _)
+        SwitchRow._value_changed(self, switch, _)

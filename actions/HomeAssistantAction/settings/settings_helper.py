@@ -7,32 +7,36 @@ from typing import Dict, Any
 
 from de_gensyn_HomeAssistantPlugin import const
 
-VALID_KEYS_CUSTOM_BASE = [
-    const.CUSTOM_ATTRIBUTE,
-    const.CUSTOM_OPERATOR,
-    const.CUSTOM_VALUE
-]
+CUSTOM_ICON = {
+    const.CUSTOM_CONDITION: {
+        const.CUSTOM_ATTRIBUTE: None,
+        const.CUSTOM_OPERATOR: None,
+        const.CUSTOM_VALUE: None
+    },
+    const.CUSTOM_ICON_ICON: None,
+    const.CUSTOM_ICON_COLOR: None,
+    const.CUSTOM_ICON_SCALE: None,
+    const.CUSTOM_ICON_OPACITY: None
+}
 
-VALID_KEYS_CUSTOM_ICON = [
-    const.CUSTOM_ICON_ICON,
-    const.CUSTOM_ICON_COLOR,
-    const.CUSTOM_ICON_SCALE,
-    const.CUSTOM_ICON_OPACITY
-]
-
-VALID_KEYS_CUSTOM_TEXT = [
-    const.CUSTOM_TEXT_POSITION,
-    const.CUSTOM_TEXT_ATTRIBUTE,
-    const.CUSTOM_TEXT_CUSTOM_TEXT,
-    const.CUSTOM_TEXT_ROUND,
-    const.CUSTOM_TEXT_ROUND_PRECISION,
-    const.CUSTOM_TEXT_TEXT_SIZE,
-    const.CUSTOM_TEXT_TEXT_COLOR,
-    const.CUSTOM_TEXT_OUTLINE_SIZE,
-    const.CUSTOM_TEXT_OUTLINE_COLOR,
-    const.CUSTOM_TEXT_SHOW_UNIT,
-    const.CUSTOM_TEXT_LINE_BREAK,
-]
+CUSTOM_TEXT = {
+    const.CUSTOM_CONDITION: {
+        const.CUSTOM_ATTRIBUTE: None,
+        const.CUSTOM_OPERATOR: None,
+        const.CUSTOM_VALUE: None
+    },
+    const.CUSTOM_TEXT_POSITION: None,
+    const.CUSTOM_TEXT_ATTRIBUTE: None,
+    const.CUSTOM_TEXT_CUSTOM_TEXT: None,
+    const.CUSTOM_TEXT_ROUND: None,
+    const.CUSTOM_TEXT_ROUND_PRECISION: None,
+    const.CUSTOM_TEXT_TEXT_SIZE: None,
+    const.CUSTOM_TEXT_TEXT_COLOR: None,
+    const.CUSTOM_TEXT_OUTLINE_SIZE: None,
+    const.CUSTOM_TEXT_OUTLINE_COLOR: None,
+    const.CUSTOM_TEXT_SHOW_UNIT: None,
+    const.CUSTOM_TEXT_LINE_BREAK: None,
+}
 
 DEFAULT_CONNECTION = {
     const.SETTING_HOST: const.EMPTY_STRING,
@@ -83,19 +87,12 @@ DEFAULT_ACTION = {
 }
 
 
-def get_new_action_settings(action_uuid: str=const.EMPTY_STRING, domain: str=const.EMPTY_STRING):
-    result = copy.deepcopy(DEFAULT_ACTION)
-    result[const.SETTING_UUID] = action_uuid
-    result[const.SETTING_ENTITY][const.SETTING_DOMAIN] = domain
-    return result
-
-
 def get_action_settings(existing: Dict[str, Any]) -> Dict[str, Any]:
     """
     This method takes an action settings dict and fills all missing settings with default values.
     Settings present in the existing settings dict, which are not needed anymore, are removed.
     """
-    settings = get_new_action_settings()
+    settings = copy.deepcopy(DEFAULT_ACTION)
 
     for key, value in existing.items():
         if key in settings and key != const.SETTING_VERSION:
@@ -103,15 +100,11 @@ def get_action_settings(existing: Dict[str, Any]) -> Dict[str, Any]:
             settings[key] = value
 
     # remove unused keys in customizations
-    for custom_icon in settings[const.SETTING_ICON][const.SETTING_CUSTOMIZATIONS]:
-        for key in custom_icon:
-            if key not in VALID_KEYS_CUSTOM_BASE and key not in VALID_KEYS_CUSTOM_ICON:
-                custom_icon.pop(key)
+    for index, customization in enumerate(settings[const.SETTING_ICON][const.SETTING_CUSTOMIZATIONS]):
+        settings[const.SETTING_ICON][const.SETTING_CUSTOMIZATIONS][index] = filter_dicts(customization, CUSTOM_ICON)
 
-    for custom_text in settings[const.SETTING_TEXT][const.SETTING_CUSTOMIZATIONS]:
-        for key in custom_text:
-            if key not in VALID_KEYS_CUSTOM_BASE and key not in VALID_KEYS_CUSTOM_TEXT:
-                custom_text.pop(key)
+    for index, customization in enumerate(settings[const.SETTING_TEXT][const.SETTING_CUSTOMIZATIONS]):
+        settings[const.SETTING_TEXT][const.SETTING_CUSTOMIZATIONS][index] = filter_dicts(customization, CUSTOM_TEXT)
 
     if settings[const.SETTING_UUID] == const.EMPTY_STRING:
         settings[const.SETTING_UUID] = str(uuid.uuid4())
@@ -161,28 +154,40 @@ def migrate_v0_to_v1(settings: Dict[str, Any]) -> Dict[str, Any]:
     Added 2025/04/01
     """
 
-    # migrate colors
+    # migrate customizations and colors
     if settings.get(const.SETTING_ICON_COLOR):
-        settings[const.SETTING_ICON_COLOR] = [int(c*255) for c in settings[const.SETTING_ICON_COLOR]]
+        settings[const.SETTING_ICON_COLOR] = [int(c * 255) for c in settings[const.SETTING_ICON_COLOR]]
         settings[const.SETTING_ICON_COLOR].append(255)
     if settings.get(const.SETTING_TEXT_TEXT_COLOR):
-        settings[const.SETTING_TEXT_TEXT_COLOR] = [int(c*255) for c in settings[const.SETTING_TEXT_TEXT_COLOR]]
+        settings[const.SETTING_TEXT_TEXT_COLOR] = [int(c * 255) for c in settings[const.SETTING_TEXT_TEXT_COLOR]]
         settings[const.SETTING_TEXT_TEXT_COLOR].append(255)
     if settings.get(const.SETTING_TEXT_OUTLINE_COLOR):
-        settings[const.SETTING_TEXT_OUTLINE_COLOR] = [int(c*255) for c in settings[const.SETTING_TEXT_OUTLINE_COLOR]]
+        settings[const.SETTING_TEXT_OUTLINE_COLOR] = [int(c * 255) for c in settings[const.SETTING_TEXT_OUTLINE_COLOR]]
         settings[const.SETTING_TEXT_OUTLINE_COLOR].append(255)
 
     for customization in settings.get(const.SETTING_CUSTOMIZATION_ICON, []):
+        customization[const.CUSTOM_CONDITION] = {}
+        customization[const.CUSTOM_CONDITION][const.CUSTOM_ATTRIBUTE] = customization[const.CUSTOM_ATTRIBUTE]
+        customization[const.CUSTOM_CONDITION][const.CUSTOM_OPERATOR] = customization[const.CUSTOM_OPERATOR]
+        customization[const.CUSTOM_CONDITION][const.CUSTOM_VALUE] = customization[const.CUSTOM_VALUE]
+
         if customization.get(const.CUSTOM_ICON_COLOR):
-            customization[const.CUSTOM_ICON_COLOR] = [int(c*255) for c in customization[const.CUSTOM_ICON_COLOR]]
+            customization[const.CUSTOM_ICON_COLOR] = [int(c * 255) for c in customization[const.CUSTOM_ICON_COLOR]]
             customization[const.CUSTOM_ICON_COLOR].append(255)
 
     for customization in settings.get(const.SETTING_CUSTOMIZATION_TEXT, []):
+        customization[const.CUSTOM_CONDITION] = {}
+        customization[const.CUSTOM_CONDITION][const.CUSTOM_ATTRIBUTE] = customization[const.CUSTOM_ATTRIBUTE]
+        customization[const.CUSTOM_CONDITION][const.CUSTOM_OPERATOR] = customization[const.CUSTOM_OPERATOR]
+        customization[const.CUSTOM_CONDITION][const.CUSTOM_VALUE] = customization[const.CUSTOM_VALUE]
+
         if customization.get(const.CUSTOM_TEXT_TEXT_COLOR):
-            customization[const.CUSTOM_TEXT_TEXT_COLOR] = [int(c*255) for c in customization[const.CUSTOM_TEXT_TEXT_COLOR]]
+            customization[const.CUSTOM_TEXT_TEXT_COLOR] = [int(c * 255) for c in
+                                                           customization[const.CUSTOM_TEXT_TEXT_COLOR]]
             customization[const.CUSTOM_TEXT_TEXT_COLOR].append(255)
         if customization.get(const.CUSTOM_TEXT_OUTLINE_COLOR):
-            customization[const.CUSTOM_TEXT_OUTLINE_COLOR] = [int(c*255) for c in customization[const.CUSTOM_TEXT_OUTLINE_COLOR]]
+            customization[const.CUSTOM_TEXT_OUTLINE_COLOR] = [int(c * 255) for c in
+                                                              customization[const.CUSTOM_TEXT_OUTLINE_COLOR]]
             customization[const.CUSTOM_TEXT_OUTLINE_COLOR].append(255)
 
     # migrate entity settings
@@ -192,34 +197,48 @@ def migrate_v0_to_v1(settings: Dict[str, Any]) -> Dict[str, Any]:
 
     # migrate service settings
     settings[const.SETTING_SERVICE] = {}
-    settings[const.SETTING_SERVICE][const.SETTING_CALL_SERVICE] = settings.get(const.SETTING_SERVICE_CALL_SERVICE, const.DEFAULT_SERVICE_CALL_SERVICE)
-    settings[const.SETTING_SERVICE][const.SETTING_SERVICE] = settings.get(const.SETTING_SERVICE_SERVICE, const.EMPTY_STRING)
+    settings[const.SETTING_SERVICE][const.SETTING_CALL_SERVICE] = settings.get(const.SETTING_SERVICE_CALL_SERVICE,
+                                                                               const.DEFAULT_SERVICE_CALL_SERVICE)
+    settings[const.SETTING_SERVICE][const.SETTING_SERVICE] = settings.get(const.SETTING_SERVICE_SERVICE,
+                                                                          const.EMPTY_STRING)
     settings[const.SETTING_SERVICE][const.SETTING_PARAMETERS] = {}
     for key, value in settings.get("service.service_parameters", {}).items():
         settings[const.SETTING_SERVICE][const.SETTING_PARAMETERS][key] = value
 
     # migrate icon settings
     settings[const.SETTING_ICON] = {}
-    settings[const.SETTING_ICON][const.SETTING_SHOW_ICON] = settings.get(const.SETTING_ICON_SHOW_ICON, const.DEFAULT_ICON_SHOW_ICON)
+    settings[const.SETTING_ICON][const.SETTING_SHOW_ICON] = settings.get(const.SETTING_ICON_SHOW_ICON,
+                                                                         const.DEFAULT_ICON_SHOW_ICON)
     settings[const.SETTING_ICON][const.SETTING_ICON] = settings.get(const.SETTING_ICON_ICON, const.EMPTY_STRING)
     settings[const.SETTING_ICON][const.SETTING_COLOR] = settings.get(const.SETTING_ICON_COLOR, const.DEFAULT_ICON_COLOR)
     settings[const.SETTING_ICON][const.SETTING_SCALE] = settings.get(const.SETTING_ICON_SCALE, const.DEFAULT_ICON_SCALE)
-    settings[const.SETTING_ICON][const.SETTING_OPACITY] = settings.get(const.SETTING_ICON_OPACITY, const.DEFAULT_ICON_OPACITY)
+    settings[const.SETTING_ICON][const.SETTING_OPACITY] = settings.get(const.SETTING_ICON_OPACITY,
+                                                                       const.DEFAULT_ICON_OPACITY)
     settings[const.SETTING_ICON][const.SETTING_CUSTOMIZATIONS] = settings.get(const.SETTING_CUSTOMIZATION_ICON, [])
 
     # migrate text settings
     settings[const.SETTING_TEXT] = {}
-    settings[const.SETTING_TEXT][const.SETTING_SHOW_TEXT] = settings.get(const.SETTING_TEXT_SHOW_TEXT, const.DEFAULT_TEXT_SHOW_TEXT)
-    settings[const.SETTING_TEXT][const.SETTING_POSITION] = settings.get(const.SETTING_TEXT_POSITION, const.DEFAULT_TEXT_POSITION)
-    settings[const.SETTING_TEXT][const.SETTING_ATTRIBUTE] = settings.get(const.SETTING_TEXT_ATTRIBUTE, const.DEFAULT_TEXT_ATTRIBUTE)
+    settings[const.SETTING_TEXT][const.SETTING_SHOW_TEXT] = settings.get(const.SETTING_TEXT_SHOW_TEXT,
+                                                                         const.DEFAULT_TEXT_SHOW_TEXT)
+    settings[const.SETTING_TEXT][const.SETTING_POSITION] = settings.get(const.SETTING_TEXT_POSITION,
+                                                                        const.DEFAULT_TEXT_POSITION)
+    settings[const.SETTING_TEXT][const.SETTING_ATTRIBUTE] = settings.get(const.SETTING_TEXT_ATTRIBUTE,
+                                                                         const.DEFAULT_TEXT_ATTRIBUTE)
     settings[const.SETTING_TEXT][const.SETTING_ROUND] = settings.get(const.SETTING_TEXT_ROUND, const.DEFAULT_TEXT_ROUND)
-    settings[const.SETTING_TEXT][const.SETTING_ROUND_PRECISION] = settings.get(const.SETTING_TEXT_ROUND_PRECISION, const.DEFAULT_TEXT_ROUND_PRECISION)
-    settings[const.SETTING_TEXT][const.SETTING_TEXT_SIZE] = settings.get(const.SETTING_TEXT_TEXT_SIZE, const.DEFAULT_TEXT_TEXT_SIZE)
-    settings[const.SETTING_TEXT][const.SETTING_TEXT_COLOR] = settings.get(const.SETTING_TEXT_TEXT_COLOR, const.DEFAULT_TEXT_TEXT_COLOR)
-    settings[const.SETTING_TEXT][const.SETTING_OUTLINE_SIZE] = settings.get(const.SETTING_TEXT_OUTLINE_SIZE, const.DEFAULT_TEXT_OUTLINE_SIZE)
-    settings[const.SETTING_TEXT][const.SETTING_OUTLINE_COLOR] = settings.get(const.SETTING_TEXT_OUTLINE_COLOR, const.DEFAULT_TEXT_OUTLINE_COLOR)
-    settings[const.SETTING_TEXT][const.SETTING_SHOW_UNIT] = settings.get(const.SETTING_TEXT_SHOW_UNIT, const.DEFAULT_TEXT_SHOW_UNIT)
-    settings[const.SETTING_TEXT][const.SETTING_UNIT_LINE_BREAK] = settings.get(const.SETTING_TEXT_UNIT_LINE_BREAK, const.DEFAULT_TEXT_UNIT_LINE_BREAK)
+    settings[const.SETTING_TEXT][const.SETTING_ROUND_PRECISION] = settings.get(const.SETTING_TEXT_ROUND_PRECISION,
+                                                                               const.DEFAULT_TEXT_ROUND_PRECISION)
+    settings[const.SETTING_TEXT][const.SETTING_TEXT_SIZE] = settings.get(const.SETTING_TEXT_TEXT_SIZE,
+                                                                         const.DEFAULT_TEXT_TEXT_SIZE)
+    settings[const.SETTING_TEXT][const.SETTING_TEXT_COLOR] = settings.get(const.SETTING_TEXT_TEXT_COLOR,
+                                                                          const.DEFAULT_TEXT_TEXT_COLOR)
+    settings[const.SETTING_TEXT][const.SETTING_OUTLINE_SIZE] = settings.get(const.SETTING_TEXT_OUTLINE_SIZE,
+                                                                            const.DEFAULT_TEXT_OUTLINE_SIZE)
+    settings[const.SETTING_TEXT][const.SETTING_OUTLINE_COLOR] = settings.get(const.SETTING_TEXT_OUTLINE_COLOR,
+                                                                             const.DEFAULT_TEXT_OUTLINE_COLOR)
+    settings[const.SETTING_TEXT][const.SETTING_SHOW_UNIT] = settings.get(const.SETTING_TEXT_SHOW_UNIT,
+                                                                         const.DEFAULT_TEXT_SHOW_UNIT)
+    settings[const.SETTING_TEXT][const.SETTING_UNIT_LINE_BREAK] = settings.get(const.SETTING_TEXT_UNIT_LINE_BREAK,
+                                                                               const.DEFAULT_TEXT_UNIT_LINE_BREAK)
     settings[const.SETTING_TEXT][const.SETTING_CUSTOMIZATIONS] = settings.get(const.SETTING_CUSTOMIZATION_TEXT, [])
 
     return settings
@@ -258,3 +277,26 @@ def migrate_call_service_moved_to_expander(settings: Dict[str, Any]) -> Dict[str
         settings[const.SETTING_SERVICE_CALL_SERVICE] = True
 
     return settings
+
+
+def filter_dicts(dict1, dict2):
+    """
+    Remove keys from dict1 that are not present in dict2.
+    If the value of a key is a dict, apply the same filtering recursively.
+
+    Args:
+    dict1 (dict): The dictionary to be filtered.
+    dict2 (dict): The dictionary to check against.
+
+    Returns:
+    dict: The filtered dictionary.
+    """
+    filtered_dict = {}
+    for key in dict1:
+        if key in dict2:
+            # If the value is a dictionary, recurse into it
+            if isinstance(dict1[key], dict) and isinstance(dict2[key], dict):
+                filtered_dict[key] = filter_dicts(dict1[key], dict2[key])
+            else:
+                filtered_dict[key] = dict1[key]
+    return filtered_dict
