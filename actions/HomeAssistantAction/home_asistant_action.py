@@ -3,6 +3,7 @@ The module for the Home Assistant action that is loaded in StreamController.
 """
 
 import json
+from collections import Counter
 from json import JSONDecodeError
 from typing import List, Tuple
 
@@ -547,6 +548,9 @@ class HomeAssistantAction(ActionCore):
         if not self.initialized:
             return
 
+        # different entities have different attributes -> reload
+        self._load_attributes()
+
         show_icon = self.settings.get_show_icon()
         show_text = self.settings.get_show_text()
 
@@ -648,16 +652,20 @@ class HomeAssistantAction(ActionCore):
 
         ha_entity = self.plugin_base.backend.get_entity(self.settings.get_entity())
 
-        text_attribute_model = [const.STATE]
-        text_attribute_model.extend(list(ha_entity.get(const.ATTRIBUTES, {}).keys()))
+        attribute_model = [const.STATE]
+        attribute_model.extend(list(ha_entity.get(const.ATTRIBUTES, {}).keys()))
 
-        self.text_attribute_combo.populate(text_attribute_model, attribute)
+        if not attribute in attribute_model:
+            attribute_model.append(attribute)
+
+        if Counter(attribute_model) != Counter(self._get_current_attributes()):
+            self.text_attribute_combo.populate(attribute_model, attribute, trigger_callback=False)
 
     def _load_custom_icons(self):
         self.icon_custom_icon_expander.clear_rows()
 
-        attributes = [self.text_attribute_combo.get_item_at(i) for i in
-                      range(self.text_attribute_combo.get_item_amount())]
+        attributes = self._get_current_attributes()
+
         state = self.plugin_base.backend.get_entity(self.settings.get_entity())
 
         for index, customization in enumerate(self.settings.get_icon_customizations()):
@@ -683,8 +691,8 @@ class HomeAssistantAction(ActionCore):
     def _load_custom_text(self):
         self.text_custom_text_expander.clear_rows()
 
-        attributes = [self.text_attribute_combo.get_item_at(i) for i in
-                      range(self.text_attribute_combo.get_item_amount())]
+        attributes = self._get_current_attributes()
+
         state = self.plugin_base.backend.get_entity(self.settings.get_entity())
 
         for index, customization in enumerate(self.settings.get_text_customizations()):
@@ -709,8 +717,7 @@ class HomeAssistantAction(ActionCore):
 
     def _on_add_customization(self, _, customization_type: str, callback,
                               index: int = -1):
-        attributes = [str(self.text_attribute_combo.get_item_at(i)) for i in
-                      range(self.text_attribute_combo.get_item_amount())]
+        attributes = self._get_current_attributes()
 
         current = None
 
@@ -855,3 +862,10 @@ class HomeAssistantAction(ActionCore):
         Callback function to be executed when the Home Assistant connection status changes.
         """
         GLib.idle_add(self.connection_status.set_title, status)
+
+    def _get_current_attributes(self) -> List[str]:
+        """
+        Gets the list of attributes set on the Combo as strings.
+        :return: the list of attributes set on the Combo as strings
+        """
+        return [str(self.text_attribute_combo.get_item_at(i)) for i in range(self.text_attribute_combo.get_item_amount())]
