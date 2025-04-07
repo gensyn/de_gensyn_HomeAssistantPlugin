@@ -696,22 +696,15 @@ class HomeAssistantAction(ActionCore):
         state = self.plugin_base.backend.get_entity(self.settings.get_entity())
 
         for index, customization in enumerate(self.settings.get_text_customizations()):
-            row = CustomizationTextRow(self.lm, customization,
-                                       len(self.settings.get_text_customizations()), index,
-                                       attributes, state, self.settings)
+            row = CustomizationTextRow(self.lm, customization, len(self.settings.get_text_customizations()), index, attributes, state, self.settings)
 
-            row.edit_button.connect(const.CONNECT_CLICKED, self._on_add_customization,
-                                    const.CUSTOMIZATION_TYPE_TEXT, self._add_custom_text,
-                                    self.settings.get_text_customizations(), index)
+            row.edit_button.connect(const.CONNECT_CLICKED, self._on_add_customization, const.CUSTOMIZATION_TYPE_TEXT, self._add_custom_text, index)
 
-            row.delete_button.connect(const.CONNECT_CLICKED, self._on_delete_customization,
-                                      self.settings.get_text_customizations(), index)
+            row.delete_button.connect(const.CONNECT_CLICKED, self._on_delete_customization, const.CUSTOMIZATION_TYPE_TEXT, index)
 
-            row.up_button.connect(const.CONNECT_CLICKED, self._on_move_up,
-                                  self.settings.get_text_customizations(), index)
+            row.up_button.connect(const.CONNECT_CLICKED, self._on_move_up, const.CUSTOMIZATION_TYPE_TEXT, index)
 
-            row.down_button.connect(const.CONNECT_CLICKED, self._on_move_down,
-                                    self.settings.get_text_customizations(), index)
+            row.down_button.connect(const.CONNECT_CLICKED, self._on_move_down, const.CUSTOMIZATION_TYPE_TEXT, index)
 
             self.text_custom_text_expander.add_row(row)
 

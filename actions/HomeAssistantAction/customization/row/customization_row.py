@@ -45,7 +45,7 @@ class CustomizationRow(ActionRow):
 
         self.down_button = Button(icon_name="go-down", valign=Align.CENTER)
         self.down_button.set_size_request(15, 7)
-        self.down_button.set_sensitive(index != customization_count)
+        self.down_button.set_sensitive(index != customization_count-1)
 
         box_arrows = Box(orientation=Orientation.VERTICAL, spacing=1)
         box_arrows.append(self.up_button)

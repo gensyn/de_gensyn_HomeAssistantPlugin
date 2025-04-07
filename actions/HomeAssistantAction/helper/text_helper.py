@@ -149,7 +149,8 @@ def _replace_values(text: str, position: str, attribute: str, text_round: bool,
     ret_line_break = line_break
 
     if customization.get_custom_text() is not None:
-        ret_text = customization.get_custom_text()
+        ret_text = customization.get_custom_text().replace("%s", text)
+        ret_text = "\n".join(ret_text.split("\\n"))
 
     if customization.get_position() is not None:
         ret_position = customization.get_position()
