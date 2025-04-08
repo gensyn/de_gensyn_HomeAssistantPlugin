@@ -744,7 +744,7 @@ class HomeAssistantAction(ActionCore):
 
     def _on_move_up(self, _, customization_type: str, index: int):
         if customization_type == const.CUSTOMIZATION_TYPE_ICON:
-            self.settings.move_icon_customizations(index, -1)
+            self.settings.move_icon_customization(index, -1)
         else:
             self.settings.move_text_customization(index, -1)
 
@@ -755,7 +755,7 @@ class HomeAssistantAction(ActionCore):
 
     def _on_move_down(self, _, customization_type: str, index: int):
         if customization_type == const.CUSTOMIZATION_TYPE_ICON:
-            self.settings.move_icon_customizations(index, 1)
+            self.settings.move_icon_customization(index, 1)
         else:
             self.settings.move_text_customization(index, 1)
 

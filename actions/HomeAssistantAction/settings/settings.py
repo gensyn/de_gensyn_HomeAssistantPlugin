@@ -118,14 +118,14 @@ class Settings:
         Get the icon scale.
         :return: the icon scale
         """
-        return self.settings[const.SETTING_ICON][const.SETTING_SCALE]
+        return int(self.settings[const.SETTING_ICON][const.SETTING_SCALE])
 
     def get_icon_opacity(self) -> int:
         """
         Get the icon opacity.
         :return: the icon opacity
         """
-        return self.settings[const.SETTING_ICON][const.SETTING_OPACITY]
+        return int(self.settings[const.SETTING_ICON][const.SETTING_OPACITY])
 
     def get_icon_customizations(self) -> List[IconCustomization]:
         """
@@ -149,7 +149,7 @@ class Settings:
 
         return result
 
-    def move_icon_customizations(self, index: int, places_count: int):
+    def move_icon_customization(self, index: int, places_count: int):
         """
         Move the icon customization at the index by x places.
         :param index: the index to move
@@ -219,14 +219,14 @@ class Settings:
         Get the text round precision.
         :return: the text round precision
         """
-        return self.settings[const.SETTING_TEXT][const.SETTING_ROUND_PRECISION]
+        return int(self.settings[const.SETTING_TEXT][const.SETTING_ROUND_PRECISION])
 
     def get_text_text_size(self) -> int:
         """
         Get the text size.
         :return: the text size
         """
-        return self.settings[const.SETTING_TEXT][const.SETTING_TEXT_SIZE]
+        return int(self.settings[const.SETTING_TEXT][const.SETTING_TEXT_SIZE])
 
     def get_text_text_color(self) -> Tuple[int, int, int, int]:
         """
@@ -240,7 +240,7 @@ class Settings:
         Get the text outline size.
         :return: the text outline size
         """
-        return self.settings[const.SETTING_TEXT][const.SETTING_OUTLINE_SIZE]
+        return int(self.settings[const.SETTING_TEXT][const.SETTING_OUTLINE_SIZE])
 
     def get_text_outline_color(self) -> Tuple[int, int, int, int]:
         """
