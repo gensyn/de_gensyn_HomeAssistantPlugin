@@ -10,8 +10,8 @@ from typing import List, Tuple
 import gi
 gi.require_version("Adw", "1")
 from gi.repository.Gtk import Button, Align, Widget
-from gi.repository.Adw import PreferencesGroup, ActionRow
-from gi.repository import GLib
+from gi.repository.Adw import PreferencesGroup
+
 
 from GtkHelper.GenerativeUI.ColorButtonRow import ColorButtonRow
 from GtkHelper.GenerativeUI.ComboRow import ComboRow
@@ -19,7 +19,7 @@ from GtkHelper.GenerativeUI.EntryRow import EntryRow
 from GtkHelper.GenerativeUI.ExpanderRow import ExpanderRow
 from GtkHelper.GenerativeUI.ScaleRow import ScaleRow
 from GtkHelper.GenerativeUI.SwitchRow import SwitchRow
-from backend.DeckManagement.InputIdentifier import Input
+from backend.DeckManagement.InputIdentifier import Input, InputEvent
 from backend.PluginManager.EventAssigner import EventAssigner
 from de_gensyn_HomeAssistantPlugin import const
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.icon_customization import IconCustomization
@@ -55,7 +55,7 @@ class HomeAssistantAction(ActionCore):
             callback=self._call_service
         )
 
-        self.event_manager.add_event_assigner(event_assigner)
+        self.add_event_assigner(event_assigner)
 
         self.initialized = False
         self.lm = self.plugin_base.locale_manager
@@ -64,7 +64,6 @@ class HomeAssistantAction(ActionCore):
         self._init_service_group()
         self._init_icon_group()
         self._init_text_group()
-        self._init_connection_group()
 
         self.has_configuration = True
 
@@ -134,7 +133,7 @@ class HomeAssistantAction(ActionCore):
         """
         Get the rows to be displayed in the UI.
         """
-        return [self._entity_group, self._service_group, self._icon_group, self._text_group, self._connection_group]
+        return [self._entity_group, self._service_group, self._icon_group, self._text_group]
 
     def _init_entity_group(self):
         """
@@ -362,22 +361,6 @@ class HomeAssistantAction(ActionCore):
         self.text_show_text.add_row(self.text_custom_text_expander.widget)
 
         self._text_group = self._create_group(const.LABEL_SETTINGS_TEXT, [self.text_show_text.widget])
-
-    def _init_connection_group(self):
-        """
-        Get all connection rows.
-        """
-
-        #
-        # Connection status
-        #
-        self.connection_status = ActionRow(title=self.lm.get(const.SETTING_CONNECTION_STATUS))
-        self.connection_status.set_title(
-            const.CONNECTED if self.plugin_base.backend.is_connected() else const.NOT_CONNECTED)
-
-        self.plugin_base.backend.set_connection_status_callback(self.set_connection_status)
-
-        self._connection_group = self._create_group(const.LABEL_SETTINGS_CONNECTION, [self.connection_status])
 
     def _create_group(self, title_const: str, widgets: List[Widget]) -> PreferencesGroup:
         group = PreferencesGroup()
@@ -849,12 +832,6 @@ class HomeAssistantAction(ActionCore):
 
             self.text_custom_text_expander.set_expanded(
                 len(self.settings.get_text_customizations()) > 0)
-
-    def set_connection_status(self, status) -> None:
-        """
-        Callback function to be executed when the Home Assistant connection status changes.
-        """
-        GLib.idle_add(self.connection_status.set_title, status)
 
     def _get_current_attributes(self) -> List[str]:
         """
