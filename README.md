@@ -49,6 +49,9 @@ If the connection can't be established or is lost, the plugin automatically trie
 Located within each action are settings that allow you to call Home Assistant services or show
 icons or text of Home Assistant entities (or possibly all three). 
 
+### Dial Control Action
+This action type is designed for devices with rotational dials, such as the Stream Deck+. It allows you to control Home Assistant entities by rotating the dial.
+
 ### Action entity
 First you need to pick an entity for your action.
 

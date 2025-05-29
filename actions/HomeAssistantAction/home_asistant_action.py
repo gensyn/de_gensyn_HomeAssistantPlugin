@@ -4,6 +4,7 @@ The module for the Home Assistant action that is loaded in StreamController.
 
 import json
 import uuid
+import threading
 from functools import partial
 from json import JSONDecodeError
 from typing import Any, Dict, List
@@ -16,6 +17,7 @@ from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.row
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.window.customization_text_window import CustomizationTextWindow
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.helper.scale_row import ScaleRow
 from src.backend.PluginManager.ActionBase import ActionBase
+from src.backend.DeckManagement.InputIdentifier import Input, InputEvent
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
@@ -81,6 +83,18 @@ class HomeAssistantAction(ActionBase):
     text_unit_line_break: SwitchRow
     text_custom_text_expander: BetterExpander
 
+    dial_entity_domain_combo: ComboRow
+    dial_entity_domain_model: StringList
+
+    dial_entity_entity_combo: ComboRow
+    dial_entity_entity_model: StringList
+
+    dial_service_call_service: ExpanderRow
+    dial_service_service_combo: ComboRow
+    dial_service_service_model: StringList
+
+    dial_step_size: ScaleRow
+
     connection_status: ActionRow
 
     connect_rows: List = []
@@ -89,6 +103,11 @@ class HomeAssistantAction(ActionBase):
         super().__init__(*args, **kwargs)
 
         self.has_configuration = True
+
+        # Timeout mechanism for dial turns
+        self._accumulated_step: int = 0
+        self._dial_timer: threading.Timer | None = None
+        self.dial_timeout: float = 0.2  # 200ms timeout
 
         self.uuid = uuid.uuid4()
 
@@ -160,6 +179,8 @@ class HomeAssistantAction(ActionBase):
         icon_group = self._get_icon_group()
         text_group = self._get_text_group()
         connection_group = self._get_connection_group()
+        # if Input.Dial > -1:
+        dial_settings_group = self._get_dial_settings_group()
 
         self._load_attributes()
         self._load_icon_settings()
@@ -170,13 +191,14 @@ class HomeAssistantAction(ActionBase):
         self.initialized = True
 
         self._load_domains()
+        self._load_dial_domains()
 
         self._set_enabled_disabled()
 
         # connect as the last action - else the on_change functions trigger on populating the models
         self._connect_rows()
 
-        return [entity_group, service_group, icon_group, text_group, connection_group]
+        return [entity_group, service_group, icon_group, text_group, dial_settings_group, connection_group]
 
     def _get_entity_group(self) -> PreferencesGroup:
         """
@@ -636,6 +658,49 @@ class HomeAssistantAction(ActionBase):
 
         return group
 
+    def _get_dial_settings_group(self) -> PreferencesGroup:
+        """
+        Get all dial entity rows.
+        """
+        self.dial_entity_domain_combo = ComboRow(title=self.lm.get(const.LABEL_ENTITY_DOMAIN))
+        self.dial_entity_domain_combo.set_enable_search(True)
+        self.dial_entity_domain_combo.set_expression(self.combo_expression)
+        self.connect_rows.append(
+            partial(self.dial_entity_domain_combo.connect, const.CONNECT_NOTIFY_SELECTED,
+                    self._on_change_dial_domain))
+
+        self.dial_entity_entity_combo = ComboRow(title=self.lm.get(const.LABEL_ENTITY_ENTITY))
+        self.dial_entity_entity_combo.set_factory(self.combo_factory)
+        self.dial_entity_entity_combo.set_enable_search(True)
+        self.dial_entity_entity_combo.set_expression(self.combo_expression)
+        self.connect_rows.append(
+            partial(self.dial_entity_entity_combo.connect, const.CONNECT_NOTIFY_SELECTED,
+                    self._on_change_dial_entity))
+
+        self.dial_service_service_combo = ComboRow(title=self.lm.get(const.LABEL_SERVICE_SERVICE))
+        self.dial_service_service_combo.set_factory(self.combo_factory)
+        self.dial_service_service_combo.set_enable_search(True)
+        self.dial_service_service_combo.set_expression(self.combo_expression)
+        self.connect_rows.append(
+            partial(self.dial_service_service_combo.connect, const.CONNECT_NOTIFY_SELECTED,
+                    self._on_change_dial_service))
+
+        self.dial_step_size = ScaleRow(self.lm.get(const.LABEL_TEXT_TEXT_SIZE),
+                                       const.DIAL_STEP_SIZE_MIN_SIZE, const.DIAL_STEP_SIZE_MAX_SIZE, 1)
+        self.connect_rows.append(
+            partial(self.dial_step_size.connect, const.CONNECT_VALUE_CHANGED, self._on_change_dial_step_size,
+                    const.SETTING_DIAL_STEP_SIZE))
+
+        group = PreferencesGroup()
+        group.set_title(self.lm.get(const.LABEL_SETTINGS_DIAL))
+        group.set_margin_top(20)
+        group.add(self.dial_entity_domain_combo)
+        group.add(self.dial_entity_entity_combo)
+        group.add(self.dial_service_service_combo)
+        group.add(self.dial_step_size)
+
+        return group
+
     def _connect_rows(self) -> None:
         """
         Connect all input fields to functions to be called on changes.
@@ -733,6 +798,24 @@ class HomeAssistantAction(ActionBase):
 
         self._set_enabled_disabled()
 
+    def _on_change_dial_domain(self, combo, _):
+        """
+        Execute when the domain is changed.
+        """
+        old_domain = self.settings.setdefault(const.SETTING_DIAL_ENTITY_DOMAIN, const.EMPTY_STRING)
+
+        domain = combo.get_selected_item().get_string()
+
+        self.set_setting(const.SETTING_DIAL_ENTITY_DOMAIN, domain)
+
+        if old_domain != domain:
+            self.dial_entity_entity_combo.set_model(None)
+            self.dial_service_service_combo.set_model(None)
+
+        if domain:
+            self._load_dial_entities()
+            self._load_dial_services()
+
     def _on_change_entity(self, combo, _):
         """
         Execute when the entity is changed.
@@ -758,6 +841,18 @@ class HomeAssistantAction(ActionBase):
 
         self._set_enabled_disabled()
 
+    def _on_change_dial_entity(self, combo, _):
+        """
+        Execute when the entity is changed.
+        """
+        old_entity = self.settings[const.SETTING_DIAL_ENTITY_ENTITY]
+        entity = combo.get_selected_item().get_string()
+
+        if old_entity == entity:
+            return
+
+        self.set_setting(const.SETTING_DIAL_ENTITY_ENTITY, entity)
+
     def _on_change_service(self, combo, _):
         """
         Execute when the service is changed.
@@ -771,6 +866,13 @@ class HomeAssistantAction(ActionBase):
         self._set_enabled_disabled()
 
         self._entity_updated()
+
+    def _on_change_dial_service(self, combo, _):
+        """
+        Execute when the service is changed.
+        """
+        value = combo.get_selected_item().get_string() if combo.get_selected_item() else ""
+        self.set_setting(const.SETTING_DIAL_SERVICE_SERVICE, value)
 
     def _on_change_combo(self, combo, *args):
         """
@@ -801,6 +903,13 @@ class HomeAssistantAction(ActionBase):
 
         self._entity_updated()
 
+    def _on_change_dial_step_size(self, scale, *_):
+        """
+        Execute when the value is changed in a scale.
+        """
+        size = scale.get_value()
+        self.set_setting(const.SETTING_DIAL_STEP_SIZE, size)
+
     def _on_change_spin_event_controller(self, _, *args):
         """
         Execute when the number is changed in a spin row.
@@ -823,6 +932,31 @@ class HomeAssistantAction(ActionBase):
             return
 
         entity = self.settings[const.SETTING_ENTITY_ENTITY]
+
+        if (show_icon or show_text) and state is None:
+            state = self.plugin_base.backend.get_entity(entity)
+
+        self._update_icon(show_icon, state)
+        self._update_labels(show_text, state)
+
+        if self.initialized:
+            self._load_custom_icons()
+            self._load_custom_text()
+            self._set_enabled_disabled()
+
+    def _dial_entity_updated(self, state: dict = None) -> None:
+        """
+        Executed when an entity is updated to reflect the changes on the key.
+        """
+        show_icon = self.settings[const.SETTING_ICON_SHOW_ICON]
+        show_text = self.settings[const.SETTING_TEXT_SHOW_TEXT]
+
+        if not show_icon and not show_text:
+            self.set_media()
+            self._clear_labels()
+            return
+
+        entity = self.settings[const.SETTING_DIAL_ENTITY_ENTITY]
 
         if (show_icon or show_text) and state is None:
             state = self.plugin_base.backend.get_entity(entity)
@@ -998,6 +1132,70 @@ class HomeAssistantAction(ActionBase):
 
             self.text_custom_text_expander.add_row(row)
 
+    def _load_dial_domains(self):
+        """
+        Load domains from Home Assistant.
+        """
+        old_domain = self.settings[const.SETTING_DIAL_ENTITY_DOMAIN]
+
+        self.dial_entity_domain_model = StringList.new([const.EMPTY_STRING])
+        self.dial_entity_domain_combo.set_model(self.dial_entity_domain_model)
+
+        all_domains = self.plugin_base.backend.get_domains()
+        domains = [domain for domain in const.DIAL_ALLOWED_DOMAINS if domain in all_domains]
+
+        if not old_domain in domains:
+            domains.append(old_domain)
+
+        for domain in domains:
+            self.dial_entity_domain_model.append(domain)
+
+        helper.set_value_in_combo(self.dial_entity_domain_combo, old_domain)
+        self._load_dial_entities()
+        self._load_dial_services()
+
+    def _load_dial_entities(self):
+        """
+        Load entities from Home Assistant.
+        """
+        old_entity = self.settings[const.SETTING_DIAL_ENTITY_ENTITY]
+
+        self.dial_entity_entity_model = StringList.new([const.EMPTY_STRING])
+        self.dial_entity_entity_combo.set_model(self.dial_entity_entity_model)
+
+        entities = sorted(
+            self.plugin_base.backend.get_entities(
+                self.dial_entity_domain_combo.get_selected_item().get_string()))
+
+        if not old_entity in entities:
+            entities.append(old_entity)
+
+        for entity in entities:
+            self.dial_entity_entity_model.append(entity)
+
+        helper.set_value_in_combo(self.dial_entity_entity_combo, old_entity)
+
+    def _load_dial_services(self):
+        """
+        Load services from Home Assistant.
+        """
+        old_service = self.settings[const.SETTING_DIAL_SERVICE_SERVICE]
+
+        self.dial_service_service_model = StringList.new([])
+        self.dial_service_service_combo.set_model(self.dial_service_service_model)
+        self.dial_step_size.set_value(self.settings[const.SETTING_DIAL_STEP_SIZE])
+
+        all_domains = self.plugin_base.backend.get_domains()
+
+        all_services = self.plugin_base.backend.get_services(
+            self.dial_entity_domain_combo.get_selected_item().get_string())
+        services = [service for service in const.DIAL_ALLOWED_SERVICES if service in all_services]
+
+        for service in services:
+            self.dial_service_service_model.append(service)
+
+        helper.set_value_in_combo(self.dial_service_service_combo, old_service)
+
     def _on_add_customization(self, _, customization_type: str, callback,
                               customization_list: List = None, index: int = -1):
         attributes = [self.text_attribute_model.get_string(i) for i in
@@ -1144,3 +1342,64 @@ class HomeAssistantAction(ActionBase):
         """
         self.settings[key] = value
         self.set_settings(self.settings)
+
+    def event_callback(self, event: InputEvent, data: dict) -> None:
+        """
+        Callback for dial events.
+        """
+        if event == Input.Dial.Events.TURN_CW:
+            if self.settings[const.SETTING_DIAL_SERVICE_SERVICE]:
+                self._accumulate_dial_step(self.settings[const.SETTING_DIAL_STEP_SIZE])
+            else:
+                print("DialAction: Dial turned clockwise, but no turn service configured.")
+        
+        elif event == Input.Dial.Events.TURN_CCW:
+            if self.settings[const.SETTING_DIAL_SERVICE_SERVICE]:
+                self._accumulate_dial_step(-self.settings[const.SETTING_DIAL_STEP_SIZE])
+            else:
+                print("DialAction: Dial turned counter-clockwise, but no turn service configured.")
+        
+        else:
+            super().event_callback(event, data)
+
+    def _accumulate_dial_step(self, step: int) -> None:
+        """
+        Accumulate dial steps and set/reset timer for delayed service call.
+        """
+        # Cancel existing timer if running
+        if self._dial_timer is not None:
+            self._dial_timer.cancel()
+        
+        # Accumulate the step
+        self._accumulated_step += step
+        
+        # Start new timer
+        self._dial_timer = threading.Timer(self.dial_timeout, self._execute_accumulated_dial_turn)
+        self._dial_timer.start()
+        
+    def _execute_accumulated_dial_turn(self) -> None:
+        """
+        Execute the accumulated dial turn service call.
+        """
+        if self._accumulated_step == 0:
+            return
+        
+        try:
+            full_service = f"{self.settings[const.SETTING_DIAL_ENTITY_DOMAIN]}.{self.settings[const.SETTING_DIAL_SERVICE_SERVICE]}"
+            _domain, service_name = full_service.split('.', 1)
+            service_data = {
+                "entity_id": self.settings[const.SETTING_DIAL_ENTITY_ENTITY],
+                "brightness_step_pct": self._accumulated_step
+            }
+            
+            self.plugin_base.backend.call_service(self.settings[const.SETTING_DIAL_ENTITY_ENTITY], service_name, service_data)
+            
+        except ValueError:
+            print(f"DialAction: Invalid service format for dial_turn_service: {service_name}. Expected 'domain.service_name'.")
+        except Exception as e:
+            print(f"DialAction: Error calling accumulated service {self.settings[const.SETTING_DIAL_SERVICE_SERVICE]} on {self.settings[const.SETTING_DIAL_ENTITY_ENTITY]}: {e}")
+        finally:
+            # Reset accumulated step and timer
+            self._accumulated_step = 0
+            self._dial_timer = None
+

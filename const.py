@@ -74,6 +74,7 @@ LABEL_SETTINGS_SERVICE = "actions.home_assistant.settings.service.label"
 LABEL_SETTINGS_ICON = "actions.home_assistant.settings.icon.label"
 LABEL_SETTINGS_TEXT = "actions.home_assistant.settings.text.label"
 LABEL_SETTINGS_CONNECTION = "actions.home_assistant.settings.connection.label"
+LABEL_SETTINGS_DIAL = "actions.home_assistant.settings.dial.label"
 
 LABEL_CUSTOMIZATION_ICON_TITLE = "actions.home_assistant.customization.icon_title.label"
 LABEL_CUSTOMIZATION_TEXT_TITLE = "actions.home_assistant.customization.text_title.label"
@@ -120,6 +121,13 @@ SETTING_TEXT_OUTLINE_SIZE = "text.outline_size"
 SETTING_TEXT_OUTLINE_COLOR = "text.outline_color"
 SETTING_TEXT_SHOW_UNIT = "text.show_unit"
 SETTING_TEXT_UNIT_LINE_BREAK = "text.unit_line_break"
+
+SETTING_DIAL_ENTITY_DOMAIN = "entity.dial_domain"
+SETTING_DIAL_ENTITY_ENTITY = "entity.dial_entity"
+
+SETTING_DIAL_SERVICE_CALL_SERVICE = "service.dial_call_service"
+SETTING_DIAL_SERVICE_SERVICE = "service.dial_service"
+SETTING_DIAL_STEP_SIZE = "text.dial_step_size"
 
 SETTING_CONNECTION_STATUS = "actions.home_assistant.connection.connection_status.label"
 
@@ -202,6 +210,12 @@ TEXT_TEXT_MIN_SIZE = 0
 TEXT_TEXT_MAX_SIZE = 50
 TEXT_OUTLINE_MIN_SIZE = 0
 TEXT_OUTLINE_MAX_SIZE = 10
+
+DEFAULT_DIAL_STEP_SIZE = 1
+DIAL_STEP_SIZE_MIN_SIZE = 1
+DIAL_STEP_SIZE_MAX_SIZE = 50
+DIAL_ALLOWED_DOMAINS = ["light"]
+DIAL_ALLOWED_SERVICES = ["turn_on"]
 
 CONNECTED = "Connected"
 CONNECTING = "Connecting"

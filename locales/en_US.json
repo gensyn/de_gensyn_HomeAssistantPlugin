@@ -10,6 +10,7 @@
     "actions.home_assistant.settings.icon.label": "Icon",
     "actions.home_assistant.settings.text.label": "Text",
     "actions.home_assistant.settings.connection.label": "Connection status",
+    "actions.home_assistant.settings.dial.label": "Dial Configuration",
 
     "actions.home_assistant.entity.domain.label": "Domain:",
     "actions.home_assistant.entity.entity.label": "Entity:",
@@ -64,4 +65,5 @@
     "actions.home_assistant.customization.less_than_equals.label": "is less than or equals",
     "actions.home_assistant.customization.greater_than.label": "is greater than",
     "actions.home_assistant.customization.greater_than_equals.label": "is greater than or equals"
+
 }
