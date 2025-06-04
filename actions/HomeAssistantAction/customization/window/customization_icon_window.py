@@ -3,9 +3,10 @@ The module for the Home Assistant customization icon window.
 """
 
 from functools import partial
-from typing import Callable, List, Dict
+from typing import Callable, List
 
 from de_gensyn_HomeAssistantPlugin import const
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.icon_customization import IconCustomization
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.window.customization_window \
     import CustomizationWindow
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.helper import helper
@@ -17,7 +18,7 @@ class CustomizationIconWindow(CustomizationWindow):
     """
 
     def __init__(self, lm, attributes: List, callback: Callable,
-                 current: Dict = None, index: int = None):
+                 current: IconCustomization = None, index: int = None):
         super().__init__(const.CUSTOMIZATION_TYPE_ICON, lm, attributes, callback, current, index)
 
         self.set_title(lm.get(const.LABEL_CUSTOMIZATION_ICON_TITLE))
@@ -101,31 +102,31 @@ class CustomizationIconWindow(CustomizationWindow):
         self.scale_opacity.set_value(const.DEFAULT_ICON_OPACITY)
         self.entry_opacity.set_text(str(const.DEFAULT_ICON_OPACITY))
 
-    def _set_current_values(self, current: Dict) -> None:
+    def _set_current_values(self, current: IconCustomization) -> None:
         if not current:
             return
 
         super()._set_current_values(current)
 
-        self.entry_icon.set_text(current.get(const.CUSTOM_ICON_ICON, const.EMPTY_STRING))
-        self.check_icon.set_active(const.CUSTOM_ICON_ICON in current.keys())
+        self.entry_icon.set_text(current.get_icon() or const.EMPTY_STRING)
+        self.check_icon.set_active(current.get_icon() is not None)
 
-        if current.get(const.CUSTOM_ICON_COLOR):
-            rgba = helper.convert_color_list_to_rgba(current[const.CUSTOM_ICON_COLOR])
+        if current.get_color():
+            rgba = helper.convert_color_list_to_rgba(current.get_color())
             self.button_color.set_rgba(rgba)
-        self.check_color.set_active(const.CUSTOM_ICON_COLOR in current.keys())
+        self.check_color.set_active(current.get_color() is not None)
 
         self.scale_scale.set_value(
-            current.get(const.CUSTOM_ICON_SCALE, const.DEFAULT_ICON_SCALE))
-        self.check_scale.set_active(const.CUSTOM_ICON_SCALE in current.keys())
+            current.get_scale() or const.DEFAULT_ICON_SCALE)
+        self.check_scale.set_active(current.get_scale() is not None)
         self.entry_scale.set_text(
-            str(int(current.get(const.CUSTOM_ICON_SCALE, const.DEFAULT_ICON_SCALE))))
+            str(int(current.get_scale() or const.DEFAULT_ICON_SCALE)))
 
         self.scale_opacity.set_value(
-            current.get(const.CUSTOM_ICON_OPACITY, const.DEFAULT_ICON_OPACITY))
-        self.check_opacity.set_active(const.CUSTOM_ICON_OPACITY in current.keys())
+            current.get_opacity() or const.DEFAULT_ICON_OPACITY)
+        self.check_opacity.set_active(current.get_opacity() is not None)
         self.entry_opacity.set_text(
-            str(int(current.get(const.CUSTOM_ICON_OPACITY, const.DEFAULT_ICON_OPACITY))))
+            str(int(current.get_opacity() or const.DEFAULT_ICON_OPACITY)))
 
     def _on_add_button(self, _):
         if not super()._on_add_button(_):
@@ -161,7 +162,7 @@ class CustomizationIconWindow(CustomizationWindow):
 
         icon = self.entry_icon.get_text() if self.check_icon.get_active() else None
         color = self.button_color.get_rgba() if self.check_color.get_active() else None
-        color_list = [color.red, color.green, color.blue] if color else None
+        color_list = helper.convert_rgba_to_color_list(color) if color else None
         scale = int(self.scale_scale.get_value()) if self.check_scale.get_active() else None
         opacity = int(
             self.scale_opacity.get_value()) if self.check_opacity.get_active() else None

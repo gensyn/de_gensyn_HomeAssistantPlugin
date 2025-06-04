@@ -2,9 +2,10 @@
 The module for the Home Assistant customization window.
 """
 from functools import partial
-from typing import Callable, List, Dict
+from typing import Callable, List
 
 import gi
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.customization import Customization
 
 gi.require_version("Gtk", "4.0")
 from gi.repository.Gtk import Align, Box, Button, CellRendererText, ComboBox, CssProvider, Entry, \
@@ -32,15 +33,15 @@ class CustomizationWindow(Window):
     default_margin = 3
 
     def __init__(self, customization_type: str, lm, attributes: List, callback: Callable,
-                 current: Dict = None, index: int = None):
+                 current: Customization = None, index: int = None):
         super().__init__()
         self.callback = callback
-        self.icons = list(icon_helper.MDI_ICONS)
+        self.icons: List[str] = list(icon_helper.MDI_ICONS)
         self.lm = lm
-        self.index = index
-        self.attributes = attributes
-        self.current = current
-        self.customization_type = customization_type
+        self.index: int = index
+        self.attributes: List[str] = attributes
+        self.current: Customization = current
+        self.customization_type: str = customization_type
 
         self.set_modal(True)
 
@@ -106,21 +107,21 @@ class CustomizationWindow(Window):
         self.combo_attribute.set_active(0)
         self.combo_operator.set_active(0)
 
-    def _set_current_values(self, current: Dict) -> None:
+    def _set_current_values(self, current: Customization) -> None:
         if not current:
             return
 
         for index, entry in enumerate(self.combo_attribute.get_model()):
-            if entry[0] == current[const.CUSTOM_ATTRIBUTE]:
+            if entry[0] == current.get_attribute():
                 self.combo_attribute.set_active(index)
                 break
 
         for index, entry in enumerate(self.combo_operator.get_model()):
-            if entry[0] == current[const.CUSTOM_OPERATOR]:
+            if entry[0] == current.get_operator():
                 self.combo_operator.set_active(index)
                 break
 
-        self.entry_value.set_text(current[const.CUSTOM_VALUE])
+        self.entry_value.set_text(current.get_value())
 
     def _create_button(self, label) -> Button:
         button = Button(label=label)

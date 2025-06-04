@@ -5,29 +5,28 @@ import logging
 from typing import Dict, List, Any
 
 from de_gensyn_HomeAssistantPlugin import const
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.text_customization import TextCustomization
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.settings.settings import Settings
 
 
-def get_text(state: Dict, settings: Dict) -> (str, str, int, str, int, str):
+def get_text(state: Dict, settings: Settings) -> (str, str, int, str, int, str):
     """
     Determine text, position and font size to show on StreamDeck.
     """
-    position = settings[const.SETTING_TEXT_POSITION]
-    text_size = settings[const.SETTING_TEXT_TEXT_SIZE]
-    text_color = settings[const.SETTING_TEXT_TEXT_COLOR]
-    text_color_converted = [int(c * 255) for c in text_color]
-    outline_size = settings[const.SETTING_TEXT_OUTLINE_SIZE]
-    outline_color = settings[const.SETTING_TEXT_OUTLINE_COLOR]
-    outline_color_converted = [int(c * 255) for c in outline_color]
+    position = settings.get_text_position()
+    text_size = settings.get_text_text_size()
+    text_color = settings.get_text_text_color()
+    outline_size = settings.get_text_outline_size()
+    outline_color = settings.get_text_outline_color()
 
     if not state["connected"]:
-        return ("N/A", position, text_size, text_color_converted, outline_size,
-                outline_color_converted)
+        return "N/A", position, text_size, text_color, outline_size, outline_color
 
-    attribute = settings[const.SETTING_TEXT_ATTRIBUTE]
-    text_round = settings[const.SETTING_TEXT_ROUND]
-    round_precision = settings[const.SETTING_TEXT_ROUND_PRECISION]
-    show_unit = settings[const.SETTING_TEXT_SHOW_UNIT]
-    line_break = settings[const.SETTING_TEXT_UNIT_LINE_BREAK]
+    attribute = settings.get_text_attribute()
+    text_round = settings.get_text_round()
+    round_precision = settings.get_text_round_precision()
+    show_unit = settings.get_text_show_unit()
+    line_break = settings.get_text_unit_line_break()
 
     text = _get_text(state, attribute, text_round, round_precision, show_unit, line_break)
 
@@ -35,12 +34,12 @@ def get_text(state: Dict, settings: Dict) -> (str, str, int, str, int, str):
     # Begin custom text
     #
 
-    customizations = settings[const.SETTING_CUSTOMIZATION_TEXT]
+    customizations: List[TextCustomization] = settings.get_text_customizations()
 
     for customization in customizations:
         value = get_value(state, settings, customization)
 
-        custom_text_value = customization[const.CUSTOM_VALUE]
+        custom_text_value = customization.get_value()
 
         try:
             # if both values are numbers, convert them both to float
@@ -50,7 +49,7 @@ def get_text(state: Dict, settings: Dict) -> (str, str, int, str, int, str):
         except (ValueError, TypeError):
             pass
 
-        operator = customization[const.CUSTOM_OPERATOR]
+        operator = customization.get_operator()
 
         if ((operator == "==" and str(value) == str(custom_text_value))
                 or (operator == "!=" and str(value) != str(custom_text_value))):
@@ -87,30 +86,27 @@ def get_text(state: Dict, settings: Dict) -> (str, str, int, str, int, str):
         # get text a second time based on the customizations but only if no custom text is defined
         text = _get_text(state, attribute, text_round, round_precision, show_unit, line_break)
 
-    text_color_converted = [int(c * 255) for c in text_color]
-    outline_color_converted = [int(c * 255) for c in outline_color]
-
-    return text, position, text_size, text_color_converted, outline_size, outline_color_converted
+    return text, position, text_size, text_color, outline_size, outline_color
 
 
-def get_value(state: Dict, settings: Dict, customization: Dict) -> Any:
+def get_value(state: Dict, settings: Settings, customization: TextCustomization) -> Any:
     """
     Gets the current value that the customization references.
     """
-    attribute = settings[const.SETTING_TEXT_ATTRIBUTE]
-    text_round = settings[const.SETTING_TEXT_ROUND]
-    round_precision = settings[const.SETTING_TEXT_ROUND_PRECISION]
-    show_unit = settings[const.SETTING_TEXT_SHOW_UNIT]
+    attribute = settings.get_text_attribute()
+    text_round = settings.get_text_round()
+    round_precision = settings.get_text_round_precision()
+    show_unit = settings.get_text_show_unit()
 
     # get text without line break to calculate the correct length
     text = _get_text(state, attribute, text_round, round_precision, show_unit, False)
 
-    if customization[const.CUSTOM_ATTRIBUTE] == const.STATE:
+    if customization.get_attribute() == const.STATE:
         value = state[const.STATE]
-    elif customization[const.CUSTOM_ATTRIBUTE] == const.CUSTOM_TEXT_TEXT_LENGTH:
+    elif customization.get_attribute() == const.CUSTOM_TEXT_TEXT_LENGTH:
         value = len(text)
     else:
-        value = state[const.ATTRIBUTES].get(customization[const.CUSTOM_ATTRIBUTE])
+        value = state[const.ATTRIBUTES].get(customization.get_attribute())
 
     return value
 
@@ -139,7 +135,7 @@ def _replace_values(text: str, position: str, attribute: str, text_round: bool,
                     round_precision: int,
                     text_size: int, text_color: List[int], outline_size: int,
                     outline_color: List[int], show_unit: bool, line_break: bool,
-                    customization: dict):
+                    customization: TextCustomization):
     ret_text = text
     ret_position = position
     ret_attribute = attribute
@@ -152,38 +148,39 @@ def _replace_values(text: str, position: str, attribute: str, text_round: bool,
     ret_show_unit = show_unit
     ret_line_break = line_break
 
-    if customization.get(const.CUSTOM_TEXT_CUSTOM_TEXT) is not None:
-        ret_text = customization[const.CUSTOM_TEXT_CUSTOM_TEXT]
+    if customization.get_custom_text() is not None:
+        ret_text = customization.get_custom_text().replace("%s", text)
+        ret_text = "\n".join(ret_text.split("\\n"))
 
-    if customization.get(const.CUSTOM_TEXT_POSITION) is not None:
-        ret_position = customization[const.CUSTOM_TEXT_POSITION]
+    if customization.get_position() is not None:
+        ret_position = customization.get_position()
 
-    if customization.get(const.CUSTOM_TEXT_ATTRIBUTE) is not None:
-        ret_attribute = customization[const.CUSTOM_TEXT_ATTRIBUTE]
+    if customization.get_text_attribute() is not None:
+        ret_attribute = customization.get_text_attribute()
 
-    if customization.get(const.CUSTOM_TEXT_ROUND) is not None:
-        ret_text_round = customization[const.CUSTOM_TEXT_ROUND]
+    if customization.get_round() is not None:
+        ret_text_round = customization.get_round()
 
-    if customization.get(const.CUSTOM_TEXT_ROUND_PRECISION) is not None:
-        ret_round_precision = customization[const.CUSTOM_TEXT_ROUND_PRECISION]
+    if customization.get_round_precision() is not None:
+        ret_round_precision = customization.get_round_precision()
 
-    if customization.get(const.CUSTOM_TEXT_TEXT_SIZE) is not None:
-        ret_text_size = customization[const.CUSTOM_TEXT_TEXT_SIZE]
+    if customization.get_text_size() is not None:
+        ret_text_size = customization.get_text_size()
 
-    if customization.get(const.CUSTOM_TEXT_TEXT_COLOR) is not None:
-        ret_text_color = customization[const.CUSTOM_TEXT_TEXT_COLOR]
+    if customization.get_text_color() is not None:
+        ret_text_color = customization.get_text_color()
 
-    if customization.get(const.CUSTOM_TEXT_OUTLINE_SIZE) is not None:
-        ret_outline_size = customization[const.CUSTOM_TEXT_OUTLINE_SIZE]
+    if customization.get_outline_size() is not None:
+        ret_outline_size = customization.get_outline_size()
 
-    if customization.get(const.CUSTOM_TEXT_OUTLINE_COLOR) is not None:
-        ret_outline_color = customization[const.CUSTOM_TEXT_OUTLINE_COLOR]
+    if customization.get_outline_color() is not None:
+        ret_outline_color = customization.get_outline_color()
 
-    if customization.get(const.CUSTOM_TEXT_SHOW_UNIT) is not None:
-        ret_show_unit = customization[const.CUSTOM_TEXT_SHOW_UNIT]
+    if customization.get_show_unit() is not None:
+        ret_show_unit = customization.get_show_unit()
 
-    if customization.get(const.CUSTOM_TEXT_LINE_BREAK) is not None:
-        ret_line_break = customization[const.CUSTOM_TEXT_LINE_BREAK]
+    if customization.get_line_break() is not None:
+        ret_line_break = customization.get_line_break()
 
     return (ret_text, ret_position, ret_attribute, ret_text_round, ret_round_precision,
             ret_text_size, ret_text_color, ret_outline_size, ret_outline_color, ret_show_unit,

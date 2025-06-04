@@ -3,9 +3,10 @@ The module for the Home Assistant customization text window.
 """
 
 from functools import partial
-from typing import Callable, List, Dict
+from typing import Callable, List
 
 from de_gensyn_HomeAssistantPlugin import const
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.text_customization import TextCustomization
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.window.customization_window \
     import CustomizationWindow
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.helper import helper
@@ -17,7 +18,7 @@ class CustomizationTextWindow(CustomizationWindow):
     """
 
     def __init__(self, lm, attributes: List, callback: Callable,
-                 current: Dict = None, index: int = None):
+                 current: TextCustomization = None, index: int = None):
         super().__init__(const.CUSTOMIZATION_TYPE_TEXT, lm, attributes, callback, current, index)
 
         self.set_title(lm.get(const.LABEL_CUSTOMIZATION_TEXT_TITLE))
@@ -219,70 +220,68 @@ class CustomizationTextWindow(CustomizationWindow):
 
         self.switch_line_break.set_active(const.DEFAULT_TEXT_UNIT_LINE_BREAK)
 
-    def _set_current_values(self, current: Dict) -> None:
+    def _set_current_values(self, current: TextCustomization) -> None:
         if not current:
             return
 
         super()._set_current_values(current)
 
         for index, entry in enumerate(self.combo_position.get_model()):
-            if entry[0] == current.get(const.CUSTOM_TEXT_POSITION,
-                                       const.DEFAULT_TEXT_POSITION):
+            if entry[0] == current.get_position():
                 self.combo_position.set_active(index)
                 break
-        self.check_position.set_active(const.CUSTOM_TEXT_POSITION in current.keys())
+        self.check_position.set_active(current.get_position() is not None)
 
         for index, entry in enumerate(self.combo_text_attribute.get_model()):
-            if entry[0] == current.get(
-                    const.CUSTOM_TEXT_ATTRIBUTE, const.DEFAULT_TEXT_ATTRIBUTE):
+            if entry[0] == current.get_text_attribute():
                 self.combo_text_attribute.set_active(index)
                 break
-        self.check_text_attribute.set_active(const.CUSTOM_TEXT_ATTRIBUTE in current.keys())
+        self.check_text_attribute.set_active(current.get_text_attribute() is not None)
 
         self.entry_custom_text.set_text(
-            current.get(const.CUSTOM_TEXT_CUSTOM_TEXT, const.DEFAULT_TEXT_CUSTOM_TEXT))
+            current.get_custom_text() or const.DEFAULT_TEXT_CUSTOM_TEXT)
         self.entry_custom_text.set_visible(
-            current.get(const.CUSTOM_TEXT_ATTRIBUTE) == const.CUSTOM_TEXT_CUSTOM_TEXT)
+            current.get_custom_text() is not None)
 
-        self.switch_round.set_active(current.get(const.CUSTOM_TEXT_ROUND, const.DEFAULT_TEXT_ROUND))
-        self.check_round.set_active(const.CUSTOM_TEXT_ROUND in current.keys())
+        self.switch_round.set_active(current.get_round() or const.DEFAULT_TEXT_ROUND)
+        self.check_round.set_active(current.get_round() is not None)
 
         self.scale_precision.set_value(
-            current.get(const.CUSTOM_TEXT_ROUND_PRECISION, const.DEFAULT_TEXT_ROUND_PRECISION))
+            current.get_round_precision() or const.DEFAULT_TEXT_ROUND_PRECISION)
         self.entry_precision.set_text(
-            str(current.get(const.CUSTOM_TEXT_ROUND_PRECISION, const.DEFAULT_TEXT_ROUND_PRECISION)))
-        self.check_precision.set_active(const.CUSTOM_TEXT_ROUND_PRECISION in current.keys())
+            str(current.get_round_precision() or const.DEFAULT_TEXT_ROUND_PRECISION))
+        self.check_precision.set_active(current.get_round_precision() is not None)
 
         self.scale_text_size.set_value(
-            current.get(const.CUSTOM_TEXT_TEXT_SIZE, const.DEFAULT_TEXT_TEXT_SIZE))
+            current.get_text_size() or const.DEFAULT_TEXT_TEXT_SIZE)
         self.entry_text_size.set_text(
-            str(current.get(const.CUSTOM_TEXT_TEXT_SIZE, const.DEFAULT_TEXT_TEXT_SIZE)))
-        self.check_text_size.set_active(const.CUSTOM_TEXT_TEXT_SIZE in current.keys())
+            str(current.get_text_size() or const.DEFAULT_TEXT_TEXT_SIZE))
+        self.check_text_size.set_active(current.get_text_size() is not None)
 
-        if current.get(const.CUSTOM_TEXT_TEXT_COLOR):
-            text_rgba = helper.convert_color_list_to_rgba(current[const.CUSTOM_TEXT_TEXT_COLOR])
+        if current.get_text_color():
+            text_rgba = helper.convert_color_list_to_rgba(current.get_text_color())
             self.button_text_color.set_rgba(text_rgba)
-        self.check_text_color.set_active(const.CUSTOM_TEXT_TEXT_COLOR in current.keys())
+        self.check_text_color.set_active(current.get_text_color() is not None)
 
         self.scale_outline_size.set_value(
-            current.get(const.CUSTOM_TEXT_OUTLINE_SIZE, const.DEFAULT_TEXT_OUTLINE_SIZE))
+            current.get_outline_size() or const.DEFAULT_TEXT_OUTLINE_SIZE)
         self.entry_outline_size.set_text(
-            str(current.get(const.CUSTOM_TEXT_OUTLINE_SIZE, const.DEFAULT_TEXT_OUTLINE_SIZE)))
-        self.check_outline_size.set_active(const.CUSTOM_TEXT_OUTLINE_SIZE in current.keys())
+            str(current.get_outline_size() or const.DEFAULT_TEXT_OUTLINE_SIZE))
+        self.check_outline_size.set_active(current.get_outline_size() is not None)
 
-        if current.get(const.CUSTOM_TEXT_OUTLINE_COLOR):
+        if current.get_outline_color():
             outline_rgba = helper.convert_color_list_to_rgba(
-                current[const.CUSTOM_TEXT_OUTLINE_COLOR])
+                current.get_outline_color())
             self.button_outline_color.set_rgba(outline_rgba)
-        self.check_outline_color.set_active(const.CUSTOM_TEXT_OUTLINE_COLOR in current.keys())
+        self.check_outline_color.set_active(current.get_outline_color() is not None)
 
         self.switch_show_unit.set_active(
-            current.get(const.CUSTOM_TEXT_SHOW_UNIT, const.DEFAULT_TEXT_SHOW_UNIT))
-        self.check_show_unit.set_active(const.CUSTOM_TEXT_SHOW_UNIT in current.keys())
+            current.get_show_unit() or const.DEFAULT_TEXT_SHOW_UNIT)
+        self.check_show_unit.set_active(current.get_show_unit() is not None)
 
         self.switch_line_break.set_active(
-            current.get(const.CUSTOM_TEXT_LINE_BREAK, const.DEFAULT_TEXT_UNIT_LINE_BREAK))
-        self.check_line_break.set_active(const.CUSTOM_TEXT_LINE_BREAK in current.keys())
+            current.get_line_break() or const.DEFAULT_TEXT_UNIT_LINE_BREAK)
+        self.check_line_break.set_active(current.get_line_break() is not None)
 
     def _on_add_button(self, _) -> None:
         if not super()._on_add_button(_):
@@ -315,11 +314,11 @@ class CustomizationTextWindow(CustomizationWindow):
             self.check_line_break.get_style_context().add_class(const.ERROR)
             return
 
-        attribute_for_operation = \
+        attribute = \
             self.combo_attribute.get_model()[self.combo_attribute.get_active()][0]
         value = self.entry_value.get_text()
 
-        if attribute_for_operation == const.CUSTOM_TEXT_TEXT_LENGTH and not self._is_number(value):
+        if attribute == const.CUSTOM_TEXT_TEXT_LENGTH and not self._is_number(value):
             # operator needs a number
             self.combo_operator.get_style_context().add_class(const.ERROR)
             self.entry_value.get_style_context().add_class(const.ERROR)
@@ -341,24 +340,22 @@ class CustomizationTextWindow(CustomizationWindow):
             self.scale_text_size.get_value()) if self.check_text_size.get_active() else None
         text_color = self.button_text_color.get_rgba() if self.check_text_color.get_active() else \
             None
-        text_color_list = [text_color.red, text_color.green,
-                           text_color.blue] if text_color else None
+        text_color_list = helper.convert_rgba_to_color_list(text_color) if text_color else None
         outline_size = int(
             self.scale_outline_size.get_value()) if self.check_outline_size.get_active() else None
         outline_color = self.button_outline_color.get_rgba() if (
             self.check_outline_color.get_active()) else None
-        outline_color_list = [outline_color.red, outline_color.green,
-                              outline_color.blue] if outline_color else None
+        outline_color_list = helper.convert_rgba_to_color_list(outline_color) if outline_color else None
         show_unit = self.switch_show_unit.get_active() if self.check_show_unit.get_active() else \
             None
         line_break = self.switch_line_break.get_active() if self.check_line_break.get_active() \
             else None
 
         self.callback(
-            attribute_for_operation=attribute_for_operation,
+            attribute=attribute,
             operator=self.combo_operator.get_model()[self.combo_operator.get_active()][0],
             value=value,
-            position=position, attribute=text_attribute, custom_text=custom_text,
+            position=position, text_attribute=text_attribute, custom_text=custom_text,
             text_round=text_round, round_precision=precision,
             text_size=text_size, text_color=text_color_list, outline_size=outline_size,
             outline_color=outline_color_list, show_unit=show_unit, line_beak=line_break,

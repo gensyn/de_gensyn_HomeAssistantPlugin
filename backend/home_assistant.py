@@ -559,10 +559,10 @@ class HomeAssistantBackend:
 
         domain = entity_id.split(".")[0]
 
-        entity_settings = self._entities[domain].get(entity_id)
-        entity_settings.get("keys").pop(action_uid, None)
+        entity_settings = self._entities[domain].get(entity_id, {})
+        entity_settings.get("keys", {}).pop(action_uid, None)
 
-        if len(entity_settings.get("keys")) > 0:
+        if len(entity_settings.get("keys", {})) > 0:
             # the entity is still attached to another key, so keep the trigger subscription
             return
 
@@ -581,7 +581,7 @@ class HomeAssistantBackend:
         """
         return self._websocket and self._websocket.connected
 
-    def _send_and_wait_for_response_with_semaphore(self, message: Dict[str, str | int], try_count: int=0) -> str:
+    def _send_and_wait_for_response_with_semaphore(self, message: Dict[str, str | int], try_count: int = 0) -> str:
         """
         Send a websocket message to Home Assistant and return the response using a semaphore.
         """
