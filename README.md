@@ -130,7 +130,7 @@ This means, multiple customizations might have conditions that are met, but the 
 customization sets the eventual value for an option. In the example above, only the second
 customization matches the condition so the text size is set to 12.  
 As an `Attribute` you can also select `custom_text` which shows a new field where you can enter any text to be displayed
-instead of the original. This allows you to create your own translation on the Stream Deck. Furthermore, `%s` in the
+instead of the original. This allows you to create your own translations on the Stream Deck. Furthermore, `%s` in the
 `custom_text` field is replaced by the original text and `\n` creates a line break. As an example: on a weather entity
 that has an attribute for the temperature you can select the temperature to be displayed and then create a customization
 with custom text `%s\n°C` which results in the temperature being displayed in the first line and "°C" in the second.  

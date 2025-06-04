@@ -1,5 +1,5 @@
 """
-Module for the ParameterComboRow.
+Module for the ParameterRow.
 """
 from typing import  Any
 
