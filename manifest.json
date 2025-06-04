@@ -1,5 +1,5 @@
 {
-    "version": "1.0.0",
+    "version": "1.0.3",
     "thumbnail": "assets/homeassistant.png",
     "id": "de_gensyn_HomeAssistantPlugin",
     "name": "Home Assistant",

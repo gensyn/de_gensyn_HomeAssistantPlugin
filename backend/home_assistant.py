@@ -559,10 +559,10 @@ class HomeAssistantBackend:
 
         domain = entity_id.split(".")[0]
 
-        entity_settings = self._entities[domain].get(entity_id)
-        entity_settings.get("keys").pop(action_uid, None)
+        entity_settings = self._entities[domain].get(entity_id, {})
+        entity_settings.get("keys", {}).pop(action_uid, None)
 
-        if len(entity_settings.get("keys")) > 0:
+        if len(entity_settings.get("keys", {})) > 0:
             # the entity is still attached to another key, so keep the trigger subscription
             return
 

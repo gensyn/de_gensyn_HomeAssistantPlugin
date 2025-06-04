@@ -2,11 +2,10 @@
 The module for the Home Assistant customization window.
 """
 from functools import partial
-from typing import Callable, List, Dict
+from typing import Callable, List
 
 import gi
-
-from actions.HomeAssistantAction.customization.customization import Customization
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.customization import Customization
 
 gi.require_version("Gtk", "4.0")
 from gi.repository.Gtk import Align, Box, Button, CellRendererText, ComboBox, CssProvider, Entry, \

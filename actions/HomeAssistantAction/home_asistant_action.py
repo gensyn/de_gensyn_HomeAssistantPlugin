@@ -19,8 +19,6 @@ from GtkHelper.GenerativeUI.EntryRow import EntryRow
 from GtkHelper.GenerativeUI.ExpanderRow import ExpanderRow
 from GtkHelper.GenerativeUI.ScaleRow import ScaleRow
 from GtkHelper.GenerativeUI.SwitchRow import SwitchRow
-from backend.DeckManagement.InputIdentifier import Input, InputEvent
-from backend.PluginManager.EventAssigner import EventAssigner
 from de_gensyn_HomeAssistantPlugin import const
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.icon_customization import IconCustomization
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.row.customization_icon_row import \
@@ -36,10 +34,10 @@ from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.helper import ico
     text_helper
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.service_parameters import service_parameters_helper
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.settings.settings import Settings
-from src.backend.PluginManager.ActionCore import ActionCore
+from src.backend.PluginManager.ActionBase import ActionBase
 
 
-class HomeAssistantAction(ActionCore):
+class HomeAssistantAction(ActionBase):
     """
     Action to be loaded by StreamController.
     """
@@ -48,14 +46,14 @@ class HomeAssistantAction(ActionCore):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        event_assigner = EventAssigner(
-            id="Key Down",
-            ui_label="Call service",
-            default_event=Input.Key.Events.DOWN,
-            callback=self._call_service
-        )
-
-        self.add_event_assigner(event_assigner)
+        # event_assigner = EventAssigner(
+        #     id="Key Down",
+        #     ui_label="Call service",
+        #     default_event=Input.Key.Events.DOWN,
+        #     callback=self._call_service
+        # )
+        #
+        # self.add_event_assigner(event_assigner)
 
         self.initialized = False
         self.lm = self.plugin_base.locale_manager
@@ -105,7 +103,7 @@ class HomeAssistantAction(ActionCore):
 
         self._entity_updated()
 
-    def _call_service(self, _) -> None:
+    def on_key_down(self) -> None:
         """
         Call the service stated in the settings.
         """

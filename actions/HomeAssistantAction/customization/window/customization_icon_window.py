@@ -3,10 +3,10 @@ The module for the Home Assistant customization icon window.
 """
 
 from functools import partial
-from typing import Callable, List, Dict
+from typing import Callable, List
 
-from actions.HomeAssistantAction.customization.icon_customization import IconCustomization
 from de_gensyn_HomeAssistantPlugin import const
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.icon_customization import IconCustomization
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.window.customization_window \
     import CustomizationWindow
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.helper import helper
