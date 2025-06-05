@@ -96,6 +96,7 @@ LABEL_CUSTOMIZATION_OPERATORS = {
     ">=": "actions.home_assistant.customization.greater_than_equals.label"
 }
 
+LABEL_DIAL_STEP_SIZE = "actions.home_assistant.dial.step_size.label"
 
 SETTING_ENTITY_DOMAIN = "entity.domain"
 SETTING_ENTITY_ENTITY = "entity.entity"

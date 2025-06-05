@@ -64,6 +64,8 @@
     "actions.home_assistant.customization.less_than.label": "ist kleiner",
     "actions.home_assistant.customization.less_than_equals.label": "ist kleiner gleich",
     "actions.home_assistant.customization.greater_than.label": "ist größer",
-    "actions.home_assistant.customization.greater_than_equals.label": "ist größer gleich"
+    "actions.home_assistant.customization.greater_than_equals.label": "ist größer gleich",
+
+    "actions.home_assistant.dial.step_size.label": "Schrittweite:"
 
 }

@@ -685,7 +685,7 @@ class HomeAssistantAction(ActionBase):
             partial(self.dial_service_service_combo.connect, const.CONNECT_NOTIFY_SELECTED,
                     self._on_change_dial_service))
 
-        self.dial_step_size = ScaleRow(self.lm.get(const.LABEL_TEXT_TEXT_SIZE),
+        self.dial_step_size = ScaleRow(self.lm.get(const.LABEL_DIAL_STEP_SIZE),
                                        const.DIAL_STEP_SIZE_MIN_SIZE, const.DIAL_STEP_SIZE_MAX_SIZE, 1)
         self.connect_rows.append(
             partial(self.dial_step_size.connect, const.CONNECT_VALUE_CHANGED, self._on_change_dial_step_size,

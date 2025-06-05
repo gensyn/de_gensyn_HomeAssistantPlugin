@@ -64,6 +64,8 @@
     "actions.home_assistant.customization.less_than.label": "is less than",
     "actions.home_assistant.customization.less_than_equals.label": "is less than or equals",
     "actions.home_assistant.customization.greater_than.label": "is greater than",
-    "actions.home_assistant.customization.greater_than_equals.label": "is greater than or equals"
+    "actions.home_assistant.customization.greater_than_equals.label": "is greater than or equals",
+
+    "actions.home_assistant.dial.step_size.label": "Step size:"
 
 }
