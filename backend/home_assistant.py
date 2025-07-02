@@ -640,18 +640,9 @@ class HomeAssistantBackend:
         """
         log.info("Trying to reconnect to Home Assistant")
 
-        count = 1
-
         while not self._connect():
             self._connection_status_callback(const.WAITING_FOR_RETRY)
-            if count < 14:
-                sleep(10)
-            elif count < 71:
-                sleep(60)
-            else:
-                sleep(300)
-
-            count += 1
+            sleep(10)
 
     def register_action(self, action: Callable):
         """
