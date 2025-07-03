@@ -20,15 +20,13 @@ from src.backend.PluginManager.PluginBase import PluginBase
 from de_gensyn_HomeAssistantPlugin import const
 
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.settings import settings_helper
-from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.home_asistant_action import \
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.home_assistant_action import \
     HomeAssistantAction
 from de_gensyn_HomeAssistantPlugin.backend.home_assistant import HomeAssistantBackend
 
 
 class HomeAssistant(PluginBase):  # pylint: disable=too-few-public-methods
-    """
-    The plugin class to be loaded by Stream Controller. Manages the credentials.
-    """
+    """The plugin class to be loaded by Stream Controller. Manages the credentials."""
     host_entry: EntryRow
     port_entry: EntryRow
     ssl_switch: SwitchRow
@@ -67,11 +65,10 @@ class HomeAssistant(PluginBase):  # pylint: disable=too-few-public-methods
         self.backend.set_ssl(ssl)
         self.backend.set_verify_certificate(verify_certificate)
         self.backend.set_token(token)
+        self.backend.reconnect()
 
     def set_settings(self, settings: Dict[str, Any]):
-        """
-        Saves the settings to the disk.
-        """
+        """Saves the settings to the disk."""
         super().set_settings(settings)
 
         host = settings.get(const.SETTING_HOST, const.EMPTY_STRING)
@@ -85,11 +82,10 @@ class HomeAssistant(PluginBase):  # pylint: disable=too-few-public-methods
         self.backend.set_ssl(ssl)
         self.backend.set_verify_certificate(verify_certificate)
         self.backend.set_token(token)
+        self.backend.reconnect()
 
     def get_settings_area(self):
-        """
-        Gets the rows for configuring Home Assistant credentials and base settings.
-        """
+        """Gets the rows for configuring Home Assistant credentials and base settings."""
         self.host_entry = EntryRow(title=self.locale_manager.get(const.LABEL_BASE_HOST))
         self.port_entry = EntryRow(title=self.locale_manager.get(const.LABEL_BASE_PORT))
         self.ssl_switch = SwitchRow(title=self.locale_manager.get(const.LABEL_BASE_SSL))
@@ -129,9 +125,7 @@ class HomeAssistant(PluginBase):  # pylint: disable=too-few-public-methods
         return group
 
     def _load_config_defaults_base(self) -> None:
-        """
-        Loads Home Assistant base settings from the disk.
-        """
+        """Loads Home Assistant base settings from the disk."""
         self.host_entry.set_text(self.settings[const.SETTING_HOST])
         self.port_entry.set_text(self.settings[const.SETTING_PORT])
         self.ssl_switch.set_active(self.settings[const.SETTING_SSL])
@@ -139,15 +133,11 @@ class HomeAssistant(PluginBase):  # pylint: disable=too-few-public-methods
         self.token_entry.set_text(self.settings[const.SETTING_TOKEN])
 
     def _on_change_base_entry(self, entry, *args) -> None:
-        """
-        Executed when an entry row is changed.
-        """
+        """Executed when an entry row is changed."""
         self.set_setting(args[1], entry.get_text())
 
     def _on_change_base_switch(self, switch, *args) -> None:
-        """
-        Executed when a switch row is changed.
-        """
+        """Executed when a switch row is changed."""
         self.set_setting(args[1], switch.get_active())
 
         if args[1] == const.SETTING_SSL and switch.get_active():
@@ -158,14 +148,10 @@ class HomeAssistant(PluginBase):  # pylint: disable=too-few-public-methods
             self.verify_certificate_switch.set_active(False)
 
     def set_status(self, status) -> None:
-        """
-        Callback function to be executed when the Home Assistant connection status changes.
-        """
+        """Callback function to be executed when the Home Assistant connection status changes."""
         GLib.idle_add(self.connection_status.set_text, status)
 
     def set_setting(self, key, value) -> None:
-        """
-        Sets the setting in the local copy and also writes it to the disk.
-        """
+        """Sets the setting in the local copy and also writes it to the disk."""
         self.settings[key] = value
         self.set_settings(self.settings)
