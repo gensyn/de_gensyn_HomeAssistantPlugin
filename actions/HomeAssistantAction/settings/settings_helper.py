@@ -58,7 +58,7 @@ DEFAULT_ACTION = {
     const.SETTING_SERVICE: {
         const.SETTING_CALL_SERVICE: const.DEFAULT_SERVICE_CALL_SERVICE,
         const.SETTING_SERVICE: const.EMPTY_STRING,
-        const.SETTING_PARAMETERS: {}
+        const.ACTION_PARAMETERS: {}
     },
 
     const.SETTING_ICON: {
@@ -201,9 +201,9 @@ def migrate_v0_to_v1(settings: Dict[str, Any]) -> Dict[str, Any]:
                                                                                const.DEFAULT_SERVICE_CALL_SERVICE)
     settings[const.SETTING_SERVICE][const.SETTING_SERVICE] = settings.get(const.SETTING_SERVICE_SERVICE,
                                                                           const.EMPTY_STRING)
-    settings[const.SETTING_SERVICE][const.SETTING_PARAMETERS] = {}
-    for key, value in settings.get("service.service_parameters", {}).items():
-        settings[const.SETTING_SERVICE][const.SETTING_PARAMETERS][key] = value
+    settings[const.SETTING_SERVICE][const.ACTION_PARAMETERS] = {}
+    for key, value in settings.get("service.action_parameters", {}).items():
+        settings[const.SETTING_SERVICE][const.ACTION_PARAMETERS][key] = value
 
     # migrate icon settings
     settings[const.SETTING_ICON] = {}

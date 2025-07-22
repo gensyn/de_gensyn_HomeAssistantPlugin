@@ -1,39 +1,39 @@
 """
-Module for service parameter operations.
+Module for action parameter operations.
 """
 from de_gensyn_HomeAssistantPlugin import const
-from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.service_parameters.parameter_combo_row import \
+from de_gensyn_HomeAssistantPlugin.actions.ActionAction.action_parameters.parameter_combo_row import \
     ParameterComboRow
-from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.service_parameters.parameter_entry_row import \
+from de_gensyn_HomeAssistantPlugin.actions.ActionAction.action_parameters.parameter_entry_row import \
     ParameterEntryRow
-from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.service_parameters.parameter_scale_row import \
+from de_gensyn_HomeAssistantPlugin.actions.ActionAction.action_parameters.parameter_scale_row import \
     ParameterScaleRow
-from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.service_parameters.parameter_switch_row import \
+from de_gensyn_HomeAssistantPlugin.actions.ActionAction.action_parameters.parameter_switch_row import \
     ParameterSwitchRow
 
 
-def load_service_parameters(action):
+def load_parameters(action):
     """
-    Load service parameters from Home Assistant.
+    Load action parameters from Home Assistant.
     """
-    action.service_parameters.clear_rows()
+    action.parameters.clear_rows()
 
     ha_entity = action.plugin_base.backend.get_entity(action.settings.get_entity())
 
-    service = action.settings.get_service()
+    ha_action = action.settings.get_action()
 
-    if not ha_entity or not service:
+    if not ha_entity or not ha_action:
         return
 
     fields = action.plugin_base.backend.get_actions(
         str(action.entity_domain_combo.get_selected_item())).get(
-        service, {}).get(const.ATTRIBUTE_FIELDS, {})
+        ha_action, {}).get(const.ATTRIBUTE_FIELDS, {})
 
     fields.update(fields.get("advanced_fields", {}).get(const.ATTRIBUTE_FIELDS, {}))
     fields.pop("advanced_fields", None)
 
     for field in fields:
-        setting_value = action.settings.get_service_parameters().get(field)
+        setting_value = action.settings.get_parameters().get(field)
 
         if not "selector" in fields[field]:
             continue
@@ -85,4 +85,4 @@ def load_service_parameters(action):
             value = str(setting_value) if setting_value else const.EMPTY_STRING
             row = ParameterEntryRow(action, var_name, field, value)
 
-        action.service_parameters.add_row(row.widget)
+        action.parameters.add_row(row.widget)

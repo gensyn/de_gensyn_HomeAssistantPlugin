@@ -4,6 +4,8 @@ Constants for the Home Assistant plugin.
 
 EMPTY_STRING = ""
 HOME_ASSISTANT = "Home Assistant"
+HOME_ASSISTANT_ACTION = "Home Assistant (Deprecated)"
+PERFORM_ACTION = "Perform Action"
 ERROR = "error"
 
 # BASE
@@ -71,6 +73,7 @@ LABEL_TEXT_NO_ENTITY = "actions.home_assistant.text.no_entity.label"
 
 LABEL_SETTINGS_ENTITY = "actions.home_assistant.settings.entity.label"
 LABEL_SETTINGS_SERVICE = "actions.home_assistant.settings.service.label"
+LABEL_SETTINGS_ACTION = "actions.home_assistant.settings.action.label"
 LABEL_SETTINGS_ICON = "actions.home_assistant.settings.icon.label"
 LABEL_SETTINGS_TEXT = "actions.home_assistant.settings.text.label"
 LABEL_SETTINGS_CONNECTION = "actions.home_assistant.settings.connection.label"
@@ -103,12 +106,14 @@ SETTING_DOMAIN = "domain"
 SETTING_ENTITY_DOMAIN = f"{SETTING_ENTITY}.{SETTING_DOMAIN}"
 SETTING_ENTITY_ENTITY = f"{SETTING_ENTITY}.{SETTING_ENTITY}"
 
+SETTING_ACTION = "action"
+ACTION_PARAMETERS = "parameters"
+SETTING_ACTION_ACTION = f"{SETTING_ACTION}.{SETTING_ACTION}"
+
 SETTING_SERVICE = "service"
 SETTING_CALL_SERVICE = "call_service"
-SETTING_PARAMETERS = "parameters"
 SETTING_SERVICE_CALL_SERVICE = f"{SETTING_SERVICE}.{SETTING_CALL_SERVICE}"
 SETTING_SERVICE_SERVICE = f"{SETTING_SERVICE}.{SETTING_SERVICE}"
-SETTING_SERVICE_PARAMETERS = f"{SETTING_SERVICE}.{SETTING_PARAMETERS}"
 
 SETTING_ICON = "icon"
 SETTING_SHOW_ICON = "show_icon"

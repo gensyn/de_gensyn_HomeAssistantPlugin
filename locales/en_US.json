@@ -7,6 +7,7 @@
 
     "actions.home_assistant.settings.entity.label": "Entity",
     "actions.home_assistant.settings.service.label": "Service",
+    "actions.home_assistant.settings.action.label": "Action",
     "actions.home_assistant.settings.icon.label": "Icon",
     "actions.home_assistant.settings.text.label": "Text",
     "actions.home_assistant.settings.connection.label": "Connection status",

@@ -45,18 +45,13 @@ class HomeAssistantBackend:
     Defines the Home Assistant backend.
     """
 
-    def __init__(self):
+    def __init__(self, host: str, port: str, ssl: bool, verify_certificate: bool, token: str):
         self._websocket: Optional[WebSocket] = None
         self._changes_websocket: Optional[WebSocket] = None
         self._message_id: int = 0
         self._domains: List[str] = []
         self._entities: Dict[str, Dict[str, Any]] = {}
-        self._services: Dict[str, Dict[str, Any]] = {}
-        self._host: str = ""
-        self._port: str = ""
-        self._ssl: bool = True
-        self._verify_certificate: bool = True
-        self._token: str = ""
+        self._actions: Dict[str, Dict[str, Any]] = {}
         self._connection_status_callback: Callable = lambda _1, _2=None: None
         self._keep_alive_thread: Optional[Thread] = None
         self._reconnect_thread: Optional[Thread] = None
@@ -64,6 +59,19 @@ class HomeAssistantBackend:
         self._entities_update_semaphore = Semaphore(1)
         self._websocket_semaphore = Semaphore(1)
         self._tracked_entities: Dict[str, Set[Callable]] = {}
+
+        self._host: str = ""
+        self.set_host(host)
+        self._port: str = ""
+        self.set_port(port)
+        self._ssl: bool = True
+        self.set_ssl(ssl)
+        self._verify_certificate: bool = True
+        self.set_verify_certificate(verify_certificate)
+        self._token: str = ""
+        self.set_token(token)
+
+        self._connect()
 
     def set_host(self, host: str) -> None:
         """Set the Home Assistant host."""
@@ -390,26 +398,26 @@ class HomeAssistantBackend:
         self._domains = domains
         self._entities = entities
 
-    def get_services(self, domain: str) -> Dict[str, Dict[str, Any]]:
+    def get_actions(self, domain: str) -> Dict[str, Dict[str, Any]]:
         """Return all services known to Home Assistant."""
         if not self._connect() or not domain:
             return {}
-        if self._services:
-            return self._services.get(domain, {})
+        if self._actions:
+            return self._actions.get(domain, {})
 
         message = self._create_message("get_services")
         response = self._send_and_wait_for_response_with_semaphore(message)
         success = _get_field_from_message(response, FIELD_SUCCESS)
-        self._services = {}
+        self._actions = {}
 
         if not success:
             log.error("Error retrieving services.")
             return {}
 
-        self._services = _get_field_from_message(response, FIELD_RESULT)
-        return self._services.get(domain, {})
+        self._actions = _get_field_from_message(response, FIELD_RESULT)
+        return self._actions.get(domain, {})
 
-    def call_service(
+    def call_action(
         self, entity_id: str, service: str, data: Optional[Dict[str, Any]] = None
     ) -> None:
         """Calls a Home Assistant service."""

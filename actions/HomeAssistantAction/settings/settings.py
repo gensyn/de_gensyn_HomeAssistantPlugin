@@ -66,7 +66,7 @@ class Settings:
         Retrieve all service parameters.
         :return: all service parameters
         """
-        return self.settings[const.SETTING_SERVICE][const.SETTING_PARAMETERS]
+        return self.settings[const.SETTING_SERVICE][const.ACTION_PARAMETERS]
 
     def set_service_parameter(self, field, value) -> None:
         """
@@ -74,7 +74,7 @@ class Settings:
         :param field: the field to set
         :param value: the value for the field
         """
-        self.settings[const.SETTING_SERVICE][const.SETTING_PARAMETERS][field] = value
+        self.settings[const.SETTING_SERVICE][const.ACTION_PARAMETERS][field] = value
         self.action.set_settings(self.settings)
 
     def remove_service_parameter(self, field) -> None:
@@ -82,14 +82,14 @@ class Settings:
         Remove the service parameter for the field.
         :param field: the field to remove
         """
-        self.settings[const.SETTING_SERVICE][const.SETTING_PARAMETERS].pop(field)
+        self.settings[const.SETTING_SERVICE][const.ACTION_PARAMETERS].pop(field)
         self.action.set_settings(self.settings)
 
     def clear_service_parameters(self) -> None:
         """
         Clear all service parameters.
         """
-        self.settings[const.SETTING_SERVICE][const.SETTING_PARAMETERS] = {}
+        self.settings[const.SETTING_SERVICE][const.ACTION_PARAMETERS] = {}
         self.action.set_settings(self.settings)
 
     def get_show_icon(self) -> bool:

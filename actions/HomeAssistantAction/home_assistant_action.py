@@ -104,7 +104,7 @@ class HomeAssistantAction(ActionBase):
                 pass
             parameters[parameter] = value
 
-        self.plugin_base.backend.call_service(entity, service, parameters)
+        self.plugin_base.backend.call_action(entity, service, parameters)
 
     def get_config_rows(self) -> list:
         """
@@ -599,7 +599,7 @@ class HomeAssistantAction(ActionBase):
         Load services from Home Assistant.
         """
         service = self.settings.get_service()
-        services = self.plugin_base.backend.get_services(
+        services = self.plugin_base.backend.get_actions(
             str(self.entity_domain_combo.get_selected_item())
         )
         self.service_service_combo.populate(services, service, update_settings=True, trigger_callback=False)
