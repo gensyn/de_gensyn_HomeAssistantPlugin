@@ -3,7 +3,6 @@ Entry point for StreamController to load the plugin.
 """
 import sys
 from pathlib import Path
-from typing import Dict, Any
 
 import gi
 
@@ -18,9 +17,12 @@ from src.backend.PluginManager.ActionHolder import ActionHolder
 from src.backend.PluginManager.PluginBase import PluginBase
 
 from de_gensyn_HomeAssistantPlugin import const
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.const import HOME_ASSISTANT_ACTION
+from de_gensyn_HomeAssistantPlugin.actions.PerformAction.const import PERFORM_ACTION
+from de_gensyn_HomeAssistantPlugin.backend import const as backend_const
 
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.home_assistant_action import HomeAssistantAction
-from de_gensyn_HomeAssistantPlugin.actions.ActionAction.action_action import ActionAction
+from de_gensyn_HomeAssistantPlugin.actions.PerformAction.perform_action import PerformAction
 from de_gensyn_HomeAssistantPlugin.backend.home_assistant import HomeAssistantBackend
 from de_gensyn_HomeAssistantPlugin.connection_settings.connection_settings import ConnectionSettings
 
@@ -41,14 +43,14 @@ class HomeAssistant(PluginBase):  # pylint: disable=too-few-public-methods
             plugin_base=self,
             action_base=HomeAssistantAction,
             action_id="de_gensyn_HomeAssistantPlugin::HomeAssistantAction",
-            action_name=const.HOME_ASSISTANT_ACTION,
+            action_name=HOME_ASSISTANT_ACTION,
         )
 
         self.service_action_holder = ActionHolder(
             plugin_base=self,
-            action_base=ActionAction,
-            action_id="de_gensyn_HomeAssistantPlugin::ActionAction",
-            action_name=const.PERFORM_ACTION,
+            action_base=PerformAction,
+            action_id="de_gensyn_HomeAssistantPlugin::PerformAction",
+            action_name=PERFORM_ACTION,
         )
         self.add_action_holder(self.home_assistant_action_holder)
         self.add_action_holder(self.service_action_holder)
@@ -60,46 +62,46 @@ class HomeAssistant(PluginBase):  # pylint: disable=too-few-public-methods
             app_version="1.5.0-beta"
         )
 
-        self.settings = ConnectionSettings(self)
-        host = self.settings.get_host()
-        port = self.settings.get_port()
-        ssl = self.settings.get_ssl()
-        verify_certificate = self.settings.get_verify_certificate()
-        token = self.settings.get_token()
+        self.connection = ConnectionSettings(self)
+        host = self.connection.get_host()
+        port = self.connection.get_port()
+        ssl = self.connection.get_ssl()
+        verify_certificate = self.connection.get_verify_certificate()
+        token = self.connection.get_token()
 
         self.backend = HomeAssistantBackend(host, port, ssl, verify_certificate, token)
 
     def reload_settings(self):
-        """Reconnects to Home Assistant with the new settings."""
-        self.backend.set_host(self.settings.get_host())
-        self.backend.set_port(self.settings.get_port())
-        self.backend.set_ssl(self.settings.get_ssl())
-        self.backend.set_verify_certificate(self.settings.get_verify_certificate())
-        self.backend.set_token(self.settings.get_token())
+        """Reconnects to Home Assistant with the new connection."""
+        self.backend.set_host(self.connection.get_host())
+        self.backend.set_port(self.connection.get_port())
+        self.backend.set_ssl(self.connection.get_ssl())
+        self.backend.set_verify_certificate(self.connection.get_verify_certificate())
+        self.backend.set_token(self.connection.get_token())
         self.backend.reconnect()
 
     def get_settings_area(self):
-        """Gets the rows for configuring Home Assistant credentials and base settings."""
-        self.host_entry = EntryRow(title=self.locale_manager.get(const.LABEL_BASE_HOST))
-        self.host_entry.set_text(self.settings.get_host())
+        """Gets the rows for configuring Home Assistant credentials and base connection."""
+        self.host_entry = EntryRow(title=self.locale_manager.get(const.LABEL_HOST))
+        self.host_entry.set_text(self.connection.get_host())
 
-        self.port_entry = EntryRow(title=self.locale_manager.get(const.LABEL_BASE_PORT))
-        self.port_entry.set_text(self.settings.get_port())
+        self.port_entry = EntryRow(title=self.locale_manager.get(const.LABEL_PORT))
+        self.port_entry.set_text(self.connection.get_port())
 
-        self.ssl_switch = SwitchRow(title=self.locale_manager.get(const.LABEL_BASE_SSL))
-        self.ssl_switch.set_active(self.settings.get_ssl())
+        self.ssl_switch = SwitchRow(title=self.locale_manager.get(const.LABEL_SSL))
+        self.ssl_switch.set_active(self.connection.get_ssl())
 
         self.verify_certificate_switch = SwitchRow(
-            title=self.locale_manager.get(const.LABEL_BASE_VERIFY_CERTIFICATE))
-        self.verify_certificate_switch.set_active(self.settings.get_verify_certificate())
+            title=self.locale_manager.get(const.LABEL_VERIFY_CERTIFICATE))
+        self.verify_certificate_switch.set_active(self.connection.get_verify_certificate())
 
-        self.token_entry = PasswordEntryRow(title=self.locale_manager.get(const.LABEL_BASE_TOKEN))
-        self.token_entry.set_text(self.settings.get_token())
+        self.token_entry = PasswordEntryRow(title=self.locale_manager.get(const.LABEL_TOKEN))
+        self.token_entry.set_text(self.connection.get_token())
 
         self.connection_status = EntryRow(title="Connection status:")
         self.connection_status.set_editable(False)
         self.connection_status.set_text(
-            const.CONNECTED if self.backend.is_connected() else const.NOT_CONNECTED)
+            backend_const.CONNECTED if self.backend.is_connected() else backend_const.NOT_CONNECTED)
 
         self.backend.set_connection_status_callback(self.set_status)
 
@@ -127,15 +129,15 @@ class HomeAssistant(PluginBase):  # pylint: disable=too-few-public-methods
 
     def _on_change_base_entry(self, entry, *args) -> None:
         """Executed when an entry row is changed."""
-        self.settings.set_setting(args[1], entry.get_text())
+        self.connection.set_setting(args[1], entry.get_text())
 
     def _on_change_base_switch(self, switch, *args) -> None:
         """Executed when a switch row is changed."""
-        self.settings.set_setting(args[1], switch.get_active())
+        self.connection.set_setting(args[1], switch.get_active())
 
         if args[1] == const.SETTING_SSL and switch.get_active():
             self.verify_certificate_switch.set_sensitive(True)
-            self.verify_certificate_switch.set_active(self.settings.get_verify_certificate())
+            self.verify_certificate_switch.set_active(self.connection.get_verify_certificate())
         elif args[1] == const.SETTING_SSL:
             self.verify_certificate_switch.set_sensitive(False)
             self.verify_certificate_switch.set_active(False)

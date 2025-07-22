@@ -4,7 +4,7 @@ Module for text related operations.
 import logging
 from typing import Dict, List, Any
 
-from de_gensyn_HomeAssistantPlugin import const
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction import const
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.text_customization import TextCustomization
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.settings.settings import Settings
 

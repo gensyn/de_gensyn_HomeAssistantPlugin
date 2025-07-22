@@ -3,7 +3,7 @@ The module for the Home Assistant customization row.
 """
 from typing import List, Dict
 
-from de_gensyn_HomeAssistantPlugin import const
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction import const
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.row.customization_row \
     import CustomizationRow
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.text_customization import TextCustomization

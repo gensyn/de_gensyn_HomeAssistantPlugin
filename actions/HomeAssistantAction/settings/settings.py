@@ -5,7 +5,7 @@ Module to manage HomeAssistantPlugin action settings.
 import copy
 from typing import Dict, Any, Tuple, List
 
-from de_gensyn_HomeAssistantPlugin import const
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction import const
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.icon_customization import IconCustomization
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.text_customization import TextCustomization
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.settings import settings_helper
@@ -333,7 +333,7 @@ class Settings:
 
     def reset(self, domain: str) -> None:
         """
-        Delete the settings and keeps only the UUID. The given domain if also set.
+        Empty the settings and keep only the UUID and the given domain.
         :param domain: the new domain
         """
         action_id = self.settings[const.SETTING_UUID]

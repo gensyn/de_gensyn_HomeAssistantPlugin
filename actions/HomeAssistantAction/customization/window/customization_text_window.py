@@ -5,7 +5,7 @@ The module for the Home Assistant customization text window.
 from functools import partial
 from typing import Callable, List
 
-from de_gensyn_HomeAssistantPlugin import const
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction import const
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.text_customization import TextCustomization
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.window.customization_window \
     import CustomizationWindow

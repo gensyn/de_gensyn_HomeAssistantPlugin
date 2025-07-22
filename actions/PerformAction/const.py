@@ -1,0 +1,35 @@
+"""
+Constants for the action Perform Action.
+"""
+
+EMPTY_STRING = ""
+PERFORM_ACTION = "Perform Action"
+
+LABEL_SERVICE_SERVICE = "actions.home_assistant.service.service.label"
+LABEL_SERVICE_NO_DOMAIN = "actions.home_assistant.service.no_domain.label"
+LABEL_SERVICE_NO_ENTITY = "actions.home_assistant.service.no_entity.label"
+LABEL_SERVICE_NO_SERVICES = "actions.home_assistant.service.no_services.label"
+LABEL_SERVICE_PARAMETERS = "actions.home_assistant.service.parameters.label"
+LABEL_SERVICE_NO_PARAMETERS = "actions.home_assistant.service.no_parameters.label"
+
+LABEL_SETTINGS_ACTION = "actions.home_assistant.connection.action.label"
+
+SETTING_ACTION = "action"
+SETTING_SERVICE = "service"
+ACTION_PARAMETERS = "parameters"
+SETTING_ACTION_ACTION = f"{SETTING_ACTION}.{SETTING_ACTION}"
+
+ADVANCED_FIELDS = "advanced_fields"
+ATTRIBUTE_FIELDS = "fields"
+ATTRIBUTES = "attributes"
+BOOLEAN = "boolean"
+DEFAULT = "default"
+LIST = "_list"
+MAX = "max"
+MIN = "min"
+NUMBER = "number"
+OPTIONS = "options"
+SELECT = "select"
+SELECTOR = "selector"
+STEP = "step"
+VALUE = "value"

@@ -7,7 +7,7 @@ import logging
 import os
 from typing import Dict, List
 
-from de_gensyn_HomeAssistantPlugin import const
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction import const
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.icon_customization import IconCustomization
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.helper import helper
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.settings.settings import Settings

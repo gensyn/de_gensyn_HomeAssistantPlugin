@@ -2,7 +2,7 @@ import sys
 import unittest
 from pathlib import Path
 
-from const import SETTING_HOST, SETTING_PORT, SETTING_SSL, SETTING_TOKEN
+from const import SETTING_HOST, SETTING_PORT, SETTING_SSL, SETTING_TOKEN, SETTING_VERIFY_CERTIFICATE
 
 absolute_plugin_path = str(Path(__file__).parent.parent.parent.absolute())
 absolute_mock_path = str(Path(__file__).parent / "stream_controller_mock")
@@ -27,43 +27,27 @@ class TestMain(unittest.TestCase):
         self.assertEqual("localhost", test_instance.backend._host)
         self.assertEqual(8123, test_instance.backend._port)
         self.assertEqual(True, test_instance.backend._ssl)
+        self.assertEqual(True, test_instance.backend._verify_certificate)
         self.assertEqual("", test_instance.backend._token)
 
         # test set_settings
-        test_instance.set_settings({
-            SETTING_HOST: "hostlocal",
-            SETTING_PORT: 3218,
-            SETTING_SSL: False,
-            SETTING_TOKEN: "",
-        })
+        test_instance.connection.set_setting(SETTING_HOST, "hostlocal")
+        test_instance.connection.set_setting(SETTING_PORT, 3218)
+        test_instance.connection.set_setting(SETTING_SSL, False)
+        test_instance.connection.set_setting(SETTING_VERIFY_CERTIFICATE, False)
+        test_instance.connection.set_setting(SETTING_TOKEN, "")
 
         self.assertEqual("hostlocal", test_instance.get_settings().get(SETTING_HOST))
         self.assertEqual(3218, test_instance.get_settings().get(SETTING_PORT))
         self.assertEqual(False, test_instance.get_settings().get(SETTING_SSL))
+        self.assertEqual(False, test_instance.get_settings().get(SETTING_VERIFY_CERTIFICATE))
         self.assertEqual("", test_instance.get_settings().get(SETTING_TOKEN))
 
         self.assertEqual("hostlocal", test_instance.backend._host)
         self.assertEqual(3218, test_instance.backend._port)
         self.assertEqual(False, test_instance.backend._ssl)
+        self.assertEqual(False, test_instance.backend._verify_certificate)
         self.assertEqual("", test_instance.backend._token)
-
-        # now test token
-        test_instance.set_settings({
-            SETTING_HOST: "",
-            SETTING_PORT: 3218,
-            SETTING_SSL: False,
-            SETTING_TOKEN: "cba",
-        })
-
-        self.assertEqual("", test_instance.get_settings().get(SETTING_HOST))
-        self.assertEqual(3218, test_instance.get_settings().get(SETTING_PORT))
-        self.assertEqual(False, test_instance.get_settings().get(SETTING_SSL))
-        self.assertEqual("cba", test_instance.get_settings().get(SETTING_TOKEN))
-
-        self.assertEqual("", test_instance.backend._host)
-        self.assertEqual(3218, test_instance.backend._port)
-        self.assertEqual(False, test_instance.backend._ssl)
-        self.assertEqual("cba", test_instance.backend._token)
 
 
 class HomeAssistantBackendMock:

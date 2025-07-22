@@ -3,7 +3,7 @@ Module for helper functions.
 """
 import gi
 
-from de_gensyn_HomeAssistantPlugin import const
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction import const
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")

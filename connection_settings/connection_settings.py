@@ -1,15 +1,15 @@
 """Module to manage Home Assistant connection action settings."""
 
-from de_gensyn_HomeAssistantPlugin import const
+from de_gensyn_HomeAssistantPlugin import const as base_const
 
 class ConnectionSettings:
     """
     Class to manage connection settings for Home Assistant.
-    :param plugin: the plugin whose settings are being managed
+    :param hass: the Plugin main instance whose settings are being managed
     """
 
-    def __init__(self, plugin: "HomeAssistant"):
-        self._plugin = plugin
+    def __init__(self, hass: "HomeAssistant"):
+        self._hass = hass
 
         self._host = None
         self._port = None
@@ -17,19 +17,19 @@ class ConnectionSettings:
         self._verify_certificate = None
         self._token = None
 
-        self._settings = self._plugin.get_settings()
+        self._settings = self._hass.get_settings()
         self._load_settings()
 
     def _load_settings(self) -> None:
         """
-        Loads the settings from the plugin.
+        Loads the settings from the instance.
         :return: None
         """
-        self._host = self._settings.get(const.SETTING_HOST, const.EMPTY_STRING)
-        self._port = self._settings.get(const.SETTING_PORT, const.EMPTY_STRING)
-        self._ssl = self._settings.get(const.SETTING_SSL, True)
-        self._verify_certificate = self._settings.get(const.SETTING_VERIFY_CERTIFICATE, True)
-        self._token = self._settings.get(const.SETTING_TOKEN, const.EMPTY_STRING)
+        self._host = self._settings.get(base_const.SETTING_HOST, base_const.EMPTY_STRING)
+        self._port = self._settings.get(base_const.SETTING_PORT, base_const.EMPTY_STRING)
+        self._ssl = self._settings.get(base_const.SETTING_SSL, True)
+        self._verify_certificate = self._settings.get(base_const.SETTING_VERIFY_CERTIFICATE, True)
+        self._token = self._settings.get(base_const.SETTING_TOKEN, base_const.EMPTY_STRING)
 
     def get_host(self) -> str:
         """
@@ -70,5 +70,5 @@ class ConnectionSettings:
         """Sets the setting in the local copy and also writes it to the disk."""
         self._settings[key] = value
         self._load_settings()
-        self._plugin.reload_settings()
-        self._plugin.set_settings(self._settings)
+        self._hass.reload_settings()
+        self._hass.set_settings(self._settings)

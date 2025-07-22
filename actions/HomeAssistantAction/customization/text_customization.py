@@ -4,7 +4,7 @@ Modul to manage text customizations.
 
 from typing import Tuple, Dict, Any
 
-from de_gensyn_HomeAssistantPlugin import const
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction import const
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.customization import Customization
 
 

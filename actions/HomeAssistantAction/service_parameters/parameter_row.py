@@ -5,7 +5,7 @@ from typing import  Any
 
 from gi.repository.Gtk import CheckButton
 
-from de_gensyn_HomeAssistantPlugin import const
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction import const
 
 
 class ParameterRow:

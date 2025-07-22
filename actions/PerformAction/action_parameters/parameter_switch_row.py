@@ -1,7 +1,7 @@
 """Module for the ParameterSwitchRow."""
 from GtkHelper.GenerativeUI.SwitchRow import SwitchRow
 
-from de_gensyn_HomeAssistantPlugin.actions.ActionAction.action_parameters.parameter_row import ParameterRow
+from de_gensyn_HomeAssistantPlugin.actions.PerformAction.action_parameters.parameter_row import ParameterRow
 
 
 class ParameterSwitchRow(ParameterRow, SwitchRow):

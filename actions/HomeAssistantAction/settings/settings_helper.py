@@ -5,7 +5,7 @@ import copy
 import uuid
 from typing import Dict, Any
 
-from de_gensyn_HomeAssistantPlugin import const
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction import const
 
 CUSTOM_ICON = {
     const.CUSTOM_CONDITION: {
@@ -36,14 +36,6 @@ CUSTOM_TEXT = {
     const.CUSTOM_TEXT_OUTLINE_COLOR: None,
     const.CUSTOM_TEXT_SHOW_UNIT: None,
     const.CUSTOM_TEXT_LINE_BREAK: None,
-}
-
-DEFAULT_CONNECTION = {
-    const.SETTING_HOST: const.EMPTY_STRING,
-    const.SETTING_PORT: const.EMPTY_STRING,
-    const.SETTING_SSL: True,
-    const.SETTING_VERIFY_CERTIFICATE: True,
-    const.SETTING_TOKEN: const.EMPTY_STRING
 }
 
 DEFAULT_ACTION = {
@@ -108,20 +100,6 @@ def get_action_settings(existing: Dict[str, Any]) -> Dict[str, Any]:
 
     if settings[const.SETTING_UUID] == const.EMPTY_STRING:
         settings[const.SETTING_UUID] = str(uuid.uuid4())
-
-    return settings
-
-
-def get_connection_settings(existing: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    This method takes a connection settings dict and fills all missing settings with default values.
-    Settings present in the existing settings dict, which are not needed anymore, are removed.
-    """
-    settings = copy.deepcopy(DEFAULT_CONNECTION)
-
-    for key, value in existing.items():
-        if key in settings:
-            settings[key] = value
 
     return settings
 

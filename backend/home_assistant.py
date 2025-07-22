@@ -16,7 +16,7 @@ from websocket import (
     WebSocketAddressException,
 )
 
-from de_gensyn_HomeAssistantPlugin import const
+from de_gensyn_HomeAssistantPlugin.backend import const
 
 HASS_WEBSOCKET_API = "/api/websocket?latest"
 
@@ -231,7 +231,7 @@ class HomeAssistantBackend:
             if self._verify_certificate:
                 error += (
                     " If you are using a self-signed certificate, please disable certificate "
-                    "verification in the plugin settings."
+                    "verification in the hass connection."
                 )
             log.error(error)
             return None

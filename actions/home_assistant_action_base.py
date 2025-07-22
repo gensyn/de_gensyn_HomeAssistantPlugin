@@ -11,7 +11,7 @@ from gi.repository.Gtk import Widget
 from gi.repository.Adw import PreferencesGroup
 
 from GtkHelper.GenerativeUI.ComboRow import ComboRow
-from de_gensyn_HomeAssistantPlugin import const
+from de_gensyn_HomeAssistantPlugin.actions import const
 from de_gensyn_HomeAssistantPlugin.actions.settings.settings import Settings
 from src.backend.PluginManager.ActionBase import ActionBase
 

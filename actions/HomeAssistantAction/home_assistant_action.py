@@ -18,7 +18,7 @@ from GtkHelper.GenerativeUI.EntryRow import EntryRow
 from GtkHelper.GenerativeUI.ExpanderRow import ExpanderRow
 from GtkHelper.GenerativeUI.ScaleRow import ScaleRow
 from GtkHelper.GenerativeUI.SwitchRow import SwitchRow
-from de_gensyn_HomeAssistantPlugin import const
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction import const
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.icon_customization import IconCustomization
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.row.customization_icon_row import CustomizationIconRow
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.row.customization_text_row import CustomizationTextRow
@@ -87,7 +87,7 @@ class HomeAssistantAction(ActionBase):
 
     def on_key_down(self) -> None:
         """
-        Call the service stated in the settings.
+        Call the service stated in the connection.
         """
         entity = self.settings.get_entity()
         service = self.settings.get_service()

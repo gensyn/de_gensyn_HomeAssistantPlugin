@@ -11,7 +11,7 @@ gi.require_version("Gtk", "4.0")
 from gi.repository.Gtk import Align, Box, Button, CellRendererText, ComboBox, CssProvider, Entry, \
     Grid, Label, ListStore, Window, ColorButton, CheckButton, Scale, Orientation, Switch
 
-from de_gensyn_HomeAssistantPlugin import const
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction import const
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.helper import icon_helper
 
 CSS = b"""

@@ -1,7 +1,7 @@
 """
 Module for service parameter operations.
 """
-from de_gensyn_HomeAssistantPlugin import const
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction import const
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.service_parameters.parameter_combo_row import \
     ParameterComboRow
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.service_parameters.parameter_entry_row import \

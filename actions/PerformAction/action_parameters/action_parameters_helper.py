@@ -1,14 +1,14 @@
 """
 Module for action parameter operations.
 """
-from de_gensyn_HomeAssistantPlugin import const
-from de_gensyn_HomeAssistantPlugin.actions.ActionAction.action_parameters.parameter_combo_row import \
+from de_gensyn_HomeAssistantPlugin.actions.PerformAction import const
+from de_gensyn_HomeAssistantPlugin.actions.PerformAction.action_parameters.parameter_combo_row import \
     ParameterComboRow
-from de_gensyn_HomeAssistantPlugin.actions.ActionAction.action_parameters.parameter_entry_row import \
+from de_gensyn_HomeAssistantPlugin.actions.PerformAction.action_parameters.parameter_entry_row import \
     ParameterEntryRow
-from de_gensyn_HomeAssistantPlugin.actions.ActionAction.action_parameters.parameter_scale_row import \
+from de_gensyn_HomeAssistantPlugin.actions.PerformAction.action_parameters.parameter_scale_row import \
     ParameterScaleRow
-from de_gensyn_HomeAssistantPlugin.actions.ActionAction.action_parameters.parameter_switch_row import \
+from de_gensyn_HomeAssistantPlugin.actions.PerformAction.action_parameters.parameter_switch_row import \
     ParameterSwitchRow
 
 
@@ -29,54 +29,54 @@ def load_parameters(action):
         str(action.entity_domain_combo.get_selected_item())).get(
         ha_action, {}).get(const.ATTRIBUTE_FIELDS, {})
 
-    fields.update(fields.get("advanced_fields", {}).get(const.ATTRIBUTE_FIELDS, {}))
-    fields.pop("advanced_fields", None)
+    fields.update(fields.get(const.ADVANCED_FIELDS, {}).get(const.ATTRIBUTE_FIELDS, {}))
+    fields.pop(const.ADVANCED_FIELDS, None)
 
     for field in fields:
         setting_value = action.settings.get_parameters().get(field)
 
-        if not "selector" in fields[field]:
+        if not const.SELECTOR in fields[field]:
             continue
 
-        selector = list(fields[field]["selector"].keys())[0]
+        selector = list(fields[field][const.SELECTOR].keys())[0]
 
         var_name = f"{const.SETTING_SERVICE}.{const.ACTION_PARAMETERS}.{field}"
-        if selector == "select" or f"{field}_list" in ha_entity.get(const.ATTRIBUTES,
-                                                                    {}).keys():
-            if selector == "select":
-                options = fields[field]["selector"]["select"]["options"]
+        if selector == const.SELECT or f"{field}{const.LIST}" in ha_entity.get(const.ATTRIBUTES,
+                                                                               {}).keys():
+            if selector == const.SELECT:
+                options = fields[field][const.SELECTOR][const.SELECT][const.OPTIONS]
             else:
-                options = ha_entity.get(const.ATTRIBUTES, {})[f"{field}_list"]
+                options = ha_entity.get(const.ATTRIBUTES, {})[f"{field}{const.LIST}"]
 
             if not isinstance(options[0], str):
-                options = [opt["value"] for opt in options]
+                options = [opt[const.VALUE] for opt in options]
 
             if setting_value is None:
                 setting_value = const.EMPTY_STRING
 
             row = ParameterComboRow(action, var_name, field, setting_value, options)
-        elif selector == "boolean":
+        elif selector == const.BOOLEAN:
             value = False
 
             if setting_value:
                 value = setting_value
             else:
-                default_value = fields[field].get("default")
+                default_value = fields[field].get(const.DEFAULT)
                 if default_value:
                     value = bool(default_value)
 
             row = ParameterSwitchRow(action, var_name, field, value)
-        elif selector == "number":
-            number_min = fields[field]["selector"]["number"]["min"]
-            number_max = fields[field]["selector"]["number"]["max"]
-            number_step = fields[field]["selector"]["number"].get("step", 1)
+        elif selector == const.NUMBER:
+            number_min = fields[field][const.SELECTOR][const.NUMBER][const.MIN]
+            number_max = fields[field][const.SELECTOR][const.NUMBER][const.MAX]
+            number_step = fields[field][const.SELECTOR][const.NUMBER].get(const.STEP, 1)
 
             value = number_min
 
             if setting_value:
                 value = setting_value
             else:
-                default_value = fields[field].get("default")
+                default_value = fields[field].get(const.DEFAULT)
                 if default_value:
                     value = default_value
 

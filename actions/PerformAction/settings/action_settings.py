@@ -2,7 +2,7 @@
 
 from typing import Dict
 
-from de_gensyn_HomeAssistantPlugin import const
+from de_gensyn_HomeAssistantPlugin.actions.PerformAction import const
 from de_gensyn_HomeAssistantPlugin.actions.settings.settings import Settings
 
 DEFAULT_SETTINGS = {
@@ -79,7 +79,7 @@ class ActionSettings(Settings):
 
     def reset(self, domain: str) -> None:
         """
-        Delete the settings and keeps only the UUID. The given domain is also set.
+        Empty the settings and keep only the UUID and the given domain.
         :param domain: the new domain
         """
         super().reset(domain)

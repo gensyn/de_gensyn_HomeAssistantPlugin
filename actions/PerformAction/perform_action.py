@@ -8,13 +8,13 @@ from json import JSONDecodeError
 
 from GtkHelper.GenerativeUI.ComboRow import ComboRow
 from GtkHelper.GenerativeUI.ExpanderRow import ExpanderRow
-from de_gensyn_HomeAssistantPlugin import const
-from de_gensyn_HomeAssistantPlugin.actions.ActionAction.action_parameters import action_parameters_helper
-from de_gensyn_HomeAssistantPlugin.actions.ActionAction.settings.action_settings import ActionSettings
+from de_gensyn_HomeAssistantPlugin.actions.PerformAction import const
+from de_gensyn_HomeAssistantPlugin.actions.PerformAction.action_parameters import action_parameters_helper
+from de_gensyn_HomeAssistantPlugin.actions.PerformAction.settings.action_settings import ActionSettings
 from de_gensyn_HomeAssistantPlugin.actions.home_assistant_action_base import HomeAssistantActionBase
 
 
-class ActionAction(HomeAssistantActionBase):
+class PerformAction(HomeAssistantActionBase):
     """Action to be loaded by StreamController."""
     def __init__(self, *args, **kwargs):
         super().__init__(track_entity= False, *args, **kwargs)

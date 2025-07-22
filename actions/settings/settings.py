@@ -2,7 +2,7 @@
 
 import uuid
 
-from de_gensyn_HomeAssistantPlugin import const
+from de_gensyn_HomeAssistantPlugin.actions import const
 
 DEFAULT_SETTINGS = {
     const.SETTING_DOMAIN: const.EMPTY_STRING,
@@ -72,6 +72,6 @@ class Settings:
         :param domain: the new domain
         """
         self._settings[const.SETTING_ENTITY][const.SETTING_DOMAIN] = domain
-        self._settings[const.SETTING_ENTITY][const.SETTING_ENTITY] = EMPTY_STRING
+        self._settings[const.SETTING_ENTITY][const.SETTING_ENTITY] = const.EMPTY_STRING
         self.load()
         self._action.set_settings(self._settings)

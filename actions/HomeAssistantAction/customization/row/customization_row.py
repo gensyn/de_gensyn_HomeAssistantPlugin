@@ -5,7 +5,7 @@ from typing import List, Dict, Any
 
 import gi
 
-from de_gensyn_HomeAssistantPlugin import const
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction import const
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.customization import Customization
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.settings.settings import Settings
 

@@ -3,7 +3,7 @@ from typing import  Any
 
 from gi.repository.Gtk import CheckButton
 
-from de_gensyn_HomeAssistantPlugin import const
+from de_gensyn_HomeAssistantPlugin import const as base_const
 
 
 class ParameterRow:
@@ -15,7 +15,7 @@ class ParameterRow:
         self.check = CheckButton()
         is_active = self.field_name in self.action.settings.get_action_parameters()
         self.check.set_active(is_active)
-        self.check.connect(const.CONNECT_TOGGLED, self._on_change_check)
+        self.check.connect(base_const.CONNECT_TOGGLED, self._on_change_check)
 
     def get_parameter_value(self) -> Any:
         """
