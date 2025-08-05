@@ -9,7 +9,7 @@ from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.tex
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.settings.settings import Settings
 
 
-def get_text(state: Dict, settings: Settings) -> (str, str, int, str, int, str):
+def get_text(state: Dict, settings: Settings, is_connected: bool) -> (str, str, int, str, int, str):
     """
     Determine text, position and font size to show on StreamDeck.
     """
@@ -19,7 +19,7 @@ def get_text(state: Dict, settings: Settings) -> (str, str, int, str, int, str):
     outline_size = settings.get_text_outline_size()
     outline_color = settings.get_text_outline_color()
 
-    if not state["connected"]:
+    if not is_connected:
         return "N/A", position, text_size, text_color, outline_size, outline_color
 
     attribute = settings.get_text_attribute()

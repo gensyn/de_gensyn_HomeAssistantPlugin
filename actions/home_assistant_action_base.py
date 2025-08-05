@@ -31,25 +31,23 @@ class HomeAssistantActionBase(ActionBase):
 
     def on_ready(self) -> None:
         """Set up action when StreamController has finished loading."""
-
-        if not self.plugin_base.backend.is_connected():
-            self.plugin_base.backend.register_action(self.on_ready)
+        self.plugin_base.backend.add_action_ready_callback(self.on_ready)
 
         entity = self.settings.get_entity()
         if entity and self.track_entity:
-            self.plugin_base.backend.add_tracked_entity(entity, self.settings.get_uuid(), self._entity_updated)
+            self.plugin_base.backend.add_tracked_entity(entity, self._entity_updated)
 
         self._load_domains()
         self._load_entities()
 
     def on_remove(self) -> None:
         """Clean up after action was removed."""
-        self.plugin_base.backend.remove_action(self.on_ready)
+        self.plugin_base.backend.remove_action_ready_callback(self.on_ready)
 
         if self.track_entity:
             self.plugin_base.backend.remove_tracked_entity(
                 self.settings.get_entity(),
-                self.settings.get_uuid()
+                self._entity_updated
             )
         self._entity_updated()
 
@@ -99,7 +97,7 @@ class HomeAssistantActionBase(ActionBase):
         if old_domain != domain:
             entity = self.settings.get_entity()
             if entity and self.track_entity:
-                self.plugin_base.backend.remove_tracked_entity(entity, self.settings.get_uuid())
+                self.plugin_base.backend.remove_tracked_entity(entity, self._entity_updated)
             self.settings.reset(domain)
             self.entity_entity_combo.remove_all_items()
 
@@ -114,10 +112,10 @@ class HomeAssistantActionBase(ActionBase):
         old_entity = str(old_entity) if old_entity is not None else None
 
         if old_entity and self.track_entity:
-            self.plugin_base.backend.remove_tracked_entity(old_entity, self.settings.get_uuid())
+            self.plugin_base.backend.remove_tracked_entity(old_entity, self._entity_updated)
 
         if entity and self.track_entity:
-            self.plugin_base.backend.add_tracked_entity(entity, self.settings.get_uuid(), self._entity_updated)
+            self.plugin_base.backend.add_tracked_entity(entity, self._entity_updated)
 
         self._set_enabled_disabled()
 

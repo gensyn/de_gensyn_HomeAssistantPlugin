@@ -54,6 +54,13 @@ class Settings:
         """
         return self.settings[const.SETTING_ENTITY][const.SETTING_ENTITY]
 
+    def get_call_service(self) -> str:
+        """
+        Get whether to call a service.
+        :return: whether to call a service
+        """
+        return self.settings[const.SETTING_SERVICE][const.SETTING_CALL_SERVICE]
+
     def get_service(self) -> str:
         """
         Get the service.

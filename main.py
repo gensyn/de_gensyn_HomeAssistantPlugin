@@ -23,7 +23,7 @@ from de_gensyn_HomeAssistantPlugin.backend import const as backend_const
 
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.home_assistant_action import HomeAssistantAction
 from de_gensyn_HomeAssistantPlugin.actions.PerformAction.perform_action import PerformAction
-from de_gensyn_HomeAssistantPlugin.backend.home_assistant import HomeAssistantBackend
+from de_gensyn_HomeAssistantPlugin.backend.home_assistant_backend import HomeAssistantBackend
 from de_gensyn_HomeAssistantPlugin.connection_settings.connection_settings import ConnectionSettings
 
 
@@ -78,7 +78,7 @@ class HomeAssistant(PluginBase):  # pylint: disable=too-few-public-methods
         self.backend.set_ssl(self.connection.get_ssl())
         self.backend.set_verify_certificate(self.connection.get_verify_certificate())
         self.backend.set_token(self.connection.get_token())
-        self.backend.reconnect()
+        self.backend.connect()
 
     def get_settings_area(self):
         """Gets the rows for configuring Home Assistant credentials and base connection."""

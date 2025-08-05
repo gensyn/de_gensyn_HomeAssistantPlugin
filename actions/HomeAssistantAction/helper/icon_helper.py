@@ -19,11 +19,11 @@ with open(MDI_FILENAME, "r", encoding="utf-8") as f:
     MDI_ICONS: Dict[str, str] = json.loads(f.read())
 
 
-def get_icon(state: Dict, settings: Settings) -> (str, float):
+def get_icon(state: Dict, settings: Settings, is_connected: bool) -> (str, float):
     """
     Get the item corresponding to the given state.
     """
-    if not state["connected"]:
+    if not is_connected:
         return (_get_icon_svg(const.ICON_NETWORK_OFF).replace("<color>",
                                                               const.ICON_COLOR_RED).replace(
             "<opacity>", "1.0")), round(const.DEFAULT_ICON_SCALE / 100, 2)

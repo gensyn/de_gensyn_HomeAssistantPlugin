@@ -53,14 +53,20 @@ class HomeAssistantAction(ActionBase):
         """
         Set up action when StreamController has finished loading.
         """
+        self.plugin_base.backend.add_action_ready_callback(self.on_ready)
+
         self.settings = Settings(self)
 
         if not self.plugin_base.backend.is_connected():
-            self.plugin_base.backend.register_action(self.on_ready)
+            self._entity_updated()
+            return
 
         entity = self.settings.get_entity()
         if entity:
-            self.plugin_base.backend.add_tracked_entity(entity, self.settings.get_uuid(), self._entity_updated)
+            self.plugin_base.backend.add_tracked_entity(entity, self._entity_updated)
+
+        if not self.plugin_base.backend.is_connected():
+            return
 
         self._load_domains()
         self._load_entities()
@@ -78,10 +84,11 @@ class HomeAssistantAction(ActionBase):
         """
         Clean up after action was removed.
         """
-        self.plugin_base.backend.remove_action(self.on_ready)
+        self.plugin_base.backend.remove_action_ready_callback(self.on_ready)
+
         self.plugin_base.backend.remove_tracked_entity(
             self.settings.get_entity(),
-            self.settings.get_uuid()
+            self._entity_updated
         )
         self._entity_updated()
 
@@ -90,8 +97,9 @@ class HomeAssistantAction(ActionBase):
         Call the service stated in the connection.
         """
         entity = self.settings.get_entity()
+        call_service = self.settings.get_call_service()
         service = self.settings.get_service()
-        if not entity or not service:
+        if not entity or not call_service or not service:
             return
 
         parameters = {}
@@ -444,8 +452,9 @@ class HomeAssistantAction(ActionBase):
         self._entity_updated()
 
     def _reload(self, *_):
-        self._set_enabled_disabled()
-        self._entity_updated()
+        if self.initialized:
+            self._set_enabled_disabled()
+            self._entity_updated()
 
     def _on_change_domain(self, _, domain, old_domain):
         """
@@ -460,7 +469,7 @@ class HomeAssistantAction(ActionBase):
         if old_domain != domain:
             entity = self.settings.get_entity()
             if entity:
-                self.plugin_base.backend.remove_tracked_entity(entity, self.settings.get_uuid())
+                self.plugin_base.backend.remove_tracked_entity(entity, self._entity_updated)
             self.settings.reset(domain)
             self.entity_entity_combo.remove_all_items()
             self.service_service_combo.remove_all_items()
@@ -488,10 +497,10 @@ class HomeAssistantAction(ActionBase):
             return
 
         if old_entity:
-            self.plugin_base.backend.remove_tracked_entity(old_entity, self.settings.get_uuid())
+            self.plugin_base.backend.remove_tracked_entity(old_entity, self._entity_updated)
 
         if entity:
-            self.plugin_base.backend.add_tracked_entity(entity, self.settings.get_uuid(), self._entity_updated)
+            self.plugin_base.backend.add_tracked_entity(entity, self._entity_updated)
             self._load_attributes()
             service_parameters_helper.load_service_parameters(self)
 
@@ -512,14 +521,17 @@ class HomeAssistantAction(ActionBase):
         """
         Executed when an entity is updated to reflect the changes on the key.
         """
+        show_icon = self.settings.get_show_icon()
+        show_text = self.settings.get_show_text()
+
         if not self.initialized:
+            if not self.plugin_base.backend.is_connected():
+                self._update_icon(show_icon, {})
+                self._update_labels(show_text, {})
             return
 
         # different entities have different attributes -> reload
         self._load_attributes()
-
-        show_icon = self.settings.get_show_icon()
-        show_text = self.settings.get_show_text()
 
         if not show_icon and not show_text:
             self.set_media()
@@ -542,11 +554,11 @@ class HomeAssistantAction(ActionBase):
         """
         Update the icon to reflect the entity state.
         """
-        if not show_icon or not state:
+        if not show_icon or state is None:
             self.set_media()
             return
 
-        icon, scale = icon_helper.get_icon(state, self.settings)
+        icon, scale = icon_helper.get_icon(state, self.settings, self.plugin_base.backend.is_connected())
         self.set_media(media_path=icon, size=scale)
 
     def _update_labels(self, show_text: bool, state: dict) -> None:
@@ -554,11 +566,11 @@ class HomeAssistantAction(ActionBase):
         Update the labels to reflect the entity state.
         """
         self._clear_labels()
-        if not show_text or not state:
+        if not show_text or state is None:
             return
 
         text, position, text_size, text_color, outline_size, outline_color = text_helper.get_text(
-            state, self.settings
+            state, self.settings, self.plugin_base.backend.is_connected()
         )
         self.set_label(
             text, position, text_color, None, text_size, outline_size, outline_color,

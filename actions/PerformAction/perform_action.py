@@ -23,6 +23,12 @@ class PerformAction(HomeAssistantActionBase):
     def on_ready(self) -> None:
         """Set up action when StreamController has finished loading."""
         self.settings: ActionSettings = ActionSettings(self)
+
+        super().on_ready()
+
+        if not self.plugin_base.backend.is_connected():
+            return
+
         super().on_ready()
         self._load_actions()
         self.initialized = True

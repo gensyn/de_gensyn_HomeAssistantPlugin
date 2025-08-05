@@ -1,0 +1,344 @@
+"""
+Module for the Home Assistant backend.
+"""
+
+from threading import Thread
+from time import sleep
+from typing import Dict, Callable, Any, List, Set, Optional
+
+from loguru import logger as log
+
+from de_gensyn_HomeAssistantPlugin.backend import const
+from de_gensyn_HomeAssistantPlugin.backend.home_assistant_websocket import HomeAssistantWebsocket
+
+class HomeAssistantBackend:
+    """
+    Defines the Home Assistant backend.
+    """
+
+    def __init__(self, host: str, port: str, ssl: bool, verify_certificate: bool, token: str):
+        self._websocket: Optional[HomeAssistantWebsocket] = None
+        self._entities: Dict[str, Dict[str, Any]] = {}
+        self._actions: Dict[str, Dict[str, Any]] = {}
+        self._connection_status_callback: Callable = lambda _1, _2=None: None
+        self._keep_alive_thread: Optional[Thread] = None
+        self._retry_connect_thread: Optional[Thread] = None
+        self._action_ready_callbacks: Set[Callable] = set()
+
+        self._host: str = const.EMPTY_STRING
+        self.set_host(host)
+        self._port: str = const.EMPTY_STRING
+        self.set_port(port)
+        self._ssl: bool = True
+        self.set_ssl(ssl)
+        self._verify_certificate: bool = True
+        self.set_verify_certificate(verify_certificate)
+        self._token: str = const.EMPTY_STRING
+        self.set_token(token)
+
+        self.connect()
+
+    def set_host(self, host: str) -> None:
+        """Set the Home Assistant host."""
+        self._host = host.split(const.DOUBLE_SLASH, 1)[-1]
+
+    def set_port(self, port: str) -> None:
+        """Set the Home Assistant port."""
+        self._port = port
+
+    def set_ssl(self, ssl: bool) -> None:
+        """Set whether Home Assistant uses SSL."""
+        self._ssl = ssl
+
+    def set_verify_certificate(self, verify_certificate: bool) -> None:
+        """Set whether the certificate should be verified."""
+        self._verify_certificate = verify_certificate
+
+    def set_token(self, token: str) -> None:
+        """Set the Home Assistant token."""
+        self._token = token
+
+    def set_connection_status_callback(self, callback: Callable) -> None:
+        """Set a callback to be called when the connection state changes."""
+        self._connection_status_callback = callback
+
+    def connect(self) -> None:
+        """Connect to Home Assistant."""
+        self.disconnect()
+
+        if not self._host or not self._token or not self._port:
+            return
+
+        self._connection_status_callback(const.CONNECTING)
+
+        websocket_host = (
+            f'{const.PROTO_SSL if self._ssl else const.PROTO}{self._host}:{self._port}{const.HASS_WEBSOCKET_API}'
+        )
+
+        self._websocket = HomeAssistantWebsocket(
+            url=websocket_host, token=self._token,
+            verify_certificate=self._verify_certificate, on_event_message=self._on_event_message,
+            on_connected=self._on_connect, on_close=self._on_disconnect
+        )
+        Thread(target=self._websocket.run_forever, daemon=True).start()
+
+    def disconnect(self) -> None:
+        """Disconnect from Home Assistant."""
+        if self._websocket is not None:
+            self._websocket.connected = False
+            self._websocket.close()
+        self._websocket = None
+        self._connection_status_callback(const.NOT_CONNECTED)
+
+    def _readd_tracked_entities(self, _=None) -> None:
+        if not self._entities:
+            return
+
+        # if the connection was lost we might need to resubscribe to entity events
+        for domain_entry in self._entities.values():
+            for entity, entity_settings in domain_entry.items():
+                if entity_settings.get(const.ACTIONS):
+                    # the order here is important
+                    # first save the existing actions
+                    actions = entity_settings[const.ACTIONS]
+                    # then reset the entity settings
+                    entity_settings[const.SUBSCRIPTION_ID] = -1
+                    entity_settings[const.ACTIONS] = set()
+                    # then re-add the actions
+                    for action in actions:
+                        self.add_tracked_entity(entity, action)
+
+    def _on_connect(self) -> None:
+        self._connection_status_callback(const.CONNECTED)
+        log.info(const.INFO_CONNECTED)
+        self._load_entities()
+        self._load_actions()
+        self._readd_tracked_entities()
+
+        for ready in self._action_ready_callbacks:
+            ready()
+
+    def _on_event_message(self, message: Dict) -> None:
+        new_state = (
+            message
+            .get(const.FIELD_EVENT, {})
+            .get(const.VARIABLES, {})
+            .get(const.TRIGGER, {})
+            .get(const.TO_STATE, {})
+        )
+        if not new_state:
+            entity_id = (
+                message
+                .get(const.FIELD_EVENT, {})
+                .get(const.VARIABLES, {})
+                .get(const.TRIGGER, {})
+                .get(const.FROM_STATE, {})
+                .get(const.ENTITY_ID)
+            )
+            entity_settings = self._entities[entity_id.split(const.DOT)[0]].get(entity_id)
+            actions = entity_settings.get(const.ACTIONS, set())
+            for action_entity_updated in actions:
+                action_entity_updated()
+            return
+
+        entity_id = new_state.get(const.ENTITY_ID)
+        domain = entity_id.split(const.DOT)[0]
+        entity_settings = self._entities[domain].get(entity_id)
+        actions = entity_settings.get(const.ACTIONS, set())
+        state = new_state.get(const.STATE)
+        attributes = new_state.get(const.ATTRIBUTES, {})
+
+        self._entities[domain][entity_id][const.STATE] = state
+        self._entities[domain][entity_id][const.ATTRIBUTES] = attributes
+
+        update_state = {
+            const.STATE: state,
+            const.ATTRIBUTES: attributes,
+            const.HA_CONNECTED: self.is_connected(),
+        }
+
+        if not actions:
+            log.warning(const.WARNING_NOT_SUBSCRIBED.format(entity_id))
+
+        for action_entity_updated in actions:
+            action_entity_updated(update_state)
+
+    def _on_disconnect(self, websocket: HomeAssistantWebsocket) -> None:
+        if websocket != self._websocket:
+            # the call comes from an obsolete websocket instance
+            return
+        log.info(const.INFO_DISCONNECTED)
+        for ready in self._action_ready_callbacks:
+            ready()
+        sleep(const.RECONNECT_INTERVAL)
+        if websocket == self._websocket:
+            # the websocket instance is still the same, so we can try to reconnect
+            self.connect()
+
+    def get_domains(self) -> List[str]:
+        """Get a list of all domains known to Home Assistant."""
+        if self._entities:
+            return list(self._entities.keys())
+        if not self.is_connected():
+            return []
+        self._load_entities()
+        return list(self._entities.keys())
+
+    def get_entity(self, entity_id: str) -> Dict[str, Any]:
+        """Return the entity state with the requested name."""
+        entity_fallback_dict = {
+            const.STATE: const.NA,
+            const.ATTRIBUTES: {},
+            const.HA_CONNECTED: self.is_connected(),
+        }
+        if not entity_id or const.DOT not in entity_id:
+            return entity_fallback_dict
+
+        domain = entity_id.split(const.DOT)[0]
+        entity_dict = self._entities.get(domain, {}).get(entity_id, entity_fallback_dict)
+        entity_dict[const.HA_CONNECTED] = self.is_connected()
+        return entity_dict
+
+    def _load_entities(self) -> None:
+        """Loads the domains and entities from Home Assistant."""
+        success, result, error = self._websocket.send_and_recv(const.GET_STATES)
+
+        if not success:
+            log.error(const.ERROR_STATES.format(error))
+            self._entities = {}
+            return
+
+        states: List[Dict] = result
+
+        entities: Dict[str, Dict[str, Any]] = {}
+
+        for entity in states:
+            entity_id = entity.get(const.ENTITY_ID)
+            domain = entity_id.split(const.DOT)[0]
+            if domain not in entities:
+                entities[domain] = {}
+            entities[domain][entity_id] = {
+                const.STATE: entity.get(const.STATE, const.OFF),
+                const.ATTRIBUTES: entity.get(const.ATTRIBUTES, {}),
+                const.ACTIONS: set(),
+                const.SUBSCRIPTION_ID: -1,
+            }
+
+        if self._entities:
+            for domain, domain_entry in self._entities.items():
+                for entity_id in domain_entry.keys():
+                    if entities.get(domain, {}).get(entity_id):
+                        entities[domain][entity_id][const.ACTIONS] = domain_entry[entity_id].get(const.ACTIONS, set())
+                        entities[domain][entity_id][const.SUBSCRIPTION_ID] = domain_entry[
+                            entity_id
+                        ].get(const.SUBSCRIPTION_ID, -1)
+
+        self._entities = entities
+
+    def get_entities(self, domain: str) -> List[str]:
+        """Return a list of all entities known to Home Assistant."""
+        if not domain:
+            return []
+        if self._entities:
+            return list(self._entities.get(domain, {}).keys())
+        self._load_entities()
+        return list(self._entities.get(domain, {}).keys())
+
+    def _load_actions(self) -> None:
+        success, result, error = self._websocket.send_and_recv(const.GET_SERVICES)
+
+        if not success:
+            log.error(const.ERROR_SERVICES.format(error))
+            self._actions = {}
+            return
+
+        self._actions = result
+
+    def get_actions(self, domain: str) -> Dict[str, Dict[str, Any]]:
+        """Return all actions known to Home Assistant for the domain."""
+        if not self._actions:
+            self._load_actions()
+        return self._actions.get(domain, {})
+
+    def call_action(
+        self, entity_id: str, service: str, data: Optional[Dict[str, Any]] = None
+    ) -> None:
+        """Calls a Home Assistant service."""
+        if not self.is_connected():
+            return
+
+        domain = entity_id.split(const.DOT)[0]
+        message = self._websocket.create_message(const.CALL_SERVICE)
+        message[const.DOMAIN] = domain
+        message[const.SERVICE] = service
+        message[const.TARGET] = {const.ENTITY_ID: entity_id}
+        message[const.SERVICE_DATA] = data if data else {}
+
+        self._websocket.send(message)
+
+    def add_action_ready_callback(self, on_ready: Callable) -> None:
+        """Register a callback to be called when the action is ready."""
+        self._action_ready_callbacks.add(on_ready)
+
+    def remove_action_ready_callback(self, on_ready: Callable) -> None:
+        """Deregister a callback that was registered to be called when the action is ready."""
+        self._action_ready_callbacks.remove(on_ready)
+
+    def add_tracked_entity(
+        self, entity_id: str, action_entity_updated: Callable
+    ) -> None:
+        """Register an entity with the Home Assistant websocket to be notified when the entity is updated."""
+        if not entity_id:
+            return
+
+        if not self.is_connected():
+            return
+
+        if not self._entities:
+            self._load_entities()
+
+        domain = entity_id.split(const.DOT)[0]
+        entity_settings = self._entities.get(domain, {}).get(entity_id, {})
+        if not entity_settings:
+            # entity doesn't exist (anymore)
+            return
+
+        if action_entity_updated in entity_settings.get(const.ACTIONS, set()):
+            # action already registered
+            return
+
+        entity_settings.get(const.ACTIONS).add(action_entity_updated)
+
+        if entity_settings.get(const.SUBSCRIPTION_ID) > -1:
+            # already subscribed to entity events
+            return
+
+        message = self._websocket.create_message(const.SUBSCRIBE_TRIGGER)
+        message[const.TRIGGER] = {const.PLATFORM: const.STATE, const.ENTITY_ID: entity_id}
+        self._websocket.send(message)
+        entity_settings[const.SUBSCRIPTION_ID] = message[const.ID]
+
+    def remove_tracked_entity(self, entity_id: str, action_entity_updated: Callable) -> None:
+        """Deregister a previously registered entity."""
+        if not entity_id:
+            return
+
+        if not self.is_connected():
+            return
+
+        domain = entity_id.split(const.DOT)[0]
+        entity_settings = self._entities[domain].get(entity_id, {})
+        entity_settings.get(const.ACTIONS, set()).remove(action_entity_updated)
+
+        if len(entity_settings.get(const.ACTIONS, set())) > 0:
+            # the entity is still attached to another key, so keep the trigger subscription
+            return
+
+        message = self._websocket.create_message(const.UNSUBSCRIBE_EVENTS)
+        message[const.SUBSCRIPTION_ID] = entity_settings[const.SUBSCRIPTION_ID]
+        self._websocket.send(message)
+        entity_settings[const.SUBSCRIPTION_ID] = -1
+
+    def is_connected(self) -> bool:
+        """Check if the backend is connected to Home Assistant."""
+        return self._websocket and self._websocket.connected

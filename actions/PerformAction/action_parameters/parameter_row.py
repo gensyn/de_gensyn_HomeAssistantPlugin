@@ -22,7 +22,7 @@ class ParameterRow:
         Get the value of the row. Must be implemented in a subclass.
         :return: the value
         """
-        pass
+        raise NotImplementedError
 
 
     def set_value(self, value: Any) -> None:
@@ -30,7 +30,7 @@ class ParameterRow:
         Set the value for the row. Must be implemented in a subclass.
         :param value: the new value
         """
-        pass
+        raise NotImplementedError
 
     def _on_change_check(self, _) -> None:
         if self.check.get_active():

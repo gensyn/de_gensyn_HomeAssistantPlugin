@@ -204,3 +204,10 @@ TEXT_OUTLINE_MAX_SIZE = 10
 
 CONNECT_CLICKED = "clicked"
 CONNECT_TOGGLED = "toggled"
+CONNECT_CHANGED = "changed"
+CONNECT_ACTIVATE = "activate"
+CONNECT_VALUE_CHANGED = "value-changed"
+CONNECT_NOTIFY_ACTIVE = "notify::active"
+CONNECT_NOTIFY_COLOR_SET = "color-set"
+
+HA_CONNECTED = "connected"
