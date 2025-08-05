@@ -10,7 +10,7 @@ from de_gensyn_HomeAssistantPlugin.backend import const
 from de_gensyn_HomeAssistantPlugin.backend.home_assistant_websocket import HomeAssistantWebsocket
 
 
-class TestBackend(unittest.TestCase):
+class TestWebsocketAuth(unittest.TestCase):
 
     @patch.object(HomeAssistantWebsocket, 'send')
     @patch.object(HomeAssistantWebsocket, 'send_and_recv')

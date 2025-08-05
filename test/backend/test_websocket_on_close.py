@@ -10,7 +10,7 @@ from de_gensyn_HomeAssistantPlugin.backend import const
 from de_gensyn_HomeAssistantPlugin.backend.home_assistant_websocket import HomeAssistantWebsocket
 
 
-class TestBackend(unittest.TestCase):
+class TestWebsocketOnClose(unittest.TestCase):
 
     def test_on_close_success(self):
         on_close_callback_mock = Mock()

@@ -10,7 +10,7 @@ from de_gensyn_HomeAssistantPlugin.backend import const
 from de_gensyn_HomeAssistantPlugin.backend.home_assistant_websocket import _on_error
 
 
-class TestBackend(unittest.TestCase):
+class TestWebsocketOnError(unittest.TestCase):
 
     @patch("de_gensyn_HomeAssistantPlugin.backend.home_assistant_websocket.log.error")
     def test_log_error(self, log_mock):

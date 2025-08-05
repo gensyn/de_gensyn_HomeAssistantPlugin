@@ -11,7 +11,7 @@ from de_gensyn_HomeAssistantPlugin.backend import const
 from de_gensyn_HomeAssistantPlugin.backend.home_assistant_websocket import _get_field_from_message
 
 
-class TestBackend(unittest.TestCase):
+class TestWebsocketGetFieldFromMessage(unittest.TestCase):
 
     def test_get_field_from_message_no_message(self):
         result = _get_field_from_message(None, const.FIELD_TYPE)

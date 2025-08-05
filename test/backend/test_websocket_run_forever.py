@@ -11,7 +11,7 @@ from de_gensyn_HomeAssistantPlugin.backend import const
 from de_gensyn_HomeAssistantPlugin.backend.home_assistant_websocket import HomeAssistantWebsocket
 
 
-class TestBackend(unittest.TestCase):
+class TestWebsocketRunForever(unittest.TestCase):
 
     @patch("de_gensyn_HomeAssistantPlugin.backend.home_assistant_websocket.WebSocketApp.run_forever")
     def test_run_forever_verify_certificate(self, websocket_app_mock):

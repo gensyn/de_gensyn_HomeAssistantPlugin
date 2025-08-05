@@ -9,7 +9,7 @@ sys.path.insert(0, absolute_plugin_path)
 from de_gensyn_HomeAssistantPlugin.backend.home_assistant_websocket import HomeAssistantWebsocket, _on_error
 
 
-class TestBackend(unittest.TestCase):
+class TestWebsocketInit(unittest.TestCase):
 
     @patch.object(HomeAssistantWebsocket, '_on_message')
     @patch.object(HomeAssistantWebsocket, '_on_close')

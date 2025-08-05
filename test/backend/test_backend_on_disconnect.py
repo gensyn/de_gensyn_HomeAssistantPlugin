@@ -10,7 +10,7 @@ from de_gensyn_HomeAssistantPlugin.backend.home_assistant_backend import HomeAss
 from de_gensyn_HomeAssistantPlugin.backend.home_assistant_backend import const
 
 
-class TestBackend(unittest.TestCase):
+class TestBackendOnDisconnect(unittest.TestCase):
 
     @patch.object(HomeAssistantBackend, 'connect')
     @patch("de_gensyn_HomeAssistantPlugin.backend.home_assistant_backend.log.info")

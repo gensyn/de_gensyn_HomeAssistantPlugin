@@ -11,7 +11,7 @@ from de_gensyn_HomeAssistantPlugin.backend import const
 from de_gensyn_HomeAssistantPlugin.backend.home_assistant_websocket import HomeAssistantWebsocket
 
 
-class TestBackend(unittest.TestCase):
+class TestWebsocketOnMessage(unittest.TestCase):
 
     @patch("de_gensyn_HomeAssistantPlugin.backend.home_assistant_websocket.json.loads")
     def test_on_message_empty_message(self, json_mock):

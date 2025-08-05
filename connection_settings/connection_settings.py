@@ -1,4 +1,5 @@
 """Module to manage Home Assistant connection action settings."""
+from typing import Optional
 
 from de_gensyn_HomeAssistantPlugin import const as base_const
 
@@ -11,11 +12,11 @@ class ConnectionSettings:
     def __init__(self, hass: "HomeAssistant"):
         self._hass = hass
 
-        self._host = None
-        self._port = None
-        self._ssl = None
-        self._verify_certificate = None
-        self._token = None
+        self._host: Optional[str] = None
+        self._port: Optional[str] = None
+        self._ssl: Optional[bool] = None
+        self._verify_certificate: Optional[bool] = None
+        self._token: Optional[str] = None
 
         self._settings = self._hass.get_settings()
         self._load_settings()

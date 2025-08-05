@@ -11,7 +11,7 @@ from de_gensyn_HomeAssistantPlugin.backend import const
 from de_gensyn_HomeAssistantPlugin.backend.home_assistant_websocket import HomeAssistantWebsocket
 
 
-class TestBackend(unittest.TestCase):
+class TestWebsocketSend(unittest.TestCase):
 
     @patch("de_gensyn_HomeAssistantPlugin.backend.home_assistant_websocket.WebSocketApp.send")
     def test_send_not_connected_with_check(self, send_mock):

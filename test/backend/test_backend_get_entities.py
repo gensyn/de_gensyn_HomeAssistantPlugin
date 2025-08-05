@@ -10,7 +10,7 @@ from de_gensyn_HomeAssistantPlugin.backend.home_assistant_backend import HomeAss
 from de_gensyn_HomeAssistantPlugin.backend.home_assistant_backend import const
 
 
-class TestBackend(unittest.TestCase):
+class TestBackendGetEntities(unittest.TestCase):
 
     def test_get_entities_domain_empty(self):
         instance = HomeAssistantBackend(const.EMPTY_STRING, const.EMPTY_STRING, True, True, const.EMPTY_STRING)

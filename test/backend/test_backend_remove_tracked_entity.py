@@ -10,7 +10,7 @@ from de_gensyn_HomeAssistantPlugin.backend.home_assistant_backend import HomeAss
 from de_gensyn_HomeAssistantPlugin.backend.home_assistant_backend import const
 
 
-class TestBackend(unittest.TestCase):
+class TestBackendRemoveTrackedEntity(unittest.TestCase):
 
     @patch.object(HomeAssistantBackend, 'connect')
     def test_remove_tracked_entity_no_entity(self, _):

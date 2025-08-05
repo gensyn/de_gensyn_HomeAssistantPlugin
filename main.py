@@ -3,6 +3,7 @@ Entry point for StreamController to load the plugin.
 """
 import sys
 from pathlib import Path
+from typing import Optional
 
 import gi
 
@@ -29,28 +30,29 @@ from de_gensyn_HomeAssistantPlugin.connection_settings.connection_settings impor
 
 class HomeAssistant(PluginBase):  # pylint: disable=too-few-public-methods
     """The plugin class to be loaded by Stream Controller. Manages the credentials."""
-    host_entry: EntryRow
-    port_entry: EntryRow
-    ssl_switch: SwitchRow
-    verify_certificate_switch: SwitchRow
-    token_entry: PasswordEntryRow
-    connection_status: EntryRow
 
     def __init__(self):
         super().__init__()
+
+        self.host_entry: Optional[EntryRow] = None
+        self.port_entry: Optional[EntryRow] = None
+        self.ssl_switch: Optional[SwitchRow] = None
+        self.verify_certificate_switch: Optional[SwitchRow] = None
+        self.token_entry: Optional[PasswordEntryRow] = None
+        self.connection_status: Optional[EntryRow] = None
 
         self.home_assistant_action_holder = ActionHolder(
             plugin_base=self,
             action_base=HomeAssistantAction,
             action_id="de_gensyn_HomeAssistantPlugin::HomeAssistantAction",
-            action_name=HOME_ASSISTANT_ACTION,
+            action_name=HOME_ASSISTANT_ACTION
         )
 
         self.service_action_holder = ActionHolder(
             plugin_base=self,
             action_base=PerformAction,
             action_id="de_gensyn_HomeAssistantPlugin::PerformAction",
-            action_name=PERFORM_ACTION,
+            action_name=PERFORM_ACTION
         )
         self.add_action_holder(self.home_assistant_action_holder)
         self.add_action_holder(self.service_action_holder)
@@ -62,12 +64,12 @@ class HomeAssistant(PluginBase):  # pylint: disable=too-few-public-methods
             app_version="1.5.0-beta"
         )
 
-        self.connection = ConnectionSettings(self)
-        host = self.connection.get_host()
-        port = self.connection.get_port()
-        ssl = self.connection.get_ssl()
-        verify_certificate = self.connection.get_verify_certificate()
-        token = self.connection.get_token()
+        self.connection: ConnectionSettings = ConnectionSettings(self)
+        host: str = self.connection.get_host()
+        port: str = self.connection.get_port()
+        ssl: bool = self.connection.get_ssl()
+        verify_certificate: bool = self.connection.get_verify_certificate()
+        token: str = self.connection.get_token()
 
         self.backend = HomeAssistantBackend(host, port, ssl, verify_certificate, token)
 

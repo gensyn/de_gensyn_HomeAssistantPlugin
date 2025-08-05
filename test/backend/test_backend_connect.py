@@ -10,7 +10,7 @@ from de_gensyn_HomeAssistantPlugin.backend.home_assistant_backend import HomeAss
 from de_gensyn_HomeAssistantPlugin.backend.home_assistant_backend import const
 
 
-class TestBackend(unittest.TestCase):
+class TestBackendConnect(unittest.TestCase):
 
     @patch.object(HomeAssistantBackend, 'disconnect')
     def test_connect_no_host(self, disconnect_mock):

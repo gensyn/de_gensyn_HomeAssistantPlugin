@@ -9,7 +9,7 @@ from de_gensyn_HomeAssistantPlugin.backend import const
 from de_gensyn_HomeAssistantPlugin.backend.home_assistant_websocket import HomeAssistantWebsocket
 
 
-class TestBackend(unittest.TestCase):
+class TestWebsocketCreateMessage(unittest.TestCase):
 
     def test_create_message(self):
         message_id = 15

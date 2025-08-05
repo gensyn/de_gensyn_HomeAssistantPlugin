@@ -10,7 +10,7 @@ from de_gensyn_HomeAssistantPlugin.backend.home_assistant_backend import HomeAss
 from de_gensyn_HomeAssistantPlugin.backend.home_assistant_backend import const
 
 
-class TestBackend(unittest.TestCase):
+class TestBackendOnEventMessage(unittest.TestCase):
 
     @patch.object(HomeAssistantBackend, 'connect')
     def test_on_event_message_no_new_state(self, _):

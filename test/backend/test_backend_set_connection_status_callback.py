@@ -10,7 +10,7 @@ from de_gensyn_HomeAssistantPlugin.backend.home_assistant_backend import const
 from de_gensyn_HomeAssistantPlugin.backend.home_assistant_backend import HomeAssistantBackend
 
 
-class TestBackend(unittest.TestCase):
+class TestBackendSetConnectionStatusCallback(unittest.TestCase):
 
     @patch.object(HomeAssistantBackend, 'connect')
     def test_set_callback(self, _):
