@@ -12,7 +12,7 @@ LABEL_SERVICE_NO_SERVICES = "actions.home_assistant.service.no_services.label"
 LABEL_SERVICE_PARAMETERS = "actions.home_assistant.service.parameters.label"
 LABEL_SERVICE_NO_PARAMETERS = "actions.home_assistant.service.no_parameters.label"
 
-LABEL_SETTINGS_ACTION = "actions.home_assistant.connection.action.label"
+LABEL_SETTINGS_ACTION = "actions.home_assistant.settings.action.label"
 
 SETTING_ACTION = "action"
 SETTING_SERVICE = "service"

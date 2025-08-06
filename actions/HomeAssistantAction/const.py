@@ -43,12 +43,11 @@ LABEL_TEXT_UNIT_LINE_BREAK_SHORT = "actions.home_assistant.text.unit_line_break_
 LABEL_TEXT_CUSTOM_TEXT = "actions.home_assistant.text.custom_text.label"
 LABEL_TEXT_NO_ENTITY = "actions.home_assistant.text.no_entity.label"
 
-LABEL_SETTINGS_ENTITY = "actions.home_assistant.connection.entity.label"
-LABEL_SETTINGS_SERVICE = "actions.home_assistant.connection.service.label"
-LABEL_SETTINGS_ACTION = "actions.home_assistant.connection.action.label"
-LABEL_SETTINGS_ICON = "actions.home_assistant.connection.icon.label"
-LABEL_SETTINGS_TEXT = "actions.home_assistant.connection.text.label"
-LABEL_SETTINGS_CONNECTION = "actions.home_assistant.connection.connection.label"
+LABEL_SETTINGS_ENTITY = "actions.home_assistant.settings.entity.label"
+LABEL_SETTINGS_SERVICE = "actions.home_assistant.settings.service.label"
+LABEL_SETTINGS_ACTION = "actions.home_assistant.settings.action.label"
+LABEL_SETTINGS_ICON = "actions.home_assistant.settings.icon.label"
+LABEL_SETTINGS_TEXT = "actions.home_assistant.settings.text.label"
 
 LABEL_CUSTOMIZATION_ICON_TITLE = "actions.home_assistant.customization.icon_title.label"
 LABEL_CUSTOMIZATION_TEXT_TITLE = "actions.home_assistant.customization.text_title.label"
