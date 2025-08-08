@@ -96,10 +96,11 @@ class HomeAssistantAction(ActionBase):
         """
         Call the service stated in the connection.
         """
+        domain = self.settings.get_domain()
         entity = self.settings.get_entity()
         call_service = self.settings.get_call_service()
         service = self.settings.get_service()
-        if not entity or not call_service or not service:
+        if not domain or not entity or not call_service or not service:
             return
 
         parameters = {}
@@ -112,7 +113,7 @@ class HomeAssistantAction(ActionBase):
                 pass
             parameters[parameter] = value
 
-        self.plugin_base.backend.call_action(entity, service, parameters)
+        self.plugin_base.backend.perform_action(domain, service, entity, parameters)
 
     def get_config_rows(self) -> list:
         """
@@ -587,7 +588,7 @@ class HomeAssistantAction(ActionBase):
         Load domains from Home Assistant.
         """
         domain = self.settings.get_domain()
-        domains = sorted(self.plugin_base.backend.get_domains())
+        domains = sorted(self.plugin_base.backend.get_domains_for_entities())
         if domain not in domains:
             domains.append(domain)
         self.entity_domain_combo.populate(domains, domain, trigger_callback=False)

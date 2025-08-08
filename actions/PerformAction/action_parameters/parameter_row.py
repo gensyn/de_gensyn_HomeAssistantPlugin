@@ -8,14 +8,21 @@ from de_gensyn_HomeAssistantPlugin import const as base_const
 
 class ParameterRow:
     """Row to display action call parameters with a check button."""
-    def __init__(self, action_core, field_name: str):
+    def __init__(self, action_core, field_name: str, required: bool):
         self.action = action_core
         self.field_name = field_name
+        self.required = required
 
         self.check = CheckButton()
-        is_active = self.field_name in self.action.settings.get_action_parameters()
-        self.check.set_active(is_active)
-        self.check.connect(base_const.CONNECT_TOGGLED, self._on_change_check)
+        self.check.connect(base_const.CONNECT_TOGGLED, self._on_change)
+
+        if self.field_name in self.action.settings.get_parameters():
+            # we already have a value for this parameter
+            self.check.set_active(True)
+
+        if self.required:
+            self.check.set_active(True)
+            self.check.set_sensitive(False)
 
     def get_parameter_value(self) -> Any:
         """
@@ -32,8 +39,9 @@ class ParameterRow:
         """
         raise NotImplementedError
 
-    def _on_change_check(self, _) -> None:
+    def _on_change(self, _=None) -> None:
+        """Handle changes to the check button or the value."""
         if self.check.get_active():
-            self.action.settings.set_action_parameter(self.field_name, self.get_parameter_value())
+            self.action.settings.set_parameter(self.field_name, self.get_parameter_value())
         else:
-            self.action.settings.remove_action_parameter(self.field_name)
+            self.action.settings.remove_parameter(self.field_name)

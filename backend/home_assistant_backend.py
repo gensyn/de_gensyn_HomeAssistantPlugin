@@ -175,7 +175,7 @@ class HomeAssistantBackend:
             # the websocket instance is still the same, so we can try to reconnect
             self.connect()
 
-    def get_domains(self) -> List[str]:
+    def get_domains_for_entities(self) -> List[str]:
         """Get a list of all domains known to Home Assistant."""
         if self._entities:
             return list(self._entities.keys())
@@ -183,6 +183,15 @@ class HomeAssistantBackend:
             return []
         self._load_entities()
         return list(self._entities.keys())
+
+    def get_domains_for_actions(self) -> List[str]:
+        """Get a list of all domains known to Home Assistant."""
+        if self._actions:
+            return list(self._actions.keys())
+        if not self.is_connected():
+            return []
+        self._load_actions()
+        return list(self._actions.keys())
 
     def get_entity(self, entity_id: str) -> Dict[str, Any]:
         """Return the entity state with the requested name."""
@@ -260,18 +269,17 @@ class HomeAssistantBackend:
             self._load_actions()
         return self._actions.get(domain, {})
 
-    def call_action(
-        self, entity_id: str, service: str, data: Optional[Dict[str, Any]] = None
+    def perform_action(
+        self, domain: str, service: str, entity_id: Optional[str], data: Optional[Dict[str, Any]] = None
     ) -> None:
         """Calls a Home Assistant service."""
         if not self.is_connected():
             return
 
-        domain = entity_id.split(const.DOT)[0]
         message = self._websocket.create_message(const.CALL_SERVICE)
         message[const.DOMAIN] = domain
         message[const.SERVICE] = service
-        message[const.TARGET] = {const.ENTITY_ID: entity_id}
+        message[const.TARGET] = {const.ENTITY_ID: entity_id} if entity_id else {}
         message[const.SERVICE_DATA] = data if data else {}
 
         self._websocket.send(message)

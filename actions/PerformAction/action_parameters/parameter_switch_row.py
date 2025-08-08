@@ -7,10 +7,10 @@ from de_gensyn_HomeAssistantPlugin.actions.PerformAction.action_parameters.param
 class ParameterSwitchRow(ParameterRow, SwitchRow):
     """SwitchRow to display action call parameters with a check button."""
 
-    def __init__(self, action_core, var_name: str, field_name: str, default_value: bool):
-        ParameterRow.__init__(self, action_core, field_name)
+    def __init__(self, action_core, var_name: str, field_name: str, default_value: bool, required: bool):
         SwitchRow.__init__(self, action_core, var_name, default_value, title=field_name,
                            can_reset=False, complex_var_name=True)
+        ParameterRow.__init__(self, action_core, field_name, required)
 
         self.widget.add_prefix(self.check)
 
@@ -30,5 +30,7 @@ class ParameterSwitchRow(ParameterRow, SwitchRow):
             SwitchRow.set_value(self, value)
 
     def _value_changed(self, switch, _) -> None:
-        self.check.set_active(True)
+        if not self.required:
+            self.check.set_active(True)
         SwitchRow._value_changed(self, switch, _)
+        ParameterRow._on_change(self)

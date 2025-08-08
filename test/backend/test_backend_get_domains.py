@@ -42,7 +42,7 @@ class TestBackendGetDomains(unittest.TestCase):
         }
         instance = HomeAssistantBackend(const.EMPTY_STRING, const.EMPTY_STRING, True, True, const.EMPTY_STRING)
         instance._entities = entities
-        result = instance.get_domains()
+        result = instance.get_domains_for_entities()
 
         is_connected_mock.assert_not_called()
         load_entities_mock.assert_not_called()
@@ -55,7 +55,7 @@ class TestBackendGetDomains(unittest.TestCase):
         entities = {}
         instance = HomeAssistantBackend(const.EMPTY_STRING, const.EMPTY_STRING, True, True, const.EMPTY_STRING)
         instance._entities = entities
-        result = instance.get_domains()
+        result = instance.get_domains_for_entities()
 
         is_connected_mock.assert_called_once()
         load_entities_mock.assert_not_called()
@@ -94,7 +94,7 @@ class TestBackendGetDomains(unittest.TestCase):
 
         instance = HomeAssistantBackend(const.EMPTY_STRING, const.EMPTY_STRING, True, True, const.EMPTY_STRING)
         instance._entities = {}
-        result = instance.get_domains()
+        result = instance.get_domains_for_entities()
 
         is_connected_mock.assert_called_once()
         load_entities_mock.assert_called_once()

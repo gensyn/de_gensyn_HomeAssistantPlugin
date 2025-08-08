@@ -7,14 +7,14 @@ from de_gensyn_HomeAssistantPlugin.actions.PerformAction.action_parameters.param
 class ParameterScaleRow(ParameterRow, ScaleRow):
     """ScaleRow to display action call parameters with a check button."""
 
-    def __init__(self, action_core, var_name: str, field_name: str, default_value: bool, min_value, max_value, step):
+    def __init__(self, action_core, var_name: str, field_name: str, default_value: bool, min_value, max_value, step, required: bool):
         digits = 0
         if "." in str(step):
             digits = len(str(step).split(".")[1])
 
-        ParameterRow.__init__(self, action_core, field_name)
         ScaleRow.__init__(self, action_core, var_name, default_value, title=field_name, min=min_value, max=max_value,
                           step=step, digits=digits, can_reset=False, complex_var_name=True)
+        ParameterRow.__init__(self, action_core, field_name, required)
 
         self.widget.add_prefix(self.check)
 
@@ -34,5 +34,7 @@ class ParameterScaleRow(ParameterRow, ScaleRow):
             ScaleRow.set_value(self, value)
 
     def _value_changed(self, scale) -> None:
-        self.check.set_active(True)
+        if not self.required:
+            self.check.set_active(True)
         ScaleRow._value_changed(self, scale)
+        ParameterRow._on_change(self)

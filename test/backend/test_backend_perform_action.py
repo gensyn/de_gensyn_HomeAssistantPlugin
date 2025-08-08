@@ -14,7 +14,7 @@ class TestBackendCallAction(unittest.TestCase):
 
     @patch.object(HomeAssistantBackend, 'connect')
     @patch.object(HomeAssistantBackend, 'is_connected')
-    def test_call_action_not_connected(self, is_connected_mock, _):
+    def test_perform_action_not_connected(self, is_connected_mock, _):
         send_mock = Mock()
 
         websocket_mock = Mock()
@@ -24,13 +24,13 @@ class TestBackendCallAction(unittest.TestCase):
 
         instance = HomeAssistantBackend(const.EMPTY_STRING, const.EMPTY_STRING, True, True, const.EMPTY_STRING)
         instance._websocket = websocket_mock
-        instance.call_action("light.living_room", "turn_on", {"brightness": 100})
+        instance.perform_action("light", "turn_on", "light.living_room", {"brightness": 100})
 
         send_mock.assert_not_called()
 
     @patch.object(HomeAssistantBackend, 'connect')
     @patch.object(HomeAssistantBackend, 'is_connected')
-    def test_call_action_success(self, is_connected_mock, _):
+    def test_perform_action_success(self, is_connected_mock, _):
         send_mock = Mock()
 
         create_message_mock = Mock()
@@ -44,7 +44,7 @@ class TestBackendCallAction(unittest.TestCase):
 
         instance = HomeAssistantBackend(const.EMPTY_STRING, const.EMPTY_STRING, True, True, const.EMPTY_STRING)
         instance._websocket = websocket_mock
-        instance.call_action("light.living_room", "turn_on", {"brightness": 100})
+        instance.perform_action("light", "turn_on", "light.living_room", {"brightness": 100})
 
         send_mock.assert_called_once_with({
             const.DOMAIN: "light",

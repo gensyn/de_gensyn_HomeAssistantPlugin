@@ -12,6 +12,7 @@ LABEL_TOKEN = "actions.base.token.label"
 
 CONNECT_NOTIFY_ACTIVE = "notify::active"
 CONNECT_NOTIFY_TEXT = "notify::text"
+CONNECT_TOGGLED = "toggled"
 
 SETTING_HOST = "host"
 SETTING_PORT = "port"

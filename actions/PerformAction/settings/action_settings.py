@@ -52,7 +52,7 @@ class ActionSettings(Settings):
         """
         return self._parameters
 
-    def set_action_parameter(self, field, value) -> None:
+    def set_parameter(self, field, value) -> None:
         """
         Set the action parameter for the field.
         :param field: the field to set
@@ -62,7 +62,7 @@ class ActionSettings(Settings):
         self.load()
         self._action.set_settings(self._settings)
 
-    def remove_action_parameter(self, field) -> None:
+    def remove_parameter(self, field) -> None:
         """
         Remove the action parameter for the field.
         :param field: the field to remove
@@ -71,7 +71,7 @@ class ActionSettings(Settings):
         self.load()
         self._action.set_settings(self._settings)
 
-    def clear_action_parameters(self) -> None:
+    def clear_parameters(self) -> None:
         """Clear all action parameters."""
         self._settings[const.SETTING_ACTION][const.ACTION_PARAMETERS] = {}
         self.load()

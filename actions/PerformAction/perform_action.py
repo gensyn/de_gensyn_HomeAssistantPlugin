@@ -5,20 +5,21 @@ The module for the Home Assistant action that is loaded in StreamController.
 import json
 from json import JSONDecodeError
 
-
 from GtkHelper.GenerativeUI.ComboRow import ComboRow
 from GtkHelper.GenerativeUI.ExpanderRow import ExpanderRow
+from src.backend.DeckManagement.InputIdentifier import Input
+from src.backend.PluginManager.EventAssigner import EventAssigner
 from de_gensyn_HomeAssistantPlugin.actions.PerformAction import const
 from de_gensyn_HomeAssistantPlugin.actions.PerformAction.action_parameters import action_parameters_helper
 from de_gensyn_HomeAssistantPlugin.actions.PerformAction.settings.action_settings import ActionSettings
-from de_gensyn_HomeAssistantPlugin.actions.home_assistant_action_base import HomeAssistantActionBase
+from de_gensyn_HomeAssistantPlugin.actions.home_assistant_action_core import HomeAssistantActionCore
 
 
-class PerformAction(HomeAssistantActionBase):
+class PerformAction(HomeAssistantActionCore):
     """Action to be loaded by StreamController."""
+
     def __init__(self, *args, **kwargs):
-        super().__init__(track_entity= False, *args, **kwargs)
-        self._init_action_group()
+        super().__init__(track_entity=False, *args, **kwargs)
 
     def on_ready(self) -> None:
         """Set up action when StreamController has finished loading."""
@@ -34,11 +35,11 @@ class PerformAction(HomeAssistantActionBase):
         self.initialized = True
         self._reload()
 
-    def on_key_down(self) -> None:
+    def _perform_action(self, _) -> None:
         """Call the action stated in the settings."""
-        entity = self.settings.get_entity()
+        domain = self.settings.get_domain()
         action = self.settings.get_action()
-        if not entity or not action:
+        if not domain or not action:
             return
 
         parameters = {}
@@ -51,16 +52,26 @@ class PerformAction(HomeAssistantActionBase):
                 pass
             parameters[parameter] = value
 
-        self.plugin_base.backend.call_action(entity, action, parameters)
+        entity = self.settings.get_entity()
+
+        self.plugin_base.backend.perform_action(domain, action, entity, parameters)
+
+    def _create_event_assigner(self) -> None:
+        self.add_event_assigner(EventAssigner(
+            id=const.ACTION_ID,
+            ui_label=const.ACTION_NAME,
+            default_events=[Input.Key.Events.DOWN],
+            callback=self._perform_action
+        ))
 
     def get_config_rows(self) -> list:
         """Get the rows to be displayed in the UI."""
-        rows = super().get_config_rows()
-        rows.append(self._action_group)
-        return rows
+        return [self.domain_combo.widget, self.action_combo.widget, self.entity_combo.widget,
+                self.parameters_expander.widget]
 
-    def _init_action_group(self) -> None:
+    def _create_ui_elements(self) -> None:
         """Get all action rows."""
+        super()._create_ui_elements()
         self.action_combo: ComboRow = ComboRow(
             self, const.SETTING_ACTION_ACTION, const.EMPTY_STRING, [],
             const.LABEL_SERVICE_SERVICE, enable_search=True,
@@ -68,14 +79,10 @@ class PerformAction(HomeAssistantActionBase):
             complex_var_name=True
         )
 
-        self.parameters: ExpanderRow = ExpanderRow(
+        self.parameters_expander: ExpanderRow = ExpanderRow(
             self, const.EMPTY_STRING, False,
             title=const.LABEL_SERVICE_PARAMETERS, can_reset=False,
             auto_add=False
-        )
-
-        self._action_group = self._create_group(
-            const.LABEL_SETTINGS_ACTION, [self.action_combo.widget, self.parameters.widget]
         )
 
     def _on_change_domain(self, _, domain, old_domain):
@@ -113,7 +120,7 @@ class PerformAction(HomeAssistantActionBase):
         if not self.initialized:
             return
 
-        self.settings.clear_action_parameters()
+        self.settings.clear_parameters()
         action_parameters_helper.load_parameters(self)
         self._reload()
 
@@ -122,9 +129,12 @@ class PerformAction(HomeAssistantActionBase):
         Load actions from Home Assistant.
         """
         action = self.settings.get_action()
-        actions = self.plugin_base.backend.get_actions(
-            str(self.entity_domain_combo.get_selected_item())
+        actions_dict = self.plugin_base.backend.get_actions(
+            str(self.domain_combo.get_selected_item())
         )
+        actions = list(actions_dict.keys())
+        if action not in actions:
+            actions.append(action)
         self.action_combo.populate(actions, action, update_settings=True, trigger_callback=False)
         action_parameters_helper.load_parameters(self)
 
@@ -134,39 +144,40 @@ class PerformAction(HomeAssistantActionBase):
         """
         if not self.initialized:
             return
-        super()._set_enabled_disabled()
 
-        # Entity section
         domain = self.settings.get_domain()
         is_domain_set = bool(domain)
-
-        # Action section
-        entity = self.settings.get_entity()
-        is_entity_set = bool(entity)
 
         if not is_domain_set:
             self.action_combo.widget.set_sensitive(False)
             self.action_combo.widget.set_subtitle(self.lm.get(const.LABEL_SERVICE_NO_DOMAIN))
-            self.parameters.widget.set_sensitive(False)
-            self.parameters.widget.set_subtitle(self.lm.get(const.LABEL_SERVICE_NO_DOMAIN))
-        elif not is_entity_set:
-            self.action_combo.widget.set_sensitive(False)
-            self.action_combo.widget.set_subtitle(self.lm.get(const.LABEL_SERVICE_NO_ENTITY))
-            self.parameters.widget.set_sensitive(False)
-            self.parameters.widget.set_subtitle(self.lm.get(const.LABEL_SERVICE_NO_ENTITY))
+            self.parameters_expander.widget.set_sensitive(False)
+            self.parameters_expander.widget.set_subtitle(self.lm.get(const.LABEL_SERVICE_NO_DOMAIN))
         elif self.action_combo.get_item_amount() == 0:
             self.action_combo.widget.set_sensitive(False)
-            self.action_combo.widget.set_subtitle(self.lm.get(const.LABEL_SERVICE_NO_SERVICES))
-            self.parameters.widget.set_sensitive(False)
-            self.parameters.widget.set_subtitle(self.lm.get(const.LABEL_SERVICE_NO_SERVICES))
+            self.action_combo.widget.set_subtitle(self.lm.get(const.LABEL_SERVICE_NO_ACTIONS))
+            self.parameters_expander.widget.set_sensitive(False)
+            self.parameters_expander.widget.set_subtitle(self.lm.get(const.LABEL_SERVICE_NO_ACTIONS))
         else:
             self.action_combo.widget.set_sensitive(True)
             self.action_combo.widget.set_subtitle(const.EMPTY_STRING)
 
-            if len(self.parameters.widget.get_rows()) == 0:
-                self.parameters.widget.set_sensitive(False)
-                self.parameters.set_expanded(False)
-                self.parameters.widget.set_subtitle(self.lm.get(const.LABEL_SERVICE_NO_PARAMETERS))
+            if len(self.parameters_expander.widget.get_rows()) == 0:
+                self.parameters_expander.widget.set_sensitive(False)
+                self.parameters_expander.set_expanded(False)
+                self.parameters_expander.widget.set_subtitle(self.lm.get(const.LABEL_SERVICE_NO_PARAMETERS))
             else:
-                self.parameters.widget.set_sensitive(True)
-                self.parameters.widget.set_subtitle(const.EMPTY_STRING)
+                self.parameters_expander.widget.set_sensitive(True)
+                self.parameters_expander.set_expanded(True)
+                self.parameters_expander.widget.set_subtitle(const.EMPTY_STRING)
+
+            action = self.settings.get_action()
+            actions = self.plugin_base.backend.get_actions(
+                str(self.domain_combo.get_selected_item())
+            )
+            has_target = bool(actions.get(action, {}).get(const.TARGET))
+            self.entity_combo.widget.set_sensitive(has_target and self.entity_combo.get_item_amount() > 1)
+
+    def _get_domains(self):
+        """This class needs all domains that provide actions in Home Assistant."""
+        return self.plugin_base.backend.get_domains_for_actions()
