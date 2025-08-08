@@ -15,7 +15,7 @@ class TestBackendGetDomains(unittest.TestCase):
     @patch.object(HomeAssistantBackend, 'connect')
     @patch.object(HomeAssistantBackend, 'is_connected')
     @patch.object(HomeAssistantBackend, '_load_entities')
-    def test_get_domains_entities_already_loaded(self, load_entities_mock, is_connected_mock, _):
+    def test_get_domains_for_entities_entities_already_loaded(self, load_entities_mock, is_connected_mock, _):
         entities = {
             "domain1": {
                 "domain1.entity1": {
@@ -51,7 +51,7 @@ class TestBackendGetDomains(unittest.TestCase):
     @patch.object(HomeAssistantBackend, 'connect')
     @patch.object(HomeAssistantBackend, 'is_connected', return_value=False)
     @patch.object(HomeAssistantBackend, '_load_entities')
-    def test_get_domains_entities_not_loaded_not_connected(self, load_entities_mock, is_connected_mock, _):
+    def test_get_domains_for_entities_entities_not_loaded_not_connected(self, load_entities_mock, is_connected_mock, _):
         entities = {}
         instance = HomeAssistantBackend(const.EMPTY_STRING, const.EMPTY_STRING, True, True, const.EMPTY_STRING)
         instance._entities = entities
@@ -64,7 +64,7 @@ class TestBackendGetDomains(unittest.TestCase):
     @patch.object(HomeAssistantBackend, 'connect')
     @patch.object(HomeAssistantBackend, 'is_connected', return_value=True)
     @patch.object(HomeAssistantBackend, '_load_entities')
-    def test_get_domains_entities_not_loaded_connected(self, load_entities_mock, is_connected_mock, _):
+    def test_get_domains_for_entities_entities_not_loaded_connected(self, load_entities_mock, is_connected_mock, _):
         entities = {
             "domain1": {
                 "domain1.entity1": {
