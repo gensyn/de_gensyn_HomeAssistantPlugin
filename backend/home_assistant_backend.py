@@ -267,6 +267,8 @@ class HomeAssistantBackend:
         """Return all actions known to Home Assistant for the domain."""
         if not self._actions:
             self._load_actions()
+        if not self._actions:
+            return {}
         return self._actions.get(domain, {})
 
     def perform_action(
