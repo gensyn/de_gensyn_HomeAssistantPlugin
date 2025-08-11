@@ -14,6 +14,17 @@ class TestBackendGetActions(unittest.TestCase):
 
     @patch.object(HomeAssistantBackend, 'connect')
     @patch.object(HomeAssistantBackend, '_load_actions')
+    def test_get_actions_no_actions(self, load_actions_mock, _):
+        instance = HomeAssistantBackend(const.EMPTY_STRING, const.EMPTY_STRING, True, True, const.EMPTY_STRING)
+
+        load_actions_mock.side_effect = lambda: setattr(instance, '_actions', {})
+
+        instance.get_actions("light")
+
+        self.assertEqual({}, instance._actions)
+
+    @patch.object(HomeAssistantBackend, 'connect')
+    @patch.object(HomeAssistantBackend, '_load_actions')
     def test_get_actions_success(self, load_actions_mock, _):
         light = {
             "turn_on": {

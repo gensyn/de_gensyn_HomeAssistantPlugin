@@ -123,21 +123,21 @@ class HomeAssistantActionCore(ActionCore):
     def _load_domains(self) -> None:
         """Load domains from Home Assistant."""
         domain = self.settings.get_domain()
-        domains = sorted(self._get_domains())
+        domains = self._get_domains()
         if domain not in domains:
             domains.append(domain)
+        domains.sort()
         self.domain_combo.populate(domains, domain, trigger_callback=False)
 
     def _load_entities(self) -> None:
         """Load entities from Home Assistant."""
         entity = self.settings.get_entity()
-        entities = sorted(
-            self.plugin_base.backend.get_entities(
+        entities = self.plugin_base.backend.get_entities(
                 str(self.domain_combo.get_selected_item())
-            )
         )
         if entity not in entities:
             entities.append(entity)
+        entities.sort()
         self.entity_combo.populate(entities, entity, trigger_callback=False)
 
     def _set_enabled_disabled(self) -> None:

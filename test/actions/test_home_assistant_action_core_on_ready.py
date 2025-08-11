@@ -11,10 +11,7 @@ sys.path.insert(0, absolute_mock_path)
 absolute_plugin_path = str(Path(__file__).parent.parent.parent.parent.absolute())
 sys.path.insert(0, absolute_plugin_path)
 
-from de_gensyn_HomeAssistantPlugin import const
 from de_gensyn_HomeAssistantPlugin.actions.home_assistant_action_core import HomeAssistantActionCore
-from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.const import HOME_ASSISTANT_ACTION
-from de_gensyn_HomeAssistantPlugin.actions.PerformAction.const import PERFORM_ACTION
 
 
 class TestHomeAssistantActionCoreOnReady(unittest.TestCase):
@@ -35,6 +32,7 @@ class TestHomeAssistantActionCoreOnReady(unittest.TestCase):
         instance.settings = settings_mock
         instance.on_ready()
 
+        instance.plugin_base.backend.add_action_ready_callback.assert_called_once_with(instance.on_ready)
         instance.plugin_base.backend.add_tracked_entity.assert_not_called()
         load_entities_mock.assert_called_once()
         load_domains_mock.assert_called_once()
@@ -55,6 +53,7 @@ class TestHomeAssistantActionCoreOnReady(unittest.TestCase):
         instance.settings = settings_mock
         instance.on_ready()
 
+        instance.plugin_base.backend.add_action_ready_callback.assert_called_once_with(instance.on_ready)
         instance.plugin_base.backend.add_tracked_entity.assert_not_called()
         load_entities_mock.assert_called_once()
         load_domains_mock.assert_called_once()
@@ -75,6 +74,7 @@ class TestHomeAssistantActionCoreOnReady(unittest.TestCase):
         instance.settings = settings_mock
         instance.on_ready()
 
+        instance.plugin_base.backend.add_action_ready_callback.assert_called_once_with(instance.on_ready)
         instance.plugin_base.backend.add_tracked_entity.assert_called_once_with("entity", instance._entity_updated)
         load_entities_mock.assert_called_once()
         load_domains_mock.assert_called_once()

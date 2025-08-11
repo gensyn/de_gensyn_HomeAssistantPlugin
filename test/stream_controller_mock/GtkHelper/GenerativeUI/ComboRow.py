@@ -1,4 +1,5 @@
 class ComboRow:
 
-    def __init__(self):
-        pass
+    def __init__(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
