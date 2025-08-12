@@ -31,10 +31,10 @@ def load_parameters(action):
     for field_name, field_settings in fields.items():
         setting_value = action.settings.get_parameters().get(field_name)
 
-        if not const.SELECTOR in fields[field_name]:
+        if not const.SELECTOR in field_settings:
             continue
 
-        selector = list(fields[field_name][const.SELECTOR].keys())[0]
+        selector = list(field_settings[const.SELECTOR].keys())[0]
 
         name = field_settings.get(const.NAME, field_name)
         var_name = f"{const.SETTING_SERVICE}.{const.ACTION_PARAMETERS}.{field_name}"
@@ -42,7 +42,7 @@ def load_parameters(action):
         if selector == const.SELECT or f"{field_name}{const.LIST}" in ha_entity.get(const.ATTRIBUTES,
                                                                                {}).keys():
             if selector == const.SELECT:
-                options = fields[field_name][const.SELECTOR][const.SELECT][const.OPTIONS]
+                options = field_settings[const.SELECTOR][const.SELECT][const.OPTIONS]
             else:
                 options = ha_entity.get(const.ATTRIBUTES, {})[f"{field_name}{const.LIST}"]
 
@@ -56,31 +56,31 @@ def load_parameters(action):
         elif selector == const.BOOLEAN:
             value = False
 
-            if setting_value:
+            if setting_value is not None:
                 value = setting_value
             else:
-                default_value = fields[field_name].get(const.DEFAULT)
-                if default_value:
+                default_value = field_settings.get(const.DEFAULT)
+                if default_value is not None:
                     value = bool(default_value)
 
             row = ParameterSwitchRow(action, var_name, name, value, required)
         elif selector == const.NUMBER:
-            number_min = fields[field_name][const.SELECTOR][const.NUMBER][const.MIN]
-            number_max = fields[field_name][const.SELECTOR][const.NUMBER][const.MAX]
-            number_step = fields[field_name][const.SELECTOR][const.NUMBER].get(const.STEP, 1)
+            number_min = field_settings[const.SELECTOR][const.NUMBER][const.MIN]
+            number_max = field_settings[const.SELECTOR][const.NUMBER][const.MAX]
+            number_step = field_settings[const.SELECTOR][const.NUMBER].get(const.STEP, 1)
 
             value = number_min
 
-            if setting_value:
+            if setting_value is not None:
                 value = setting_value
             else:
-                default_value = fields[field_name].get(const.DEFAULT)
-                if default_value:
+                default_value = field_settings.get(const.DEFAULT)
+                if default_value is not None:
                     value = default_value
 
             row = ParameterScaleRow(action, var_name, name, value, number_min, number_max, number_step, required)
         else:
-            value = str(setting_value) if setting_value else const.EMPTY_STRING
+            value = str(setting_value) if setting_value is not None else const.EMPTY_STRING
             row = ParameterEntryRow(action, var_name, name, value, required)
 
         action.parameters_expander.add_row(row.widget)

@@ -1,6 +1,8 @@
 """Module for the ParameterRow."""
 from typing import  Any
 
+import gi
+gi.require_version('Gtk', '4.0')
 from gi.repository.Gtk import CheckButton
 
 from de_gensyn_HomeAssistantPlugin import const as base_const
