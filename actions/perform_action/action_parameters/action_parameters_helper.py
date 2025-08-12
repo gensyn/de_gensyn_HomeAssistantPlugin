@@ -1,21 +1,17 @@
-"""
-Module for action parameter operations.
-"""
-from de_gensyn_HomeAssistantPlugin.actions.PerformAction import const
-from de_gensyn_HomeAssistantPlugin.actions.PerformAction.action_parameters.parameter_combo_row import \
+"""Module for action parameter operations."""
+from de_gensyn_HomeAssistantPlugin.actions.perform_action import const
+from de_gensyn_HomeAssistantPlugin.actions.perform_action.action_parameters.parameter_combo_row import \
     ParameterComboRow
-from de_gensyn_HomeAssistantPlugin.actions.PerformAction.action_parameters.parameter_entry_row import \
+from de_gensyn_HomeAssistantPlugin.actions.perform_action.action_parameters.parameter_entry_row import \
     ParameterEntryRow
-from de_gensyn_HomeAssistantPlugin.actions.PerformAction.action_parameters.parameter_scale_row import \
+from de_gensyn_HomeAssistantPlugin.actions.perform_action.action_parameters.parameter_scale_row import \
     ParameterScaleRow
-from de_gensyn_HomeAssistantPlugin.actions.PerformAction.action_parameters.parameter_switch_row import \
+from de_gensyn_HomeAssistantPlugin.actions.perform_action.action_parameters.parameter_switch_row import \
     ParameterSwitchRow
 
 
 def load_parameters(action):
-    """
-    Load action parameters from Home Assistant.
-    """
+    """Load action parameters from Home Assistant."""
     action.parameters_expander.clear_rows()
 
     ha_entity = action.plugin_base.backend.get_entity(action.settings.get_entity())

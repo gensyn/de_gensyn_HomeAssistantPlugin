@@ -19,11 +19,11 @@ from src.backend.PluginManager.PluginBase import PluginBase
 
 from de_gensyn_HomeAssistantPlugin import const
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.const import HOME_ASSISTANT_ACTION
-from de_gensyn_HomeAssistantPlugin.actions.PerformAction.const import PERFORM_ACTION
+from de_gensyn_HomeAssistantPlugin.actions.perform_action.const import PERFORM_ACTION
 from de_gensyn_HomeAssistantPlugin.backend import const as backend_const
 
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.home_assistant_action import HomeAssistantAction
-from de_gensyn_HomeAssistantPlugin.actions.PerformAction.perform_action import PerformAction
+from de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action import PerformAction
 from de_gensyn_HomeAssistantPlugin.backend.home_assistant_backend import HomeAssistantBackend
 from de_gensyn_HomeAssistantPlugin.connection_settings.connection_settings import ConnectionSettings
 

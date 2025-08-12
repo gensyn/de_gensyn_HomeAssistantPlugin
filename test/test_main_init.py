@@ -12,7 +12,7 @@ sys.path.insert(0, absolute_plugin_path)
 from de_gensyn_HomeAssistantPlugin import const
 from de_gensyn_HomeAssistantPlugin.main import HomeAssistant
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.const import HOME_ASSISTANT_ACTION
-from de_gensyn_HomeAssistantPlugin.actions.PerformAction.const import PERFORM_ACTION
+from de_gensyn_HomeAssistantPlugin.actions.perform_action.const import PERFORM_ACTION
 
 
 class TestMainInit(unittest.TestCase):

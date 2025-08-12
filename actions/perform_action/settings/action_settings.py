@@ -2,7 +2,7 @@
 
 from typing import Dict
 
-from de_gensyn_HomeAssistantPlugin.actions.PerformAction import const
+from de_gensyn_HomeAssistantPlugin.actions.perform_action import const
 from de_gensyn_HomeAssistantPlugin.actions.settings.settings import Settings
 
 DEFAULT_SETTINGS = {

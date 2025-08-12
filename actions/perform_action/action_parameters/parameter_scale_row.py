@@ -1,7 +1,7 @@
 """Module for the ParameterScaleRow."""
 
 from GtkHelper.GenerativeUI.ScaleRow import ScaleRow
-from de_gensyn_HomeAssistantPlugin.actions.PerformAction.action_parameters.parameter_row import ParameterRow
+from de_gensyn_HomeAssistantPlugin.actions.perform_action.action_parameters.parameter_row import ParameterRow
 
 
 class ParameterScaleRow(ParameterRow, ScaleRow):
