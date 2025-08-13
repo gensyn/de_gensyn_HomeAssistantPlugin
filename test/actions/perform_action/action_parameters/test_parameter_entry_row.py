@@ -117,6 +117,7 @@ def create_instance(entry_row_init_mock, parameter_row_init_mock, required) -> P
     entry_row_init_mock.side_effect = add_instance_attributes
 
     instance = ParameterEntryRow(action_core_mock, var_name, field_name, default_value, required)
+
     entry_row_init_mock.assert_called_once_with(instance, action_core_mock, var_name, default_value,
                                                 title=field_name, can_reset=False, complex_var_name=True)
     parameter_row_init_mock.assert_called_once_with(instance, action_core_mock, field_name, required)
