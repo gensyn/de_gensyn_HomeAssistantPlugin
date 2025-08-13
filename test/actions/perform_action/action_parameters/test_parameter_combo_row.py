@@ -119,8 +119,7 @@ def create_instance(combo_row_init_mock, parameter_row_init_mock, required) -> P
 
     instance = ParameterComboRow(action_core_mock, var_name, field_name, default_value, items, required)
     combo_row_init_mock.assert_called_once_with(instance, action_core_mock, var_name, default_value, items,
-                                                title=field_name,
-                                                can_reset=False, complex_var_name=True)
+                                                title=field_name, can_reset=False, complex_var_name=True)
     parameter_row_init_mock.assert_called_once_with(instance, action_core_mock, field_name, required)
 
     return instance
