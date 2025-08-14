@@ -16,7 +16,6 @@ class ParameterRow:
         self.required = required
 
         self.check = CheckButton()
-        self.check.connect(base_const.CONNECT_TOGGLED, self._on_change)
 
         if self.field_name in self.action.settings.get_parameters():
             # we already have a value for this parameter
@@ -26,12 +25,14 @@ class ParameterRow:
             self.check.set_active(True)
             self.check.set_sensitive(False)
 
+        self.check.connect(base_const.CONNECT_TOGGLED, self._on_change)
+
     def get_parameter_value(self) -> Any:
         """
         Get the value of the row. Must be implemented in a subclass.
         :return: the value
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
 
     def set_value(self, value: Any) -> None:
@@ -39,7 +40,7 @@ class ParameterRow:
         Set the value for the row. Must be implemented in a subclass.
         :param value: the new value
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def _on_change(self, _=None) -> None:
         """Handle changes to the check button or the value."""
