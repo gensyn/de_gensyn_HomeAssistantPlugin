@@ -15,3 +15,6 @@ class ActionCore:
         self.plugin_base.add_tracked_entity = Mock()
         self.plugin_base.remove_tracked_entity = Mock()
         pass
+
+    def add_event_assigner(self, event_assigner):
+        pass

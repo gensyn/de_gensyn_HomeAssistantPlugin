@@ -4,6 +4,7 @@ The module for the Home Assistant action that is loaded in StreamController.
 
 import json
 from json import JSONDecodeError
+from typing import List
 
 from GtkHelper.GenerativeUI.ComboRow import ComboRow
 from GtkHelper.GenerativeUI.ExpanderRow import ExpanderRow
@@ -30,7 +31,6 @@ class PerformAction(HomeAssistantActionCore):
         if not self.plugin_base.backend.is_connected():
             return
 
-        super().on_ready()
         self._load_actions()
         self.initialized = True
         self._reload()
@@ -178,6 +178,6 @@ class PerformAction(HomeAssistantActionCore):
             has_target = bool(actions.get(action, {}).get(const.TARGET))
             self.entity_combo.widget.set_sensitive(has_target and self.entity_combo.get_item_amount() > 1)
 
-    def _get_domains(self):
+    def _get_domains(self) -> List[str]:
         """This class needs all domains that provide actions in Home Assistant."""
         return self.plugin_base.backend.get_domains_for_actions()
