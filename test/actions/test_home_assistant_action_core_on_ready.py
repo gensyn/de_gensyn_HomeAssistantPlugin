@@ -75,7 +75,7 @@ class TestHomeAssistantActionCoreOnReady(unittest.TestCase):
         instance.on_ready()
 
         instance.plugin_base.backend.add_action_ready_callback.assert_called_once_with(instance.on_ready)
-        instance.plugin_base.backend.add_tracked_entity.assert_called_once_with("entity", instance._entity_updated)
+        instance.plugin_base.backend.add_tracked_entity.assert_called_once_with("entity", instance.refresh)
         load_entities_mock.assert_called_once()
         load_domains_mock.assert_called_once()
 

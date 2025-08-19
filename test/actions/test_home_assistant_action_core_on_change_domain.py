@@ -126,7 +126,7 @@ class TestHomeAssistantActionCoreOnChangeDomain(unittest.TestCase):
         instance._on_change_domain(None, domain, "light")
 
         settings_mock.get_entity.assert_called_once()
-        instance.plugin_base.backend.remove_tracked_entity.assert_called_once_with(entity_id, instance._entity_updated)
+        instance.plugin_base.backend.remove_tracked_entity.assert_called_once_with(entity_id, instance.refresh)
         settings_mock.reset.assert_called_once_with(domain)
         instance.entity_combo.remove_all_items.assert_called_once()
         load_entities_mock.assert_not_called()
@@ -156,7 +156,7 @@ class TestHomeAssistantActionCoreOnChangeDomain(unittest.TestCase):
         instance._on_change_domain(None, domain, None)
 
         settings_mock.get_entity.assert_called_once()
-        instance.plugin_base.backend.remove_tracked_entity.assert_called_once_with(entity_id, instance._entity_updated)
+        instance.plugin_base.backend.remove_tracked_entity.assert_called_once_with(entity_id, instance.refresh)
         settings_mock.reset.assert_called_once_with(domain)
         instance.entity_combo.remove_all_items.assert_called_once()
         load_entities_mock.assert_called_once()

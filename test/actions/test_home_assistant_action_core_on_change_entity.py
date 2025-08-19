@@ -25,7 +25,7 @@ class TestHomeAssistantActionCoreOnChangeDomain(unittest.TestCase):
         instance._on_change_entity(None, new_entity_id, old_entity_id)
 
         instance.plugin_base.backend.remove_tracked_entity.assert_not_called()
-        instance.plugin_base.backend.add_tracked_entity.assert_called_once_with(new_entity_id, instance._entity_updated)
+        instance.plugin_base.backend.add_tracked_entity.assert_called_once_with(new_entity_id, instance.refresh)
         set_enabled_disabled_mock.assert_called_once()
 
     @patch.object(HomeAssistantActionCore, "_create_ui_elements")
@@ -39,7 +39,7 @@ class TestHomeAssistantActionCoreOnChangeDomain(unittest.TestCase):
         instance._on_change_entity(None, new_entity_id, old_entity_id)
 
         instance.plugin_base.backend.remove_tracked_entity.assert_called_once_with(old_entity_id,
-                                                                                   instance._entity_updated)
+                                                                                   instance.refresh)
         instance.plugin_base.backend.add_tracked_entity.assert_not_called()
         set_enabled_disabled_mock.assert_called_once()
 
@@ -68,8 +68,8 @@ class TestHomeAssistantActionCoreOnChangeDomain(unittest.TestCase):
         instance._on_change_entity(None, new_entity_id, old_entity_id)
 
         instance.plugin_base.backend.remove_tracked_entity.assert_called_once_with(old_entity_id,
-                                                                                   instance._entity_updated)
-        instance.plugin_base.backend.add_tracked_entity.assert_called_once_with(new_entity_id, instance._entity_updated)
+                                                                                   instance.refresh)
+        instance.plugin_base.backend.add_tracked_entity.assert_called_once_with(new_entity_id, instance.refresh)
         set_enabled_disabled_mock.assert_called_once()
 
 

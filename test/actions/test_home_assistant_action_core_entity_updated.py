@@ -19,7 +19,7 @@ class TestHomeAssistantActionCoreEntityUpdated(unittest.TestCase):
     def test_entity_updated_success(self, _, __):
         # This test checks if the _entity_updated method can be called without errors
         instance = HomeAssistantActionCore(True)
-        instance._entity_updated()
+        instance.refresh()
 
 
 if __name__ == '__main__':

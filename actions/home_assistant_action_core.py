@@ -33,7 +33,7 @@ class HomeAssistantActionCore(ActionCore):
 
         entity = self.settings.get_entity()
         if entity and self.track_entity:
-            self.plugin_base.backend.add_tracked_entity(entity, self._entity_updated)
+            self.plugin_base.backend.add_tracked_entity(entity, self.refresh)
 
         self._load_domains()
         self._load_entities()
@@ -45,9 +45,9 @@ class HomeAssistantActionCore(ActionCore):
         if self.track_entity:
             self.plugin_base.backend.remove_tracked_entity(
                 self.settings.get_entity(),
-                self._entity_updated
+                self.refresh
             )
-        self._entity_updated()
+        self.refresh()
 
     def get_config_rows(self) -> List[PreferencesGroup]:
         """Get the rows to be displayed in the UI."""
@@ -73,7 +73,7 @@ class HomeAssistantActionCore(ActionCore):
         """Reload the action."""
         self.settings.load()
         self._set_enabled_disabled()
-        self._entity_updated()
+        self.refresh()
 
     def _on_change_domain(self, _, domain, old_domain):
         """Execute when the domain is changed."""
@@ -83,7 +83,7 @@ class HomeAssistantActionCore(ActionCore):
         if old_domain != domain:
             entity = self.settings.get_entity()
             if entity and self.track_entity:
-                self.plugin_base.backend.remove_tracked_entity(entity, self._entity_updated)
+                self.plugin_base.backend.remove_tracked_entity(entity, self.refresh)
             self.settings.reset(domain)
             self.entity_combo.remove_all_items()
 
@@ -98,14 +98,14 @@ class HomeAssistantActionCore(ActionCore):
         old_entity = str(old_entity) if old_entity is not None else None
 
         if old_entity and self.track_entity:
-            self.plugin_base.backend.remove_tracked_entity(old_entity, self._entity_updated)
+            self.plugin_base.backend.remove_tracked_entity(old_entity, self.refresh)
 
         if entity and self.track_entity:
-            self.plugin_base.backend.add_tracked_entity(entity, self._entity_updated)
+            self.plugin_base.backend.add_tracked_entity(entity, self.refresh)
 
         self._set_enabled_disabled()
 
-    def _entity_updated(self, state: dict = None) -> None:
+    def refresh(self, state: dict = None) -> None:
         """
         Executed when an entity is updated to reflect the changes on the key.
         This does not need to do anything by default, but can be overridden by subclasses.

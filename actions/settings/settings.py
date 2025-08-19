@@ -19,15 +19,10 @@ class Settings:
     def __init__(self, action):
         self._action = action
 
-        self._uuid = None
         self._domain = None
         self._entity = None
 
         self._settings = self._action.get_settings()
-
-        if not self._settings.get(const.SETTING_UUID):
-            self._settings[const.SETTING_UUID] = str(uuid.uuid4())
-            self._action.set_settings(self._settings)
 
         if not self._settings.get(const.SETTING_ENTITY):
             self._settings[const.SETTING_ENTITY] = DEFAULT_SETTINGS.copy()
@@ -41,16 +36,8 @@ class Settings:
         :return: None
         """
         self._settings = self._action.get_settings()
-        self._uuid = self._settings[const.SETTING_UUID]
         self._domain = self._settings[const.SETTING_ENTITY][const.SETTING_DOMAIN]
         self._entity = self._settings[const.SETTING_ENTITY][const.SETTING_ENTITY]
-
-    def get_uuid(self) -> str:
-        """
-        Get the uuid.
-        :return: the uuid
-        """
-        return self._uuid
 
     def get_domain(self) -> str:
         """

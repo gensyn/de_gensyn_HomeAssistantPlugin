@@ -16,8 +16,8 @@ class TestHomeAssistantActionCoreOnRemove(unittest.TestCase):
 
     @patch.object(HomeAssistantActionCore, "_create_ui_elements")
     @patch.object(HomeAssistantActionCore, "_create_event_assigner")
-    @patch.object(HomeAssistantActionCore, "_entity_updated")
-    def test_on_read_entity_not_tracked(self, entity_updated_mock, _, __):
+    @patch.object(HomeAssistantActionCore, "refresh")
+    def test_on_read_entity_not_tracked(self, refresh_mock, _, __):
         get_entity_mock = Mock(return_value="entity")
 
         settings_mock = Mock()
@@ -31,12 +31,12 @@ class TestHomeAssistantActionCoreOnRemove(unittest.TestCase):
 
         instance.plugin_base.backend.remove_action_ready_callback.assert_called_once_with(instance.on_ready)
         instance.plugin_base.backend.remove_tracked_entity.assert_not_called()
-        entity_updated_mock.assert_called_once()
+        refresh_mock.assert_called_once()
 
     @patch.object(HomeAssistantActionCore, "_create_ui_elements")
     @patch.object(HomeAssistantActionCore, "_create_event_assigner")
-    @patch.object(HomeAssistantActionCore, "_entity_updated")
-    def test_on_remove_success(self, entity_updated_mock, _, __):
+    @patch.object(HomeAssistantActionCore, "refresh")
+    def test_on_remove_success(self, refresh_mock, _, __):
         get_entity_mock = Mock(return_value="entity")
 
         settings_mock = Mock()
@@ -49,8 +49,8 @@ class TestHomeAssistantActionCoreOnRemove(unittest.TestCase):
         instance.on_remove()
 
         instance.plugin_base.backend.remove_action_ready_callback.assert_called_once_with(instance.on_ready)
-        instance.plugin_base.backend.remove_tracked_entity.assert_called_once_with("entity", instance._entity_updated)
-        entity_updated_mock.assert_called_once()
+        instance.plugin_base.backend.remove_tracked_entity.assert_called_once_with("entity", instance.refresh)
+        refresh_mock.assert_called_once()
 
 
 if __name__ == '__main__':

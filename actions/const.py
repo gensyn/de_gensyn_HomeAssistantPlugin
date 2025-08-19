@@ -12,7 +12,6 @@ LABEL_ENTITY_ENTITY = "actions.home_assistant.entity.entity.label"
 LABEL_SETTINGS_ENTITY = "actions.home_assistant.settings.entity.label"
 
 SETTING_VERSION = "version"
-SETTING_UUID = "uuid"
 
 SETTING_ENTITY = "entity"
 SETTING_DOMAIN = "domain"

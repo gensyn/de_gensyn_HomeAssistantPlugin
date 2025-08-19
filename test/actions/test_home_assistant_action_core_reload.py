@@ -17,8 +17,8 @@ class TestHomeAssistantActionCoreReload(unittest.TestCase):
     @patch.object(HomeAssistantActionCore, "_create_ui_elements")
     @patch.object(HomeAssistantActionCore, "_create_event_assigner")
     @patch.object(HomeAssistantActionCore, "_set_enabled_disabled")
-    @patch.object(HomeAssistantActionCore, "_entity_updated")
-    def test_reload_success(self, entity_updated_mock, set_enabled_disabled_mock, _, __):
+    @patch.object(HomeAssistantActionCore, "refresh")
+    def test_reload_success(self, refresh_mock, set_enabled_disabled_mock, _, __):
         settings_mock = Mock()
         settings_mock.load = Mock()
 
@@ -28,7 +28,7 @@ class TestHomeAssistantActionCoreReload(unittest.TestCase):
 
         settings_mock.load.assert_called_once()
         set_enabled_disabled_mock.assert_called_once()
-        entity_updated_mock.assert_called_once()
+        refresh_mock.assert_called_once()
 
 
 if __name__ == '__main__':
