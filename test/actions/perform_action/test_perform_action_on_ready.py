@@ -16,7 +16,7 @@ class TestPerformActionOnReady(unittest.TestCase):
 
     @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.__init__')
     @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.on_ready')
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.ActionSettings')
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.PerformActionSettings')
     @patch.object(PerformAction, '_load_actions')
     @patch.object(PerformAction, '_reload')
     def test_on_ready_not_connected(self, reload_mock, load_actions_mock, action_settings_mock, on_ready_mock, _):
@@ -37,7 +37,7 @@ class TestPerformActionOnReady(unittest.TestCase):
 
     @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.__init__')
     @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.on_ready')
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.ActionSettings')
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.PerformActionSettings')
     @patch.object(PerformAction, '_load_actions')
     @patch.object(PerformAction, '_reload')
     def test_on_ready_success(self, reload_mock, load_actions_mock, action_settings_mock, on_ready_mock, _):

@@ -12,7 +12,7 @@ from src.backend.DeckManagement.InputIdentifier import Input
 from src.backend.PluginManager.EventAssigner import EventAssigner
 from de_gensyn_HomeAssistantPlugin.actions.perform_action import const
 from de_gensyn_HomeAssistantPlugin.actions.perform_action.action_parameters import action_parameters_helper
-from de_gensyn_HomeAssistantPlugin.actions.perform_action.settings.action_settings import ActionSettings
+from de_gensyn_HomeAssistantPlugin.actions.perform_action.settings.perform_action_settings import PerformActionSettings
 from de_gensyn_HomeAssistantPlugin.actions.home_assistant_action_core import HomeAssistantActionCore
 
 
@@ -24,7 +24,7 @@ class PerformAction(HomeAssistantActionCore):
 
     def on_ready(self) -> None:
         """Set up action when StreamController has finished loading."""
-        self.settings: ActionSettings = ActionSettings(self)
+        self.settings: PerformActionSettings = PerformActionSettings(self)
 
         super().on_ready()
 

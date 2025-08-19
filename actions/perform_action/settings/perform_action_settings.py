@@ -11,9 +11,9 @@ DEFAULT_SETTINGS = {
 }
 
 
-class ActionSettings(Settings):
+class PerformActionSettings(Settings):
     """
-    Class to manage all settings for an HomeAssistantPlugin action.
+    Class to manage all settings for a "Perform Action" action.
     :param action: the action whose settings are being managed
     """
 
