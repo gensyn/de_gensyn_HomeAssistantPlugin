@@ -28,8 +28,8 @@ class TestPerformActionSettingsInit(unittest.TestCase):
             },
         }
 
-        settings_expected = settings.copy()
-        settings_expected[const.SETTING_ACTION] = DEFAULT_SETTINGS.copy()
+        settings_expected = deepcopy(settings)
+        settings_expected[const.SETTING_ACTION] = deepcopy(DEFAULT_SETTINGS)
 
         def super_init(instance, action):
             instance._settings = settings
