@@ -14,8 +14,8 @@ from de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action import 
 
 class TestPerformActionOnReady(unittest.TestCase):
 
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.__init__')
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.on_ready')
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.on_ready')
     @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.PerformActionSettings')
     @patch.object(PerformAction, '_load_actions')
     @patch.object(PerformAction, '_reload')
@@ -35,8 +35,8 @@ class TestPerformActionOnReady(unittest.TestCase):
         load_actions_mock.assert_not_called()
         reload_mock.assert_not_called()
 
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.__init__')
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.on_ready')
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.on_ready')
     @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.PerformActionSettings')
     @patch.object(PerformAction, '_load_actions')
     @patch.object(PerformAction, '_reload')

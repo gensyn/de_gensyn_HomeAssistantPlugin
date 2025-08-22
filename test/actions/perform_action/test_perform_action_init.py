@@ -14,7 +14,7 @@ from de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action import 
 
 class TestPerformActionInit(unittest.TestCase):
 
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.__init__')
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
     def test_init_field_not_in_parameters_not_required(self, home_assistant_action_core_init_mock):
         test_arg = "test_arg_value"
         test_kwarg = "test_kwarg_value"

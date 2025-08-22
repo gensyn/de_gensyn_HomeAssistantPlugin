@@ -82,7 +82,7 @@ DEFAULT_ACTION = {
 def get_action_settings(existing: Dict[str, Any]) -> Dict[str, Any]:
     """
     This method takes an action settings dict and fills all missing settings with default values.
-    Settings present in the existing settings dict, which are not needed anymore, are removed.
+    BaseSettings present in the existing settings dict, which are not needed anymore, are removed.
     """
     settings = copy.deepcopy(DEFAULT_ACTION)
 

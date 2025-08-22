@@ -14,13 +14,15 @@ from de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action import 
 
 class TestPerformActionOnChangeDomain(unittest.TestCase):
 
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.__init__')
     @patch(
-        'de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore._on_change_entity')
+        'de_gensyn_HomeAssistantPlugin.actions.cores.base_core.base_core.log.info')
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
     @patch(
-        'de_gensyn_HomeAssistantPlugin.actions.perform_action.action_parameters.action_parameters_helper.load_parameters')
+        'de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore._on_change_entity')
+    @patch(
+        'de_gensyn_HomeAssistantPlugin.actions.perform_action.parameters.parameters_helper.load_parameters')
     @patch.object(PerformAction, '_reload')
-    def test_on_change_domain_not_initialized(self, reload_mock, load_parameters_mock, on_change_entity_mock, _):
+    def test_on_change_domain_not_initialized(self, reload_mock, load_parameters_mock, on_change_entity_mock, _, __):
         new_entity = 'light.kitchen'
         old_entity = 'switch.living_room'
 
@@ -32,11 +34,11 @@ class TestPerformActionOnChangeDomain(unittest.TestCase):
         load_parameters_mock.assert_not_called()
         reload_mock.assert_not_called()
 
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.__init__')
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
     @patch(
-        'de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore._on_change_entity')
+        'de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore._on_change_entity')
     @patch(
-        'de_gensyn_HomeAssistantPlugin.actions.perform_action.action_parameters.action_parameters_helper.load_parameters')
+        'de_gensyn_HomeAssistantPlugin.actions.perform_action.parameters.parameters_helper.load_parameters')
     @patch.object(PerformAction, '_reload')
     def test_on_change_domain_same_entity(self, reload_mock, load_parameters_mock, on_change_entity_mock, _):
         new_entity = 'light.kitchen'
@@ -50,11 +52,11 @@ class TestPerformActionOnChangeDomain(unittest.TestCase):
         load_parameters_mock.assert_not_called()
         reload_mock.assert_not_called()
 
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.__init__')
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
     @patch(
-        'de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore._on_change_entity')
+        'de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore._on_change_entity')
     @patch(
-        'de_gensyn_HomeAssistantPlugin.actions.perform_action.action_parameters.action_parameters_helper.load_parameters')
+        'de_gensyn_HomeAssistantPlugin.actions.perform_action.parameters.parameters_helper.load_parameters')
     @patch.object(PerformAction, '_reload')
     def test_on_change_domain_entity_none(self, reload_mock, load_parameters_mock, on_change_entity_mock, _):
         new_entity = None
@@ -68,11 +70,11 @@ class TestPerformActionOnChangeDomain(unittest.TestCase):
         load_parameters_mock.assert_not_called()
         reload_mock.assert_called_once()
 
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.__init__')
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
     @patch(
-        'de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore._on_change_entity')
+        'de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore._on_change_entity')
     @patch(
-        'de_gensyn_HomeAssistantPlugin.actions.perform_action.action_parameters.action_parameters_helper.load_parameters')
+        'de_gensyn_HomeAssistantPlugin.actions.perform_action.parameters.parameters_helper.load_parameters')
     @patch.object(PerformAction, '_reload')
     def test_on_change_domain_entity_empty(self, reload_mock, load_parameters_mock, on_change_entity_mock, _):
         new_entity = ""
@@ -86,11 +88,11 @@ class TestPerformActionOnChangeDomain(unittest.TestCase):
         load_parameters_mock.assert_not_called()
         reload_mock.assert_called_once()
 
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.__init__')
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
     @patch(
-        'de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore._on_change_entity')
+        'de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore._on_change_entity')
     @patch(
-        'de_gensyn_HomeAssistantPlugin.actions.perform_action.action_parameters.action_parameters_helper.load_parameters')
+        'de_gensyn_HomeAssistantPlugin.actions.perform_action.parameters.parameters_helper.load_parameters')
     @patch.object(PerformAction, '_reload')
     def test_on_change_domain_success(self, reload_mock, load_parameters_mock, on_change_entity_mock, _):
         new_entity = 'light.kitchen'

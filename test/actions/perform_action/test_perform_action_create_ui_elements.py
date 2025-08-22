@@ -9,15 +9,15 @@ sys.path.insert(0, absolute_mock_path)
 absolute_plugin_path = str(Path(__file__).parent.parent.parent.parent.parent.absolute())
 sys.path.insert(0, absolute_plugin_path)
 
-from de_gensyn_HomeAssistantPlugin.actions.perform_action import const
+from de_gensyn_HomeAssistantPlugin.actions.perform_action import perform_const
 from de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action import PerformAction
 
 
 class TestPerformActionCreateUiElements(unittest.TestCase):
 
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.__init__')
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
     @patch(
-        'de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore._create_ui_elements')
+        'de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore._create_ui_elements')
     @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.ComboRow')
     @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.ExpanderRow')
     def test_create_ui_elements_success(self, expander_row_mock, combo_row_mock, create_ui_elements_mock, _):
@@ -27,10 +27,10 @@ class TestPerformActionCreateUiElements(unittest.TestCase):
         create_ui_elements_mock.assert_called_once()
         combo_row_mock.assert_called_once_with(
             instance,
-            const.SETTING_ACTION_ACTION,
-            const.EMPTY_STRING,
+            perform_const.SETTING_ACTION_ACTION,
+            perform_const.EMPTY_STRING,
             [],
-            const.LABEL_SERVICE_SERVICE,
+            perform_const.LABEL_SERVICE_SERVICE,
             enable_search=True,
             on_change=instance._on_change_action,
             can_reset=False,
@@ -38,9 +38,9 @@ class TestPerformActionCreateUiElements(unittest.TestCase):
         )
         expander_row_mock.assert_called_once_with(
             instance,
-            const.EMPTY_STRING,
+            perform_const.EMPTY_STRING,
             False,
-            title=const.LABEL_SERVICE_PARAMETERS,
+            title=perform_const.LABEL_SERVICE_PARAMETERS,
             can_reset=False,
             auto_add=False
         )

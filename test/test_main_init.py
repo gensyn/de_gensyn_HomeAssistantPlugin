@@ -12,7 +12,8 @@ sys.path.insert(0, absolute_plugin_path)
 from de_gensyn_HomeAssistantPlugin import const
 from de_gensyn_HomeAssistantPlugin.main import HomeAssistant
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.const import HOME_ASSISTANT_ACTION
-from de_gensyn_HomeAssistantPlugin.actions.perform_action.const import PERFORM_ACTION
+from de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_const import PERFORM_ACTION
+from de_gensyn_HomeAssistantPlugin.actions.show_icon.icon_const import SHOW_ICON
 
 
 class TestMainInit(unittest.TestCase):
@@ -23,10 +24,11 @@ class TestMainInit(unittest.TestCase):
     @patch("de_gensyn_HomeAssistantPlugin.main.HomeAssistantBackend")
     @patch("de_gensyn_HomeAssistantPlugin.main.HomeAssistantAction")
     @patch("de_gensyn_HomeAssistantPlugin.main.PerformAction")
+    @patch("de_gensyn_HomeAssistantPlugin.main.ShowIcon")
     @patch("de_gensyn_HomeAssistantPlugin.main.ActionHolder")
-    def test_init_success(self, action_holder_mock, perform_action_mock, ha_action_mock, backend_mock, settings_mock,
+    def test_init_success(self, action_holder_mock, show_icon_mock, perform_action_mock, ha_action_mock, backend_mock, settings_mock,
                   register_mock, add_action_holder_mock):
-        action_holder_mock.side_effect = [ha_action_mock, perform_action_mock]
+        action_holder_mock.side_effect = [ha_action_mock, perform_action_mock, show_icon_mock]
 
         host: str = "localhost"
         port: str = "8123"
@@ -49,7 +51,7 @@ class TestMainInit(unittest.TestCase):
         self.assertIsNone(instance.verify_certificate_switch)
         self.assertIsNone(instance.token_entry)
 
-        self.assertEqual(2, action_holder_mock.call_count)
+        self.assertEqual(3, action_holder_mock.call_count)
         action_holder_mock.assert_has_calls([
             call(
                 plugin_base=instance,
@@ -62,13 +64,20 @@ class TestMainInit(unittest.TestCase):
                 action_base=perform_action_mock,
                 action_id="de_gensyn_HomeAssistantPlugin::PerformAction",
                 action_name=PERFORM_ACTION
+            ),
+            call(
+                plugin_base=instance,
+                action_base=show_icon_mock,
+                action_id="de_gensyn_HomeAssistantPlugin::ShowIcon",
+                action_name=SHOW_ICON
             )
         ])
 
-        self.assertEqual(2, add_action_holder_mock.call_count)
+        self.assertEqual(3, add_action_holder_mock.call_count)
         add_action_holder_mock.assert_has_calls([
             call(ha_action_mock),
-            call(perform_action_mock)
+            call(perform_action_mock),
+            call(show_icon_mock)
         ])
 
         self.assertEqual(1, register_mock.call_count)

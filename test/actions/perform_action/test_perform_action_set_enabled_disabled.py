@@ -9,14 +9,16 @@ sys.path.insert(0, absolute_mock_path)
 absolute_plugin_path = str(Path(__file__).parent.parent.parent.parent.parent.absolute())
 sys.path.insert(0, absolute_plugin_path)
 
-from de_gensyn_HomeAssistantPlugin.actions.perform_action import const
+from de_gensyn_HomeAssistantPlugin.actions.perform_action import perform_const
 from de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action import PerformAction
 
 
 class TestPerformActionSetEnabledDisabled(unittest.TestCase):
 
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.__init__')
-    def test_set_enabled_disabled_not_initialized(self, _):
+    @patch(
+        'de_gensyn_HomeAssistantPlugin.actions.cores.base_core.base_core.log.info')
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
+    def test_set_enabled_disabled_not_initialized(self, _, __):
         settings_mock = Mock()
         settings_mock.get_domain = Mock(return_value="light")
 
@@ -27,7 +29,7 @@ class TestPerformActionSetEnabledDisabled(unittest.TestCase):
 
         settings_mock.get_domain.assert_not_called()
 
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.__init__')
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
     def test_set_enabled_disabled_domain_not_set(self, _):
         settings_mock = Mock()
         settings_mock.get_domain = Mock(return_value=None)
@@ -43,7 +45,7 @@ class TestPerformActionSetEnabledDisabled(unittest.TestCase):
         parameters_expander_mock.widget.set_subtitle = Mock()
 
         locale_manager = {
-            const.LABEL_SERVICE_NO_DOMAIN: "No domain set"
+            perform_const.LABEL_SERVICE_NO_DOMAIN: "No domain set"
         }
 
         instance = PerformAction()
@@ -56,12 +58,12 @@ class TestPerformActionSetEnabledDisabled(unittest.TestCase):
 
         settings_mock.get_domain.assert_called_once()
         action_combo_mock.widget.set_sensitive.assert_called_once_with(False)
-        action_combo_mock.widget.set_subtitle.assert_called_once_with(locale_manager[const.LABEL_SERVICE_NO_DOMAIN])
+        action_combo_mock.widget.set_subtitle.assert_called_once_with(locale_manager[perform_const.LABEL_SERVICE_NO_DOMAIN])
         parameters_expander_mock.widget.set_sensitive.assert_called_once_with(False)
         parameters_expander_mock.widget.set_subtitle.assert_called_once_with(
-            locale_manager[const.LABEL_SERVICE_NO_DOMAIN])
+            locale_manager[perform_const.LABEL_SERVICE_NO_DOMAIN])
 
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.__init__')
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
     def test_set_enabled_disabled_no_actions(self, _):
         settings_mock = Mock()
         settings_mock.get_domain = Mock(return_value="light")
@@ -78,7 +80,7 @@ class TestPerformActionSetEnabledDisabled(unittest.TestCase):
         parameters_expander_mock.widget.set_subtitle = Mock()
 
         locale_manager = {
-            const.LABEL_SERVICE_NO_ACTIONS: "No actions available"
+            perform_const.LABEL_SERVICE_NO_ACTIONS: "No actions available"
         }
 
         instance = PerformAction()
@@ -91,12 +93,12 @@ class TestPerformActionSetEnabledDisabled(unittest.TestCase):
 
         settings_mock.get_domain.assert_called_once()
         action_combo_mock.widget.set_sensitive.assert_called_once_with(False)
-        action_combo_mock.widget.set_subtitle.assert_called_once_with(locale_manager[const.LABEL_SERVICE_NO_ACTIONS])
+        action_combo_mock.widget.set_subtitle.assert_called_once_with(locale_manager[perform_const.LABEL_SERVICE_NO_ACTIONS])
         parameters_expander_mock.widget.set_sensitive.assert_called_once_with(False)
         parameters_expander_mock.widget.set_subtitle.assert_called_once_with(
-            locale_manager[const.LABEL_SERVICE_NO_ACTIONS])
+            locale_manager[perform_const.LABEL_SERVICE_NO_ACTIONS])
 
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.__init__')
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
     def test_set_enabled_disabled_no_parameters_no_target_one_entity(self, _):
         settings_mock = Mock()
         settings_mock.get_domain = Mock(return_value="light")
@@ -124,7 +126,7 @@ class TestPerformActionSetEnabledDisabled(unittest.TestCase):
         domain_combo_mock.get_selected_item = Mock(return_value="light")
 
         locale_manager = {
-            const.LABEL_SERVICE_NO_PARAMETERS: "No parameters available"
+            perform_const.LABEL_SERVICE_NO_PARAMETERS: "No parameters available"
         }
 
         plugin_base_mock = Mock()
@@ -144,17 +146,17 @@ class TestPerformActionSetEnabledDisabled(unittest.TestCase):
 
         settings_mock.get_domain.assert_called_once()
         action_combo_mock.widget.set_sensitive.assert_called_once_with(True)
-        action_combo_mock.widget.set_subtitle.assert_called_once_with(const.EMPTY_STRING)
+        action_combo_mock.widget.set_subtitle.assert_called_once_with(perform_const.EMPTY_STRING)
         parameters_expander_mock.widget.set_sensitive.assert_called_once_with(False)
         parameters_expander_mock.set_expanded.assert_called_once_with(False)
         parameters_expander_mock.widget.set_subtitle.assert_called_once_with(
-            locale_manager[const.LABEL_SERVICE_NO_PARAMETERS])
+            locale_manager[perform_const.LABEL_SERVICE_NO_PARAMETERS])
         settings_mock.get_action.assert_called_once()
         domain_combo_mock.get_selected_item.assert_called_once()
         plugin_base_mock.backend.get_actions.assert_called_once_with(domain_combo_mock.get_selected_item.return_value)
         entity_combo_mock.widget.set_sensitive.assert_called_once_with(False)
 
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.__init__')
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
     def test_set_enabled_disabled_parameters_no_target_two_entities(self, _):
         settings_mock = Mock()
         settings_mock.get_domain = Mock(return_value="light")
@@ -197,16 +199,16 @@ class TestPerformActionSetEnabledDisabled(unittest.TestCase):
 
         settings_mock.get_domain.assert_called_once()
         action_combo_mock.widget.set_sensitive.assert_called_once_with(True)
-        action_combo_mock.widget.set_subtitle.assert_called_once_with(const.EMPTY_STRING)
+        action_combo_mock.widget.set_subtitle.assert_called_once_with(perform_const.EMPTY_STRING)
         parameters_expander_mock.widget.set_sensitive.assert_called_once_with(True)
         parameters_expander_mock.set_expanded.assert_called_once_with(True)
-        parameters_expander_mock.widget.set_subtitle.assert_called_once_with(const.EMPTY_STRING)
+        parameters_expander_mock.widget.set_subtitle.assert_called_once_with(perform_const.EMPTY_STRING)
         settings_mock.get_action.assert_called_once()
         domain_combo_mock.get_selected_item.assert_called_once()
         plugin_base_mock.backend.get_actions.assert_called_once_with(domain_combo_mock.get_selected_item.return_value)
         entity_combo_mock.widget.set_sensitive.assert_called_once_with(False)
 
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.__init__')
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
     def test_set_enabled_disabled_parameters_target_no_entity(self, _):
         settings_mock = Mock()
         settings_mock.get_domain = Mock(return_value="light")
@@ -249,16 +251,16 @@ class TestPerformActionSetEnabledDisabled(unittest.TestCase):
 
         settings_mock.get_domain.assert_called_once()
         action_combo_mock.widget.set_sensitive.assert_called_once_with(True)
-        action_combo_mock.widget.set_subtitle.assert_called_once_with(const.EMPTY_STRING)
+        action_combo_mock.widget.set_subtitle.assert_called_once_with(perform_const.EMPTY_STRING)
         parameters_expander_mock.widget.set_sensitive.assert_called_once_with(True)
         parameters_expander_mock.set_expanded.assert_called_once_with(True)
-        parameters_expander_mock.widget.set_subtitle.assert_called_once_with(const.EMPTY_STRING)
+        parameters_expander_mock.widget.set_subtitle.assert_called_once_with(perform_const.EMPTY_STRING)
         settings_mock.get_action.assert_called_once()
         domain_combo_mock.get_selected_item.assert_called_once()
         plugin_base_mock.backend.get_actions.assert_called_once_with(domain_combo_mock.get_selected_item.return_value)
         entity_combo_mock.widget.set_sensitive.assert_called_once_with(False)
 
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.__init__')
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
     def test_set_enabled_disabled_parameters_target_two_entities(self, _):
         settings_mock = Mock()
         settings_mock.get_domain = Mock(return_value="light")
@@ -301,10 +303,10 @@ class TestPerformActionSetEnabledDisabled(unittest.TestCase):
 
         settings_mock.get_domain.assert_called_once()
         action_combo_mock.widget.set_sensitive.assert_called_once_with(True)
-        action_combo_mock.widget.set_subtitle.assert_called_once_with(const.EMPTY_STRING)
+        action_combo_mock.widget.set_subtitle.assert_called_once_with(perform_const.EMPTY_STRING)
         parameters_expander_mock.widget.set_sensitive.assert_called_once_with(True)
         parameters_expander_mock.set_expanded.assert_called_once_with(True)
-        parameters_expander_mock.widget.set_subtitle.assert_called_once_with(const.EMPTY_STRING)
+        parameters_expander_mock.widget.set_subtitle.assert_called_once_with(perform_const.EMPTY_STRING)
         settings_mock.get_action.assert_called_once()
         domain_combo_mock.get_selected_item.assert_called_once()
         plugin_base_mock.backend.get_actions.assert_called_once_with(domain_combo_mock.get_selected_item.return_value)

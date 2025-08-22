@@ -1,7 +1,7 @@
 import sys
 import unittest
 from pathlib import Path
-from unittest.mock import patch, call, Mock
+from unittest.mock import Mock
 
 absolute_mock_path = str(Path(__file__).parent / "stream_controller_mock")
 sys.path.insert(0, absolute_mock_path)

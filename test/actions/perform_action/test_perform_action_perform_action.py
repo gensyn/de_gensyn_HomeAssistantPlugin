@@ -15,8 +15,8 @@ from de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action import 
 
 class TestPerformActionPerformAction(unittest.TestCase):
 
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.__init__')
-    def test_perform_action_no_domain(self, _):
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
+    def test_perform_action_no_domain(self, _,):
         settings_mock = Mock()
         settings_mock.get_domain = Mock(return_value=None)
         settings_mock.get_action = Mock(return_value='test_action')
@@ -30,6 +30,7 @@ class TestPerformActionPerformAction(unittest.TestCase):
         plugin_base_mock.backend = backend_mock
 
         instance = PerformAction()
+        instance.initialized = True
         instance.settings = settings_mock
         instance.plugin_base = plugin_base_mock
         instance._perform_action(None)
@@ -37,7 +38,7 @@ class TestPerformActionPerformAction(unittest.TestCase):
         settings_mock.get_entity.assert_not_called()
         backend_mock.perform_action.assert_not_called()
 
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.__init__')
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
     def test_perform_action_no_action(self, _):
         settings_mock = Mock()
         settings_mock.get_domain = Mock(return_value='test_domain')
@@ -52,6 +53,7 @@ class TestPerformActionPerformAction(unittest.TestCase):
         plugin_base_mock.backend = backend_mock
 
         instance = PerformAction()
+        instance.initialized = True
         instance.settings = settings_mock
         instance.plugin_base = plugin_base_mock
         instance._perform_action(None)
@@ -59,7 +61,7 @@ class TestPerformActionPerformAction(unittest.TestCase):
         settings_mock.get_entity.assert_not_called()
         backend_mock.perform_action.assert_not_called()
 
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.__init__')
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
     def test_perform_action_success(self, _):
         parameters = {
             'param_list': json.dumps(['item1', 'item2']),
@@ -81,6 +83,7 @@ class TestPerformActionPerformAction(unittest.TestCase):
         plugin_base_mock.backend = backend_mock
 
         instance = PerformAction()
+        instance.initialized = True
         instance.settings = settings_mock
         instance.plugin_base = plugin_base_mock
         instance._perform_action(None)

@@ -14,13 +14,15 @@ from de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action import 
 
 class TestPerformActionOnChangeDomain(unittest.TestCase):
 
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.__init__')
     @patch(
-        'de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore._on_change_domain')
+        'de_gensyn_HomeAssistantPlugin.actions.cores.base_core.base_core.log.info')
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
+    @patch(
+        'de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore._on_change_domain')
     @patch.object(PerformAction, '_load_actions')
     @patch.object(PerformAction, '_set_enabled_disabled')
     def test_on_change_domain_not_initialized(self, set_enabled_disabled_mock, load_actions_mock, on_change_domain_mock,
-                                              _):
+                                              _, __):
         new_domain = 'light'
         old_domain = 'switch'
 
@@ -32,9 +34,9 @@ class TestPerformActionOnChangeDomain(unittest.TestCase):
         load_actions_mock.assert_not_called()
         set_enabled_disabled_mock.assert_not_called()
 
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.__init__')
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
     @patch(
-        'de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore._on_change_domain')
+        'de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore._on_change_domain')
     @patch.object(PerformAction, '_load_actions')
     @patch.object(PerformAction, '_set_enabled_disabled')
     def test_on_change_domain_domain_none(self, set_enabled_disabled_mock, load_actions_mock, on_change_domain_mock,
@@ -50,9 +52,9 @@ class TestPerformActionOnChangeDomain(unittest.TestCase):
         load_actions_mock.assert_not_called()
         set_enabled_disabled_mock.assert_called_once()
 
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.__init__')
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
     @patch(
-        'de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore._on_change_domain')
+        'de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore._on_change_domain')
     @patch.object(PerformAction, '_load_actions')
     @patch.object(PerformAction, '_set_enabled_disabled')
     def test_on_change_domain_domain_empty(self, set_enabled_disabled_mock, load_actions_mock, on_change_domain_mock,
@@ -68,9 +70,9 @@ class TestPerformActionOnChangeDomain(unittest.TestCase):
         load_actions_mock.assert_not_called()
         set_enabled_disabled_mock.assert_called_once()
 
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.__init__')
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
     @patch(
-        'de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore._on_change_domain')
+        'de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore._on_change_domain')
     @patch.object(PerformAction, '_load_actions')
     @patch.object(PerformAction, '_set_enabled_disabled')
     def test_on_change_domain_success(self, set_enabled_disabled_mock, load_actions_mock, on_change_domain_mock,

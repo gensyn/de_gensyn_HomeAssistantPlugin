@@ -48,6 +48,8 @@
 
     "actions.home_assistant.connection.connection_status.label": "Verbindungsstatus",
 
+    "actions.home_assistant.customization.label": "Anpassen:",
+    "actions.home_assistant.customization.no_entity.label": "Keine Entität ausgewählt",
     "actions.home_assistant.customization.icon_title.label": "Icon anpassen",
     "actions.home_assistant.customization.text_title.label": "Text anpassen",
     "actions.home_assistant.customization.attribute.label": "Attribut",

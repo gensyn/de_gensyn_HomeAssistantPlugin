@@ -9,14 +9,12 @@ sys.path.insert(0, absolute_mock_path)
 absolute_plugin_path = str(Path(__file__).parent.parent.parent.parent.parent.absolute())
 sys.path.insert(0, absolute_plugin_path)
 
-from src.backend.DeckManagement.InputIdentifier import Input
-from de_gensyn_HomeAssistantPlugin.actions.perform_action import const
 from de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action import PerformAction
 
 
 class TestPerformActionGetConfigRows(unittest.TestCase):
 
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.__init__')
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
     def test_get_config_rows_success(self, _):
         domain_combo_mock = Mock()
         domain_combo_mock.widget = "domain"

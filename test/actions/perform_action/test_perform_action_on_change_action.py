@@ -14,11 +14,13 @@ from de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action import 
 
 class TestPerformActionOnChangeAction(unittest.TestCase):
 
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.__init__')
     @patch(
-        'de_gensyn_HomeAssistantPlugin.actions.perform_action.action_parameters.action_parameters_helper.load_parameters')
+        'de_gensyn_HomeAssistantPlugin.actions.cores.base_core.base_core.log.info')
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
+    @patch(
+        'de_gensyn_HomeAssistantPlugin.actions.perform_action.parameters.parameters_helper.load_parameters')
     @patch.object(PerformAction, '_reload')
-    def test_on_change_action_not_initialized(self, reload_mock, load_parameters_mock, _):
+    def test_on_change_action_not_initialized(self, reload_mock, load_parameters_mock, _, __):
         settings_mock = Mock()
         settings_mock.clear_parameters = Mock()
 
@@ -31,9 +33,9 @@ class TestPerformActionOnChangeAction(unittest.TestCase):
         load_parameters_mock.assert_not_called()
         reload_mock.assert_not_called()
 
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.__init__')
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
     @patch(
-        'de_gensyn_HomeAssistantPlugin.actions.perform_action.action_parameters.action_parameters_helper.load_parameters')
+        'de_gensyn_HomeAssistantPlugin.actions.perform_action.parameters.parameters_helper.load_parameters')
     @patch.object(PerformAction, '_reload')
     def test_on_change_action_success(self, reload_mock, load_parameters_mock, _):
         settings_mock = Mock()

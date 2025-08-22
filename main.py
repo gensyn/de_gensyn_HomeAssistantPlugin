@@ -18,12 +18,14 @@ from src.backend.PluginManager.ActionHolder import ActionHolder
 from src.backend.PluginManager.PluginBase import PluginBase
 
 from de_gensyn_HomeAssistantPlugin import const
+from de_gensyn_HomeAssistantPlugin.actions.show_icon.icon_const import SHOW_ICON
+from de_gensyn_HomeAssistantPlugin.actions.show_icon.show_icon import ShowIcon
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.const import HOME_ASSISTANT_ACTION
-from de_gensyn_HomeAssistantPlugin.actions.perform_action.const import PERFORM_ACTION
+from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.home_assistant_action import HomeAssistantAction
+from de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_const import PERFORM_ACTION
+from de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action import PerformAction
 from de_gensyn_HomeAssistantPlugin.backend import const as backend_const
 
-from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.home_assistant_action import HomeAssistantAction
-from de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action import PerformAction
 from de_gensyn_HomeAssistantPlugin.backend.home_assistant_backend import HomeAssistantBackend
 from de_gensyn_HomeAssistantPlugin.connection_settings.connection_settings import ConnectionSettings
 
@@ -48,14 +50,23 @@ class HomeAssistant(PluginBase):  # pylint: disable=too-few-public-methods
             action_name=HOME_ASSISTANT_ACTION
         )
 
-        self.service_action_holder = ActionHolder(
+        self.perform_action_action_holder = ActionHolder(
             plugin_base=self,
             action_base=PerformAction,
             action_id="de_gensyn_HomeAssistantPlugin::PerformAction",
             action_name=PERFORM_ACTION
         )
+
+        self.show_icon_action_holder = ActionHolder(
+            plugin_base=self,
+            action_base=ShowIcon,
+            action_id="de_gensyn_HomeAssistantPlugin::ShowIcon",
+            action_name=SHOW_ICON
+        )
+
         self.add_action_holder(self.home_assistant_action_holder)
-        self.add_action_holder(self.service_action_holder)
+        self.add_action_holder(self.perform_action_action_holder)
+        self.add_action_holder(self.show_icon_action_holder)
 
         self.register(
             plugin_name=const.HOME_ASSISTANT,

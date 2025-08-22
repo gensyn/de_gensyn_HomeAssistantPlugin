@@ -14,9 +14,9 @@ from de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action import 
 
 class TestPerformActionOnChangeAction(unittest.TestCase):
 
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.__init__')
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
     @patch(
-        'de_gensyn_HomeAssistantPlugin.actions.perform_action.action_parameters.action_parameters_helper.load_parameters')
+        'de_gensyn_HomeAssistantPlugin.actions.perform_action.parameters.parameters_helper.load_parameters')
     def test_load_actions_action_in_actions(self, load_parameters_mock, _):
         settings_mock = Mock()
         settings_mock.get_action = Mock(return_value='test_action')
@@ -32,6 +32,7 @@ class TestPerformActionOnChangeAction(unittest.TestCase):
         plugin_base_mock.backend.get_actions = Mock(return_value={'test_action': {}, 'another_action': {}})
 
         instance = PerformAction()
+        instance.initialized = True
         instance.settings = settings_mock
         instance.plugin_base = plugin_base_mock
         instance.domain_combo = domain_combo_mock
@@ -49,9 +50,9 @@ class TestPerformActionOnChangeAction(unittest.TestCase):
         )
         load_parameters_mock.assert_called_once_with(instance)
 
-    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.HomeAssistantActionCore.__init__')
+    @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
     @patch(
-        'de_gensyn_HomeAssistantPlugin.actions.perform_action.action_parameters.action_parameters_helper.load_parameters')
+        'de_gensyn_HomeAssistantPlugin.actions.perform_action.parameters.parameters_helper.load_parameters')
     def test_load_actions_action_not_in_actions(self, load_parameters_mock, _):
         settings_mock = Mock()
         settings_mock.get_action = Mock(return_value='test_action')
@@ -67,6 +68,7 @@ class TestPerformActionOnChangeAction(unittest.TestCase):
         plugin_base_mock.backend.get_actions = Mock(return_value={'one_action': {}, 'another_action': {}})
 
         instance = PerformAction()
+        instance.initialized = True
         instance.settings = settings_mock
         instance.plugin_base = plugin_base_mock
         instance.domain_combo = domain_combo_mock
