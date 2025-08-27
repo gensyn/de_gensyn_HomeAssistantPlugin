@@ -4,9 +4,9 @@ Module for helper functions.
 from typing import Tuple
 
 import gi
+gi.require_version("Gdk", "4.0")
 from gi.repository.Gdk import RGBA
 
-gi.require_version("Gtk", "4.0")
 
 
 def convert_color_list_to_rgba(color: Tuple[int, int, int, int]) -> RGBA:

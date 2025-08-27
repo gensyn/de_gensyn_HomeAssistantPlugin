@@ -104,31 +104,31 @@ class IconWindow(CustomizationWindow):
         self.scale_opacity.set_value(icon_const.DEFAULT_ICON_OPACITY)
         self.entry_opacity.set_text(str(icon_const.DEFAULT_ICON_OPACITY))
 
-    def _set_current_values(self, current: IconCustomization) -> None:
-        if not current:
+    def _set_current_values(self) -> None:
+        if not self.current:
             return
 
-        super()._set_current_values(current)
+        super()._set_current_values()
 
-        self.entry_icon.set_text(current.get_icon() or icon_const.EMPTY_STRING)
-        self.check_icon.set_active(current.get_icon() is not None)
+        self.entry_icon.set_text(self.current.get_icon() or icon_const.EMPTY_STRING)
+        self.check_icon.set_active(self.current.get_icon() is not None)
 
-        if current.get_color():
-            rgba = customization_helper.convert_color_list_to_rgba(current.get_color())
+        if self.current.get_color():
+            rgba = customization_helper.convert_color_list_to_rgba(self.current.get_color())
             self.button_color.set_rgba(rgba)
-        self.check_color.set_active(current.get_color() is not None)
+        self.check_color.set_active(self.current.get_color() is not None)
 
         self.scale_scale.set_value(
-            current.get_scale() or icon_const.DEFAULT_ICON_SCALE)
-        self.check_scale.set_active(current.get_scale() is not None)
+            self.current.get_scale() or icon_const.DEFAULT_ICON_SCALE)
+        self.check_scale.set_active(self.current.get_scale() is not None)
         self.entry_scale.set_text(
-            str(int(current.get_scale() or icon_const.DEFAULT_ICON_SCALE)))
+            str(int(self.current.get_scale() or icon_const.DEFAULT_ICON_SCALE)))
 
         self.scale_opacity.set_value(
-            current.get_opacity() or icon_const.DEFAULT_ICON_OPACITY)
-        self.check_opacity.set_active(current.get_opacity() is not None)
+            self.current.get_opacity() or icon_const.DEFAULT_ICON_OPACITY)
+        self.check_opacity.set_active(self.current.get_opacity() is not None)
         self.entry_opacity.set_text(
-            str(int(current.get_opacity() or icon_const.DEFAULT_ICON_OPACITY)))
+            str(int(self.current.get_opacity() or icon_const.DEFAULT_ICON_OPACITY)))
 
     def _on_add_button(self, _):
         if not super()._on_add_button(_):

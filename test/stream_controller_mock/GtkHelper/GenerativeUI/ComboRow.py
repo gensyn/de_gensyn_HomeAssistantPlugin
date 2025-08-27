@@ -12,3 +12,9 @@ class ComboRow:
 
     def _value_changed(self):
         pass
+
+    def set_sensitive(self, _: bool) -> None:
+        pass
+
+    def get_item_amount(self) -> int:
+        return len(self.args[3])

@@ -1,6 +1,6 @@
 class EntryRow:
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs) -> None:
         pass
 
     def get_text(self) -> str:

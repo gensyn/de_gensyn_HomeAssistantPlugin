@@ -99,28 +99,28 @@ class CustomizationWindow(Window):
 
     def _after_init(self) -> None:
         self._set_default_values()
-        self._set_current_values(self.current)
+        self._set_current_values()
         self._connect_rows()
 
     def _set_default_values(self) -> None:
         self.combo_attribute.set_active(0)
         self.combo_operator.set_active(0)
 
-    def _set_current_values(self, current: Customization) -> None:
-        if not current:
+    def _set_current_values(self) -> None:
+        if not self.current:
             return
 
         for index, entry in enumerate(self.combo_attribute.get_model()):
-            if entry[0] == current.get_attribute():
+            if entry[0] == self.current.get_attribute():
                 self.combo_attribute.set_active(index)
                 break
 
         for index, entry in enumerate(self.combo_operator.get_model()):
-            if entry[0] == current.get_operator():
+            if entry[0] == self.current.get_operator():
                 self.combo_operator.set_active(index)
                 break
 
-        self.entry_value.set_text(current.get_value())
+        self.entry_value.set_text(self.current.get_value())
 
     def _create_button(self, label) -> Button:
         button = Button(label=label)
