@@ -232,7 +232,7 @@ class TextWindow(CustomizationWindow):
                 break
         self.check_position.set_active(self.current.get_position() is not None)
 
-        for index, entry in enumerate(self.combo_attribute.get_model()):
+        for index, entry in enumerate(self.combo_text_attribute.get_model()):
             if entry[0] == self.current.get_text_attribute():
                 self.combo_text_attribute.set_active(index)
                 break

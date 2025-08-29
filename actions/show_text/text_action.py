@@ -221,12 +221,6 @@ class ShowText(CustomizationCore):
                 self.unit_line_break.widget.set_sensitive(False)
 
     @requires_initialization
-    def _reload(self, *_):
-        """Reload the action."""
-        super()._reload()
-        self._load_attributes()
-
-    @requires_initialization
     def _on_change_entity(self, _, entity, old_entity):
         self._load_attributes()
         super()._on_change_entity(_, entity, old_entity)
@@ -270,6 +264,9 @@ class ShowText(CustomizationCore):
 
         if not entity:
             return
+
+        # the attributes of the entity might have changed
+        self._load_attributes()
 
         if state is None:
             state = self.plugin_base.backend.get_entity(entity)
