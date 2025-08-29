@@ -17,44 +17,31 @@ class BaseSettings:
     def __init__(self, action):
         self._action = action
 
-        self._domain = None
-        self._entity = None
-
-        self._settings = self._action.get_settings()
-
-        if not self._settings.get(const.SETTING_ENTITY):
-            self._settings[const.SETTING_ENTITY] = DEFAULT_SETTINGS.copy()
-            self._action.set_settings(self._settings)
-
-    def load(self) -> None:
-        """
-        Loads the settings from the action.
-        :return: None
-        """
-        self._settings = self._action.get_settings()
-        self._domain = self._settings[const.SETTING_ENTITY][const.SETTING_DOMAIN]
-        self._entity = self._settings[const.SETTING_ENTITY][const.SETTING_ENTITY]
+        if not self._action.get_settings().get(const.SETTING_ENTITY):
+            settings = self._action.get_settings()
+            settings[const.SETTING_ENTITY] = DEFAULT_SETTINGS.copy()
+            self._action.set_settings(settings)
 
     def get_domain(self) -> str:
         """
         Get the domain.
         :return: the domain
         """
-        return self._domain
+        return self._action.get_settings()[const.SETTING_ENTITY][const.SETTING_DOMAIN]
 
     def get_entity(self) -> str:
         """
         Get the entity.
         :return: the entity
         """
-        return self._entity
+        return self._action.get_settings()[const.SETTING_ENTITY][const.SETTING_ENTITY]
 
     def reset(self, domain: str) -> None:
         """
         Delete the settings and keeps only the UUID. The given domain is also set.
         :param domain: the new domain
         """
-        self._settings[const.SETTING_ENTITY][const.SETTING_DOMAIN] = domain
-        self._settings[const.SETTING_ENTITY][const.SETTING_ENTITY] = const.EMPTY_STRING
-        self.load()
-        self._action.set_settings(self._settings)
+        settings = self._action.get_settings()
+        settings[const.SETTING_ENTITY][const.SETTING_DOMAIN] = domain
+        settings[const.SETTING_ENTITY][const.SETTING_ENTITY] = const.EMPTY_STRING
+        self._action.set_settings(settings)

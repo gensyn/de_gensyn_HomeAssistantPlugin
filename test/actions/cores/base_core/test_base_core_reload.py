@@ -20,14 +20,12 @@ class TestBaseCoreReload(unittest.TestCase):
     @patch.object(BaseCore, "refresh")
     def test_reload_success(self, refresh_mock, set_enabled_disabled_mock, _, __):
         settings_mock = Mock()
-        settings_mock.load = Mock()
 
         instance = BaseCore(False)
         instance.initialized = True
         instance.settings = settings_mock
         instance._reload()
 
-        settings_mock.load.assert_called_once()
         set_enabled_disabled_mock.assert_called_once()
         refresh_mock.assert_called_once()
 

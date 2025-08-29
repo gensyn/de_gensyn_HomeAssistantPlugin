@@ -1,5 +1,6 @@
 import sys
 import unittest
+from copy import deepcopy
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -44,8 +45,8 @@ class TestCustomizationSettings(unittest.TestCase):
         self.settings = self.customization_settings.CustomizationSettings(
             self.mock_action, self.customization_name, self.mock_implementation
         )
-        self.settings._settings = self.example_settings
         self.settings._action = self.mock_action
+        self.settings._action.get_settings.return_value = self.example_settings
 
     def tearDown(self):
         self.const_patch.stop()
@@ -65,31 +66,23 @@ class TestCustomizationSettings(unittest.TestCase):
         self.mock_implementation.from_dict.assert_any_call({"c": 3})
 
     def test_move_customization(self):
-        self.settings._move_customization = MagicMock()
-        self.settings.move_customization(1, 2)
-        self.settings._move_customization.assert_called_once_with(
-            self.example_settings[self.customization_name][self.mock_const.SETTING_CUSTOMIZATIONS], 1, 2
-        )
-
-    def test__move_customization(self):
-        # Actually test _move_customization logic
-        customization_list = [1, 2, 3, 4]
-        self.settings._settings[self.customization_name][self.mock_const.SETTING_CUSTOMIZATIONS] = customization_list
         self.settings._action.set_settings.reset_mock()
+        expected = deepcopy(self.example_settings)
+        entry = expected[self.customization_name][self.mock_const.SETTING_CUSTOMIZATIONS].pop(0)
+        expected[self.customization_name][self.mock_const.SETTING_CUSTOMIZATIONS].insert(2, entry)
 
-        self.settings._move_customization(customization_list, 1, 2)
-        self.assertEqual(customization_list, [1, 3, 4, 2])
-        self.settings._action.set_settings.assert_called_once_with(self.settings._settings)
+        self.settings.move_customization(0, 2)
+        self.assertEqual(expected, self.settings._action.get_settings())
+        self.settings._action.set_settings.assert_called_once_with(expected)
 
     def test_remove_customization(self):
         self.settings._action.set_settings.reset_mock()
         # Remove at index 1 ('b':2)
         self.settings.remove_customization(1)
         self.assertEqual(
-            self.settings._settings[self.customization_name][self.mock_const.SETTING_CUSTOMIZATIONS],
-            [{"a": 1}, {"c": 3}]
+            self.settings._action.get_settings()[self.customization_name][self.mock_const.SETTING_CUSTOMIZATIONS], [{"a": 1}, {"c": 3}]
         )
-        self.settings._action.set_settings.assert_called_once_with(self.settings._settings)
+        self.settings._action.set_settings.assert_called_once_with(self.settings._action.get_settings())
 
     def test_replace_customization(self):
         self.settings._action.set_settings.reset_mock()
@@ -98,22 +91,24 @@ class TestCustomizationSettings(unittest.TestCase):
         mock_cust.export.return_value = {"foo": "bar"}
         self.settings.replace_customization(0, mock_cust)
         self.assertEqual(
-            self.settings._settings[self.customization_name][self.mock_const.SETTING_CUSTOMIZATIONS][0],
+            self.settings._action.get_settings()[self.customization_name][self.mock_const.SETTING_CUSTOMIZATIONS][0],
             {"foo": "bar"}
         )
-        self.settings._action.set_settings.assert_called_once_with(self.settings._settings)
+        self.settings._action.set_settings.assert_called_once_with(self.settings._action.get_settings())
         mock_cust.export.assert_called_once()
 
     def test_add_customization(self):
         self.settings._action.set_settings.reset_mock()
+        expected = deepcopy(self.example_settings)
+        expected[self.customization_name][self.mock_const.SETTING_CUSTOMIZATIONS].append({"baz": 42})
         mock_cust = MagicMock()
         mock_cust.export.return_value = {"baz": 42}
         self.settings.add_customization(mock_cust)
         self.assertIn(
             {"baz": 42},
-            self.settings._settings[self.customization_name][self.mock_const.SETTING_CUSTOMIZATIONS]
+            self.example_settings[self.customization_name][self.mock_const.SETTING_CUSTOMIZATIONS]
         )
-        self.settings._action.set_settings.assert_called_once_with(self.settings._settings)
+        self.settings._action.set_settings.assert_called_once_with(expected)
         mock_cust.export.assert_called_once()
 
 if __name__ == "__main__":

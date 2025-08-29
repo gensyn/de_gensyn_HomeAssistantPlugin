@@ -9,7 +9,7 @@ sys.path.insert(0, absolute_mock_path)
 absolute_plugin_path = str(Path(__file__).parent.parent.parent.parent.parent.absolute())
 sys.path.insert(0, absolute_plugin_path)
 
-from de_gensyn_HomeAssistantPlugin.actions.show_icon.show_icon import ShowIcon
+from de_gensyn_HomeAssistantPlugin.actions.show_icon.icon_action import ShowIcon
 from de_gensyn_HomeAssistantPlugin.actions.show_icon.icon_customization import IconCustomization
 from de_gensyn_HomeAssistantPlugin.actions.show_icon.icon_row import IconRow
 from de_gensyn_HomeAssistantPlugin.actions.show_icon.icon_window import IconWindow
@@ -24,40 +24,40 @@ class TestShowIcon(unittest.TestCase):
 
         # Patch ShowIconSettings, IconWindow, IconCustomization, IconRow
         patcher_settings = patch(
-            "de_gensyn_HomeAssistantPlugin.actions.show_icon.show_icon.ShowIconSettings",
+            "de_gensyn_HomeAssistantPlugin.actions.show_icon.icon_action.ShowIconSettings",
             autospec=True
         )
         self.MockShowIconSettings = patcher_settings.start()
         self.addCleanup(patcher_settings.stop)
 
         patcher_icon_helper = patch(
-            "de_gensyn_HomeAssistantPlugin.actions.show_icon.show_icon.icon_helper.get_icon",
+            "de_gensyn_HomeAssistantPlugin.actions.show_icon.icon_action.icon_helper.get_icon",
             return_value=("mdi:lightbulb", 24)
         )
         self.mock_get_icon = patcher_icon_helper.start()
         self.addCleanup(patcher_icon_helper.stop)
 
         patcher_icon_const = patch(
-            "de_gensyn_HomeAssistantPlugin.actions.show_icon.show_icon.icon_const"
+            "de_gensyn_HomeAssistantPlugin.actions.show_icon.icon_action.icon_const"
         )
         self.mock_icon_const = patcher_icon_const.start()
         self.addCleanup(patcher_icon_const.stop)
 
         # Patch EntryRow, ColorButtonRow, ScaleRow
-        patcher_entry_row = patch("de_gensyn_HomeAssistantPlugin.actions.show_icon.show_icon.EntryRow")
+        patcher_entry_row = patch("de_gensyn_HomeAssistantPlugin.actions.show_icon.icon_action.EntryRow")
         self.MockEntryRow = patcher_entry_row.start()
         self.addCleanup(patcher_entry_row.stop)
 
-        patcher_color_button_row = patch("de_gensyn_HomeAssistantPlugin.actions.show_icon.show_icon.ColorButtonRow")
+        patcher_color_button_row = patch("de_gensyn_HomeAssistantPlugin.actions.show_icon.icon_action.ColorButtonRow")
         self.MockColorButtonRow = patcher_color_button_row.start()
         self.addCleanup(patcher_color_button_row.stop)
 
-        patcher_scale_row = patch("de_gensyn_HomeAssistantPlugin.actions.show_icon.show_icon.ScaleRow")
+        patcher_scale_row = patch("de_gensyn_HomeAssistantPlugin.actions.show_icon.icon_action.ScaleRow")
         self.MockScaleRow = patcher_scale_row.start()
         self.addCleanup(patcher_scale_row.stop)
 
         # Patch CustomizationCore methods
-        patcher_super_init = patch("de_gensyn_HomeAssistantPlugin.actions.show_icon.show_icon.CustomizationCore.__init__")
+        patcher_super_init = patch("de_gensyn_HomeAssistantPlugin.actions.show_icon.icon_action.CustomizationCore.__init__")
         self.MockSuperInit = patcher_super_init.start()
         self.addCleanup(patcher_super_init.stop)
 
@@ -169,7 +169,7 @@ class TestShowIcon(unittest.TestCase):
         self.instance.initialized = True
         self.mock_settings.get_domain.return_value = "light"
         self.mock_settings.get_entity.return_value = "light.bedroom"
-        with patch("de_gensyn_HomeAssistantPlugin.actions.show_icon.show_icon.CustomizationCore._set_enabled_disabled"):
+        with patch("de_gensyn_HomeAssistantPlugin.actions.show_icon.icon_action.CustomizationCore._set_enabled_disabled"):
             self.instance._set_enabled_disabled()
         self.instance.icon.widget.set_sensitive.assert_called_with(True)
         self.instance.color.widget.set_sensitive.assert_called_with(True)

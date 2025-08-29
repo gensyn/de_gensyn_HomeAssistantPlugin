@@ -19,6 +19,7 @@ LABEL_CUSTOMIZATION_OPERATORS = {
 ERROR = "error"
 SETTING_CUSTOMIZATIONS = "customizations"
 ATTRIBUTES = "attributes"
+UNIT_OF_MEASUREMENT = "unit_of_measurement"
 STATE = "state"
 EMPTY_STRING = ""
 

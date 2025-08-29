@@ -84,7 +84,6 @@ class BaseCore(ActionCore):
     @requires_initialization
     def _reload(self, *_):
         """Reload the action."""
-        self.settings.load()
         self._set_enabled_disabled()
         self.refresh()
 
@@ -118,6 +117,7 @@ class BaseCore(ActionCore):
         if entity and self.track_entity:
             self.plugin_base.backend.add_tracked_entity(entity, self.refresh)
 
+        self.refresh()
         self._set_enabled_disabled()
 
     @requires_initialization
@@ -161,8 +161,6 @@ class BaseCore(ActionCore):
     @requires_initialization
     def _set_enabled_disabled(self) -> None:
         """Set the active/inactive state for all rows."""
-        self.settings.load()
-
         domain = self.settings.get_domain()
         is_domain_set = bool(domain)
         self.entity_combo.set_sensitive(

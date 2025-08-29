@@ -30,9 +30,8 @@ class TestBaseSettingsInit(unittest.TestCase):
         settings_expected = deepcopy(settings)
         settings_expected[const.SETTING_ENTITY] = deepcopy(DEFAULT_SETTINGS)
 
-        instance = BaseSettings(action_mock)
+        BaseSettings(action_mock)
 
-        self.assertEqual(settings_expected, instance._settings)
         action_mock.set_settings.assert_called_once_with(settings_expected)
 
     def test_base_settings_success(self):
@@ -47,27 +46,12 @@ class TestBaseSettingsInit(unittest.TestCase):
         }
 
         action_mock = Mock()
-        action_mock.get_settings.return_value = {}
-
-        settings_expected = deepcopy(settings)
-        settings_expected[const.SETTING_ENTITY] = deepcopy(DEFAULT_SETTINGS)
+        action_mock.get_settings.return_value = settings
 
         # test init
         instance = BaseSettings(action_mock)
 
-        self.assertEqual(settings_expected, instance._settings)
         action_mock.get_settings.assert_called_once()
-        action_mock.set_settings.assert_called_once_with(settings_expected)
-
-        # test load
-        action_mock.reset_mock()
-        action_mock.get_settings.return_value = settings
-
-        instance.load()
-
-        action_mock.get_settings.assert_called_once()
-        self.assertEqual(domain, instance._domain)
-        self.assertEqual(entity, instance._entity)
 
         # test get_domain
         self.assertEqual(domain, instance.get_domain())
@@ -83,11 +67,8 @@ class TestBaseSettingsInit(unittest.TestCase):
             }
         }
 
-        with patch.object(BaseSettings, "load") as load_mock:
-            instance.reset("switch")
-            load_mock.assert_called_once()
+        instance.reset("switch")
 
-        self.assertEqual(settings_expected_for_reset, instance._settings)
         action_mock.set_settings.assert_called_once_with(settings_expected_for_reset)
 
 

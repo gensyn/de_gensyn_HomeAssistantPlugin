@@ -7,6 +7,7 @@ from typing import Optional
 
 import gi
 
+
 gi.require_version("Adw", "1")
 from gi.repository import GLib
 from gi.repository.Adw import EntryRow, SwitchRow, PasswordEntryRow, PreferencesGroup
@@ -19,7 +20,9 @@ from src.backend.PluginManager.PluginBase import PluginBase
 
 from de_gensyn_HomeAssistantPlugin import const
 from de_gensyn_HomeAssistantPlugin.actions.show_icon.icon_const import SHOW_ICON
-from de_gensyn_HomeAssistantPlugin.actions.show_icon.show_icon import ShowIcon
+from de_gensyn_HomeAssistantPlugin.actions.show_icon.icon_action import ShowIcon
+from de_gensyn_HomeAssistantPlugin.actions.show_text.text_const import SHOW_TEXT
+from de_gensyn_HomeAssistantPlugin.actions.show_text.text_action import ShowText
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.const import HOME_ASSISTANT_ACTION
 from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.home_assistant_action import HomeAssistantAction
 from de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_const import PERFORM_ACTION
@@ -64,14 +67,22 @@ class HomeAssistant(PluginBase):  # pylint: disable=too-few-public-methods
             action_name=SHOW_ICON
         )
 
+        self.show_text_action_holder = ActionHolder(
+            plugin_base=self,
+            action_base=ShowText,
+            action_id="de_gensyn_HomeAssistantPlugin::ShowText",
+            action_name=SHOW_TEXT
+        )
+
         self.add_action_holder(self.home_assistant_action_holder)
         self.add_action_holder(self.perform_action_action_holder)
         self.add_action_holder(self.show_icon_action_holder)
+        self.add_action_holder(self.show_text_action_holder)
 
         self.register(
             plugin_name=const.HOME_ASSISTANT,
             github_repo="https://github.com/gensyn/de_gensyn_HomeAssistantPlugin",
-            plugin_version="1.0.3",
+            plugin_version="2.0.0",
             app_version="1.5.0-beta"
         )
 

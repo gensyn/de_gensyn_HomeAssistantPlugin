@@ -1,0 +1,80 @@
+EMPTY_STRING = ""
+CUSTOMIZATION_WINDOW_TITLE = "actions.home_assistant.customization.text_title.label"
+SHOW_TEXT = "Show Text"
+
+SETTING_TEXT = "text"
+SETTING_POSITION = "position"
+SETTING_ATTRIBUTE = "attribute"
+SETTING_ROUND = "round"
+SETTING_ROUND_PRECISION = "round_precision"
+SETTING_TEXT_SIZE = "text_size"
+SETTING_TEXT_COLOR = "text_color"
+SETTING_OUTLINE_SIZE = "outline_size"
+SETTING_OUTLINE_COLOR = "outline_color"
+SETTING_SHOW_UNIT = "show_unit"
+SETTING_UNIT_LINE_BREAK = "unit_line_break"
+SETTING_TEXT_POSITION = f"{SETTING_TEXT}.{SETTING_POSITION}"
+SETTING_TEXT_ATTRIBUTE = f"{SETTING_TEXT}.{SETTING_ATTRIBUTE}"
+SETTING_TEXT_ROUND = f"{SETTING_TEXT}.{SETTING_ROUND}"
+SETTING_TEXT_ROUND_PRECISION = f"{SETTING_TEXT}.{SETTING_ROUND_PRECISION}"
+SETTING_TEXT_TEXT_SIZE = f"{SETTING_TEXT}.{SETTING_TEXT_SIZE}"
+SETTING_TEXT_TEXT_COLOR = f"{SETTING_TEXT}.{SETTING_TEXT_COLOR}"
+SETTING_TEXT_OUTLINE_SIZE = f"{SETTING_TEXT}.{SETTING_OUTLINE_SIZE}"
+SETTING_TEXT_OUTLINE_COLOR = f"{SETTING_TEXT}.{SETTING_OUTLINE_COLOR}"
+SETTING_TEXT_SHOW_UNIT = f"{SETTING_TEXT}.{SETTING_SHOW_UNIT}"
+SETTING_TEXT_UNIT_LINE_BREAK = f"{SETTING_TEXT}.{SETTING_UNIT_LINE_BREAK}"
+
+POSITION_TOP = "top"
+POSITION_CENTER = "center"
+POSITION_BOTTOM = "bottom"
+
+LABEL_SHOW_TEXT = "actions.home_assistant.text.show_text.label"
+LABEL_POSITION = "actions.home_assistant.text.position.label"
+LABEL_ATTRIBUTE = "actions.home_assistant.text.attribute.label"
+LABEL_ROUND = "actions.home_assistant.text.round.label"
+LABEL_ROUND_PRECISION = "actions.home_assistant.text.round_precision.label"
+LABEL_TEXT_SIZE = "actions.home_assistant.text.text_size.label"
+LABEL_OUTLINE_SIZE = "actions.home_assistant.text.outline_size.label"
+LABEL_TEXT_COLOR = "actions.home_assistant.text.text_color.label"
+LABEL_OUTLINE_COLOR = "actions.home_assistant.text.outline_color.label"
+LABEL_SHOW_UNIT = "actions.home_assistant.text.show_unit.label"
+LABEL_SHOW_UNIT_SHORT = "actions.home_assistant.text.show_unit_short.label"
+LABEL_UNIT_LINE_BREAK = "actions.home_assistant.text.unit_line_break.label"
+LABEL_UNIT_LINE_BREAK_SHORT = "actions.home_assistant.text.unit_line_break_short.label"
+LABEL_CUSTOM_TEXT = "actions.home_assistant.text.custom_text.label"
+LABEL_NO_ENTITY = "actions.home_assistant.text.no_entity.label"
+
+DEFAULT_POSITION = POSITION_CENTER
+DEFAULT_ROUND = False
+DEFAULT_ROUND_PRECISION = 2
+DEFAULT_TEXT_SIZE = 20
+DEFAULT_TEXT_COLOR = [255, 255, 255, 255]
+DEFAULT_OUTLINE_SIZE = 2
+DEFAULT_OUTLINE_COLOR = [0, 0, 0, 255]
+DEFAULT_SHOW_UNIT = False
+DEFAULT_UNIT_LINE_BREAK = False
+DEFAULT_ATTRIBUTE = "state"
+DEFAULT_CUSTOM_TEXT = EMPTY_STRING
+
+ROUND_MIN_PRECISION = 0
+ROUND_MAX_PRECISION = 10
+TEXT_MIN_SIZE = 0
+TEXT_MAX_SIZE = 50
+OUTLINE_MIN_SIZE = 0
+OUTLINE_MAX_SIZE = 10
+
+CUSTOM_POSITION = "position"
+CUSTOM_ATTRIBUTE = "text_attribute"
+CUSTOM_ROUND = "round"
+CUSTOM_ROUND_PRECISION = "round_precision"
+CUSTOM_TEXT_SIZE = "text_size"
+CUSTOM_TEXT_COLOR = "text_color"
+CUSTOM_OUTLINE_SIZE = "outline_size"
+CUSTOM_OUTLINE_COLOR = "outline_color"
+CUSTOM_SHOW_UNIT = "show_unit"
+CUSTOM_LINE_BREAK = "line_break"
+CUSTOM_TEXT_LENGTH = "text_length"
+CUSTOM_CUSTOM_TEXT = "custom_text"
+
+ERROR = "error"
+STATE = "state"

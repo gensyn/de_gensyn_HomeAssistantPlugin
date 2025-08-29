@@ -26,9 +26,8 @@ class TestShowIconSettings(unittest.TestCase):
         self.action.get_settings.return_value = self.settings_data.copy()
         self.action.set_settings = MagicMock()
 
-    def test_load_and_getters(self):
+    def test_getters(self):
         sis = icon_settings.ShowIconSettings(self.action)
-        # Should call load and populate properties
         self.assertEqual(sis.get_icon(), "mdi:thermometer")
         self.assertEqual(sis.get_color(), (255, 0, 0, 255))
         self.assertEqual(sis.get_scale(), 150)

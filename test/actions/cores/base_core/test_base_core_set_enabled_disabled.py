@@ -41,7 +41,6 @@ class TestBaseCoreSetEnabledDisabled(unittest.TestCase):
     @patch.object(BaseCore, "_create_event_assigner")
     def test_set_enabled_disabled_no_domain(self, _, __):
         settings_mock = Mock()
-        settings_mock.load = Mock()
         settings_mock.get_domain = Mock(return_value=None)
 
         entity_combo_mock = Mock()
@@ -54,7 +53,6 @@ class TestBaseCoreSetEnabledDisabled(unittest.TestCase):
         instance.initialized = True
         instance._set_enabled_disabled()
 
-        settings_mock.load.assert_called_once()
         settings_mock.get_domain.assert_called_once()
         entity_combo_mock.set_sensitive.assert_called_once_with(False)
 
@@ -62,7 +60,6 @@ class TestBaseCoreSetEnabledDisabled(unittest.TestCase):
     @patch.object(BaseCore, "_create_event_assigner")
     def test_set_enabled_disabled_only_one_entity(self, _, __):
         settings_mock = Mock()
-        settings_mock.load = Mock()
         settings_mock.get_domain = Mock(return_value="light")
 
         entity_combo_mock = Mock()
@@ -75,7 +72,6 @@ class TestBaseCoreSetEnabledDisabled(unittest.TestCase):
         instance.initialized = True
         instance._set_enabled_disabled()
 
-        settings_mock.load.assert_called_once()
         settings_mock.get_domain.assert_called_once()
         entity_combo_mock.set_sensitive.assert_called_once_with(False)
 
@@ -83,8 +79,7 @@ class TestBaseCoreSetEnabledDisabled(unittest.TestCase):
     @patch.object(BaseCore, "_create_event_assigner")
     def test_set_enabled_disabled_success(self, _, __):
         settings_mock = Mock()
-        settings_mock.load = Mock()
-        settings_mock.get_domain = Mock(return_value="light")
+        settings_mock.get_domain.return_value = "light"
 
         entity_combo_mock = Mock()
         entity_combo_mock.get_item_amount = Mock(return_value=2)
@@ -96,7 +91,6 @@ class TestBaseCoreSetEnabledDisabled(unittest.TestCase):
         instance.initialized = True
         instance._set_enabled_disabled()
 
-        settings_mock.load.assert_called_once()
         settings_mock.get_domain.assert_called_once()
         entity_combo_mock.set_sensitive.assert_called_once_with(True)
 

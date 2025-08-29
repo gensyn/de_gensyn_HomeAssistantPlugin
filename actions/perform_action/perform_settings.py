@@ -20,37 +20,24 @@ class PerformActionSettings(BaseSettings):
     def __init__(self, action):
         super().__init__(action)
 
-        self._ha_action = None
-        self._parameters = None
-
-        if not self._settings.get(perform_const.SETTING_ACTION):
-            self._settings[perform_const.SETTING_ACTION] = DEFAULT_SETTINGS.copy()
-            self._action.set_settings(self._settings)
-
-        self.load()
-
-    def load(self) -> None:
-        """
-        Loads the settings from the action.
-        :return: None
-        """
-        super().load()
-        self._ha_action = self._settings[perform_const.SETTING_ACTION][perform_const.SETTING_ACTION]
-        self._parameters = self._settings[perform_const.SETTING_ACTION][perform_const.ACTION_PARAMETERS]
+        if not self._action.get_settings().get(perform_const.SETTING_ACTION):
+            settings = self._action.get_settings()
+            settings[perform_const.SETTING_ACTION] = DEFAULT_SETTINGS.copy()
+            self._action.set_settings(settings)
 
     def get_action(self) -> str:
         """
         Get the action.
         :return: the action
         """
-        return self._ha_action
+        return self._action.get_settings()[perform_const.SETTING_ACTION][perform_const.SETTING_ACTION]
 
     def get_parameters(self) -> Dict:
         """
         Retrieve all action parameters.
         :return: all action parameters
         """
-        return self._parameters
+        return self._action.get_settings()[perform_const.SETTING_ACTION][perform_const.ACTION_PARAMETERS]
 
     def set_parameter(self, field, value) -> None:
         """
@@ -58,24 +45,24 @@ class PerformActionSettings(BaseSettings):
         :param field: the field to set
         :param value: the value for the field
         """
-        self._settings[perform_const.SETTING_ACTION][perform_const.ACTION_PARAMETERS][field] = value
-        self.load()
-        self._action.set_settings(self._settings)
+        settings = self._action.get_settings()
+        settings[perform_const.SETTING_ACTION][perform_const.ACTION_PARAMETERS][field] = value
+        self._action.set_settings(settings)
 
     def remove_parameter(self, field) -> None:
         """
         Remove the action parameter for the field.
         :param field: the field to remove
         """
-        self._settings[perform_const.SETTING_ACTION][perform_const.ACTION_PARAMETERS].pop(field)
-        self.load()
-        self._action.set_settings(self._settings)
+        settings = self._action.get_settings()
+        settings[perform_const.SETTING_ACTION][perform_const.ACTION_PARAMETERS].pop(field)
+        self._action.set_settings(settings)
 
     def clear_parameters(self) -> None:
         """Clear all action parameters."""
-        self._settings[perform_const.SETTING_ACTION][perform_const.ACTION_PARAMETERS] = {}
-        self.load()
-        self._action.set_settings(self._settings)
+        settings = self._action.get_settings()
+        settings[perform_const.SETTING_ACTION][perform_const.ACTION_PARAMETERS] = {}
+        self._action.set_settings(settings)
 
     def reset(self, domain: str) -> None:
         """
@@ -83,7 +70,7 @@ class PerformActionSettings(BaseSettings):
         :param domain: the new domain
         """
         super().reset(domain)
-        self._settings[perform_const.SETTING_ACTION][perform_const.SETTING_ACTION] = perform_const.EMPTY_STRING
-        self._settings[perform_const.SETTING_ACTION][perform_const.ACTION_PARAMETERS] = {}
-        self.load()
-        self._action.set_settings(self._settings)
+        settings = self._action.get_settings()
+        settings[perform_const.SETTING_ACTION][perform_const.SETTING_ACTION] = perform_const.EMPTY_STRING
+        settings[perform_const.SETTING_ACTION][perform_const.ACTION_PARAMETERS] = {}
+        self._action.set_settings(settings)

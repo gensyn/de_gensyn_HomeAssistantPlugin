@@ -1,8 +1,6 @@
-import sys
 import unittest
-from pathlib import Path
 
-from actions.cores.customization_core import customization
+from de_gensyn_HomeAssistantPlugin.actions.cores.customization_core import customization
 
 
 class TestCustomization(unittest.TestCase):

@@ -20,22 +20,19 @@ class CustomizationSettings(BaseSettings):
         self.customization_implementation = customization_implementation
 
     def get_customizations(self):
-        return [self.customization_implementation.from_dict(c) for c in self._settings[self.customization_name][customization_const.SETTING_CUSTOMIZATIONS]]
+        return [self.customization_implementation.from_dict(c) for c in self._action.get_settings()[self.customization_name][customization_const.SETTING_CUSTOMIZATIONS]]
 
-    def move_customization(self, index: int, places_count: int):
+    def move_customization(self, index: int, offset: int):
         """
         Move the customization at the index by x places.
         :param index: the index to move
-        :param places_count: to number of places to move; may be negative
+        :param offset: number of places to move; may be negative
         :return:
         """
-        customization_list = self._settings[self.customization_name][customization_const.SETTING_CUSTOMIZATIONS]
-        self._move_customization(customization_list, index, places_count)
-
-    def _move_customization(self, customization_list: List, index: int, places_count: int):
-        customization = customization_list.pop(index)
-        customization_list.insert(index + places_count, customization)
-        self._action.set_settings(self._settings)
+        settings = self._action.get_settings()
+        customization = settings[self.customization_name][customization_const.SETTING_CUSTOMIZATIONS].pop(index)
+        settings[self.customization_name][customization_const.SETTING_CUSTOMIZATIONS].insert(index + offset, customization)
+        self._action.set_settings(settings)
 
     def remove_customization(self, index: int) -> None:
         """
@@ -43,8 +40,9 @@ class CustomizationSettings(BaseSettings):
         :param index: the index to remove
         :return:
         """
-        self._settings[self.customization_name][customization_const.SETTING_CUSTOMIZATIONS].pop(index)
-        self._action.set_settings(self._settings)
+        settings = self._action.get_settings()
+        settings[self.customization_name][customization_const.SETTING_CUSTOMIZATIONS].pop(index)
+        self._action.set_settings(settings)
 
     def replace_customization(self, index: int, customization: Customization) -> None:
         """
@@ -53,13 +51,15 @@ class CustomizationSettings(BaseSettings):
         :param customization: the new customization
         :return:
         """
-        self._settings[self.customization_name][customization_const.SETTING_CUSTOMIZATIONS][index] = customization.export()
-        self._action.set_settings(self._settings)
+        settings = self._action.get_settings()
+        settings[self.customization_name][customization_const.SETTING_CUSTOMIZATIONS][index] = customization.export()
+        self._action.set_settings(settings)
 
     def add_customization(self, customization: Customization) -> None:
         """
         Add a new customization.
         :param customization: the new customization
         """
-        self._settings[self.customization_name][customization_const.SETTING_CUSTOMIZATIONS].append(customization.export())
-        self._action.set_settings(self._settings)
+        settings = self._action.get_settings()
+        settings[self.customization_name][customization_const.SETTING_CUSTOMIZATIONS].append(customization.export())
+        self._action.set_settings(settings)

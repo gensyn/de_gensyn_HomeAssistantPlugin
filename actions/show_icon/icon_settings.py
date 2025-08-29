@@ -25,52 +25,35 @@ class ShowIconSettings(CustomizationSettings):
     def __init__(self, action):
         super().__init__(action, icon_const.SETTING_ICON, IconCustomization)
 
-        self._icon = None
-        self._color = None
-        self._scale = None
-        self._opacity = None
-
-        if not self._settings.get(icon_const.SETTING_ICON):
-            self._settings[icon_const.SETTING_ICON] = DEFAULT_SETTINGS.copy()
-            self._action.set_settings(self._settings)
-
-        self.load()
+        if not self._action.get_settings().get(icon_const.SETTING_ICON):
+            settings = self._action.get_settings()
+            settings[icon_const.SETTING_ICON] = DEFAULT_SETTINGS.copy()
+            self._action.set_settings(settings)
 
     def get_icon(self) -> str:
         """
         Get the icon.
         :return: the icon
         """
-        return self._icon
+        return self._action.get_settings()[icon_const.SETTING_ICON][icon_const.SETTING_ICON]
 
     def get_color(self) -> Tuple[int, int, int, int]:
         """
         Get the color.
         :return: the color
         """
-        return self._color
+        return self._action.get_settings()[icon_const.SETTING_ICON][icon_const.SETTING_COLOR]
 
     def get_scale(self) -> int:
         """
         Get the scale.
         :return: the scale
         """
-        return int(self._scale)
+        return int(self._action.get_settings()[icon_const.SETTING_ICON][icon_const.SETTING_SCALE])
 
     def get_opacity(self) -> int:
         """
         Get the opacity.
         :return: the opacity
         """
-        return int(self._opacity)
-
-    def load(self) -> None:
-        """
-        Loads the settings from the action.
-        :return: None
-        """
-        super().load()
-        self._icon = self._settings[icon_const.SETTING_ICON][icon_const.SETTING_ICON]
-        self._color = self._settings[icon_const.SETTING_ICON][icon_const.SETTING_COLOR]
-        self._scale = self._settings[icon_const.SETTING_ICON][icon_const.SETTING_SCALE]
-        self._opacity = self._settings[icon_const.SETTING_ICON][icon_const.SETTING_OPACITY]
+        return int(self._action.get_settings()[icon_const.SETTING_ICON][icon_const.SETTING_OPACITY])
