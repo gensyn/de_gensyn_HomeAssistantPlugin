@@ -56,6 +56,12 @@ class TestCustomizationWindow(unittest.TestCase):
         self.customization_patch = patch("de_gensyn_HomeAssistantPlugin.actions.cores.customization_core.customization_window.Customization")
         self.MockCustomization = self.customization_patch.start()
 
+        self.gtk_window_init_patch = patch(
+            "gi.repository.Gtk.Window.__init__",
+            return_value=None
+        )
+        self.mock_gtk_window_init = self.gtk_window_init_patch.start()
+
         # Import after patching
         from de_gensyn_HomeAssistantPlugin.actions.cores.customization_core import customization_window
         self.customization_window = customization_window
@@ -65,6 +71,8 @@ class TestCustomizationWindow(unittest.TestCase):
         self.mock_set_child = self.set_child_patch.start()
         self.destroy_patch = patch.object(self.customization_window.CustomizationWindow, "destroy")
         self.mock_destroy = self.destroy_patch.start()
+        self.set_modal_patch = patch.object(self.customization_window.CustomizationWindow, "set_modal")
+        self.mock_set_modal = self.set_modal_patch.start()
 
         # Patch Grid.attach and Box.append for layout logic
         self.grid_attach_patch = patch("de_gensyn_HomeAssistantPlugin.actions.cores.customization_core.customization_window.Grid.attach")
@@ -117,6 +125,8 @@ class TestCustomizationWindow(unittest.TestCase):
         self.destroy_patch.stop()
         self.grid_attach_patch.stop()
         self.box_append_patch.stop()
+        self.gtk_window_init_patch.stop()
+        self.set_modal_patch.stop()
         for k in self.widget_patchers:
             try:
                 self.widget_patchers[k].stop()
