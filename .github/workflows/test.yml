@@ -27,7 +27,7 @@ jobs:
 
     - name: Run individual tests
       run: |
-        for test in $(find tests -name "test_*.py"); do
+        for test in $(find test -name "test_*.py"); do
           python $test || exit 1
         done
 
