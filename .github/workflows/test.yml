@@ -28,6 +28,7 @@ jobs:
     - name: Run individual tests
       run: |
         for test in $(find test -name "test_*.py"); do
+          echo $test
           python $test || exit 1
         done
 
