@@ -144,20 +144,20 @@ class CustomizationIconWindow(CustomizationWindow):
                 try:
                     float(self.entry_value.get_text())
                 except ValueError:
-                    self.combo_operator.get_style_context().add_class(const.ERROR)
-                    self.entry_value.get_style_context().add_class(const.ERROR)
+                    self.combo_operator.add_css_class(const.ERROR)
+                    self.entry_value.add_css_class(const.ERROR)
                     return
 
             if icon not in self.icons:
-                self.entry_icon.get_style_context().add_class(const.ERROR)
+                self.entry_icon.add_css_class(const.ERROR)
                 return
 
         if (not self.check_icon.get_active() and not self.check_color.get_active() and not
         self.check_scale.get_active() and not self.check_opacity.get_active()):
-            self.check_icon.get_style_context().add_class(const.ERROR)
-            self.check_color.get_style_context().add_class(const.ERROR)
-            self.check_scale.get_style_context().add_class(const.ERROR)
-            self.check_opacity.get_style_context().add_class(const.ERROR)
+            self.check_icon.add_css_class(const.ERROR)
+            self.check_color.add_css_class(const.ERROR)
+            self.check_scale.add_css_class(const.ERROR)
+            self.check_opacity.add_css_class(const.ERROR)
             return
 
         icon = self.entry_icon.get_text() if self.check_icon.get_active() else None
@@ -178,8 +178,8 @@ class CustomizationIconWindow(CustomizationWindow):
     def _on_widget_changed(self, _):
         super()._on_widget_changed(_)
 
-        self.entry_icon.get_style_context().remove_class(const.ERROR)
-        self.check_icon.get_style_context().remove_class(const.ERROR)
-        self.check_color.get_style_context().remove_class(const.ERROR)
-        self.check_scale.get_style_context().remove_class(const.ERROR)
-        self.check_opacity.get_style_context().remove_class(const.ERROR)
+        self.entry_icon.remove_css_class(const.ERROR)
+        self.check_icon.remove_css_class(const.ERROR)
+        self.check_color.remove_css_class(const.ERROR)
+        self.check_scale.remove_css_class(const.ERROR)
+        self.check_opacity.remove_css_class(const.ERROR)

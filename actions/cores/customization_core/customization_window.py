@@ -5,23 +5,35 @@ from functools import partial
 from typing import Callable, List
 
 import gi
-
+from gi.repository import GObject
+from gi.repository.GLib import Bytes
+from gi.repository.Gio import ListStore
 
 gi.require_version("Gtk", "4.0")
-from gi.repository.Gtk import Align, Box, Button, CellRendererText, ComboBox, CssProvider, Entry, \
-    Grid, Label, ListStore, Window, ColorButton, CheckButton, Scale, Orientation, Switch
+from gi.repository.Gtk import Align, Box, Button, CssProvider, Entry, \
+    Grid, Label, Window, CheckButton, Scale, Orientation, Switch, ColorDialog, ColorDialogButton, DropDown, StringObject, PropertyExpression
 
 from de_gensyn_HomeAssistantPlugin.actions import const as base_const
 from de_gensyn_HomeAssistantPlugin.actions.cores.customization_core import customization_const
 from de_gensyn_HomeAssistantPlugin.actions.cores.customization_core.customization import Customization
 
 CSS = b"""
-combo.error {
+dropdown.error {
     background-color: #ffcccc; /* Light red */
 }
 """
 STYLE_PROVIDER = CssProvider()
-STYLE_PROVIDER.load_from_data(CSS)
+STYLE_PROVIDER.load_from_bytes(Bytes.new(CSS))
+
+
+class DropDownItem(GObject.Object):
+    value = GObject.Property(type=str)
+    label = GObject.Property(type=str)
+
+    def __init__(self, value, label):
+        super().__init__()
+        self.value = value
+        self.label = label
 
 
 class CustomizationWindow(Window):
@@ -49,8 +61,8 @@ class CustomizationWindow(Window):
         label_value = self._create_label(lm.get(customization_const.LABEL_CUSTOMIZATION_VALUE))
         label_if = self._create_label(lm.get(customization_const.LABEL_CUSTOMIZATION_IF))
 
-        self.combo_attribute = self._create_combo(self.attributes)
-        self.combo_operator = self._create_combo_operator()
+        self.condition_attribute = self._create_drop_down(self.attributes)
+        self.operator = self._create_drop_down_operator()
 
         self.entry_value = self._create_entry()
 
@@ -72,8 +84,8 @@ class CustomizationWindow(Window):
         add_button.set_margin_end(15)
         label_if.set_margin_start(15)
         label_if.set_margin_bottom(30)
-        self.combo_attribute.set_margin_bottom(30)
-        self.combo_operator.set_margin_bottom(30)
+        self.condition_attribute.set_margin_bottom(30)
+        self.operator.set_margin_bottom(30)
         self.entry_value.set_margin_end(15)
         self.entry_value.set_margin_bottom(30)
 
@@ -82,8 +94,8 @@ class CustomizationWindow(Window):
         self.grid_fields.attach(label_operator, 4, 0, 1, 1)
         self.grid_fields.attach(label_value, 5, 0, 1, 1)
         self.grid_fields.attach(label_if, 0, 1, 1, 1)
-        self.grid_fields.attach(self.combo_attribute, 1, 1, 3, 1)
-        self.grid_fields.attach(self.combo_operator, 4, 1, 1, 1)
+        self.grid_fields.attach(self.condition_attribute, 1, 1, 3, 1)
+        self.grid_fields.attach(self.operator, 4, 1, 1, 1)
         self.grid_fields.attach(self.entry_value, 5, 1, 1, 1)
 
         box_buttons = Box()
@@ -103,21 +115,21 @@ class CustomizationWindow(Window):
         self._connect_rows()
 
     def _set_default_values(self) -> None:
-        self.combo_attribute.set_active(0)
-        self.combo_operator.set_active(0)
+        self.condition_attribute.set_selected(0)
+        self.operator.set_selected(0)
 
     def _set_current_values(self) -> None:
         if not self.current:
             return
 
-        for index, entry in enumerate(self.combo_attribute.get_model()):
-            if entry[0] == self.current.get_attribute():
-                self.combo_attribute.set_active(index)
+        for index, entry in enumerate(self.condition_attribute.get_model()):
+            if entry.get_string() == self.current.get_attribute():
+                self.condition_attribute.set_selected(index)
                 break
 
-        for index, entry in enumerate(self.combo_operator.get_model()):
-            if entry[0] == self.current.get_operator():
-                self.combo_operator.set_active(index)
+        for index, entry in enumerate(self.operator.get_model()):
+            if entry.value == self.current.get_operator():
+                self.operator.set_selected(index)
                 break
 
         self.entry_value.set_text(self.current.get_value())
@@ -130,59 +142,51 @@ class CustomizationWindow(Window):
         button.set_margin_end(self.default_margin)
         return button
 
-    def _create_combo(self, attributes: List, check: CheckButton = None) -> ComboBox:
-        combo = ComboBox()
-        combo.set_margin_top(self.default_margin)
-        combo.set_margin_bottom(self.default_margin)
-        combo.set_margin_start(self.default_margin)
-        combo.set_margin_end(self.default_margin)
+    def _create_drop_down(self, attributes: List, check: CheckButton = None) -> DropDown:
+        drop_down = DropDown()
+        drop_down.set_margin_top(self.default_margin)
+        drop_down.set_margin_bottom(self.default_margin)
+        drop_down.set_margin_start(self.default_margin)
+        drop_down.set_margin_end(self.default_margin)
 
-        model = ListStore(str)
+        model = ListStore()
         for option in attributes:
-            model.append([option])
+            model.append(StringObject.new(option))
 
-        combo.set_model(model)
+        drop_down.set_model(model)
 
-        renderer = CellRendererText()
-
-        # Pack the renderer into the ComboBox
-        combo.pack_start(renderer, True)
-        combo.add_attribute(renderer, "text", 0)
         self.connect_rows.append(
-            partial(combo.connect, base_const.CONNECT_CHANGED, self._on_widget_changed))
+            partial(drop_down.connect, base_const.CONNECT_NOTIFY_SELECTED_ITEM, self._on_widget_changed))
 
         if check is not None:
-            self.connect_rows.append(partial(combo.connect, base_const.CONNECT_CHANGED,
-                                             lambda _: check.set_active(combo.get_active() >= 0)))
+            self.connect_rows.append(partial(drop_down.connect, base_const.CONNECT_NOTIFY_SELECTED_ITEM,
+                                             lambda _=None, __=None: check.set_active(drop_down.get_selected() >= 0)))
 
-        return combo
+        return drop_down
 
-    def _create_combo_operator(self) -> ComboBox:
-        combo = ComboBox()
-        combo.set_margin_top(self.default_margin)
-        combo.set_margin_bottom(self.default_margin)
-        combo.set_margin_start(self.default_margin)
-        combo.set_margin_end(self.default_margin)
+    def _create_drop_down_operator(self) -> DropDown:
+        expression = PropertyExpression.new(DropDownItem, None, "label")
 
-        model = ListStore(str, str)
-        model.append(["==", self.lm.get(customization_const.LABEL_CUSTOMIZATION_OPERATORS["=="])])
-        model.append(["!=", self.lm.get(customization_const.LABEL_CUSTOMIZATION_OPERATORS["!="])])
-        model.append(["<", self.lm.get(customization_const.LABEL_CUSTOMIZATION_OPERATORS["<"])])
-        model.append(["<=", self.lm.get(customization_const.LABEL_CUSTOMIZATION_OPERATORS["<="])])
-        model.append([">", self.lm.get(customization_const.LABEL_CUSTOMIZATION_OPERATORS[">"])])
-        model.append([">=", self.lm.get(customization_const.LABEL_CUSTOMIZATION_OPERATORS[">="])])
+        drop_down = DropDown(expression=expression)
+        drop_down.set_margin_top(self.default_margin)
+        drop_down.set_margin_bottom(self.default_margin)
+        drop_down.set_margin_start(self.default_margin)
+        drop_down.set_margin_end(self.default_margin)
 
-        combo.set_model(model)
+        model = ListStore()
+        model.append(DropDownItem("==", self.lm.get(customization_const.LABEL_CUSTOMIZATION_OPERATORS["=="])))
+        model.append(DropDownItem("!=", self.lm.get(customization_const.LABEL_CUSTOMIZATION_OPERATORS["!="])))
+        model.append(DropDownItem("<", self.lm.get(customization_const.LABEL_CUSTOMIZATION_OPERATORS["<"])))
+        model.append(DropDownItem("<=", self.lm.get(customization_const.LABEL_CUSTOMIZATION_OPERATORS["<="])))
+        model.append(DropDownItem(">", self.lm.get(customization_const.LABEL_CUSTOMIZATION_OPERATORS[">"])))
+        model.append(DropDownItem(">=", self.lm.get(customization_const.LABEL_CUSTOMIZATION_OPERATORS[">="])))
 
-        renderer = CellRendererText()
+        drop_down.set_model(model)
 
-        # Pack the renderer into the ComboBox
-        combo.pack_start(renderer, True)
-        combo.add_attribute(renderer, "text", 1)
         self.connect_rows.append(
-            partial(combo.connect, base_const.CONNECT_CHANGED, self._on_widget_changed))
+            partial(drop_down.connect, base_const.CONNECT_NOTIFY_SELECTED_ITEM, self._on_widget_changed))
 
-        return combo
+        return drop_down
 
     def _create_label(self, label: str):
         label = Label(label=label)
@@ -205,7 +209,7 @@ class CustomizationWindow(Window):
             partial(entry.connect, base_const.CONNECT_ACTIVATE, self._on_add_button))
         if check is not None:
             self.connect_rows.append(partial(entry.connect, base_const.CONNECT_CHANGED,
-                                             lambda _: check.set_active(
+                                             lambda _=None, __=None: check.set_active(
                                                  entry.get_text() != customization_const.EMPTY_STRING)))
         return entry
 
@@ -216,7 +220,7 @@ class CustomizationWindow(Window):
         scale.set_margin_start(self.default_margin)
         scale.set_margin_end(self.default_margin)
         self.connect_rows.append(
-            partial(scale.connect, base_const.CONNECT_VALUE_CHANGED, lambda _: check.set_active(True)))
+            partial(scale.connect, base_const.CONNECT_VALUE_CHANGED, lambda _=None, __=None: check.set_active(True)))
         return scale
 
     def _create_scale_entry(self, check) -> Entry:
@@ -230,7 +234,7 @@ class CustomizationWindow(Window):
         self.connect_rows.append(
             partial(entry.connect, base_const.CONNECT_ACTIVATE, self._on_add_button))
         self.connect_rows.append(partial(entry.connect, base_const.CONNECT_CHANGED,
-                                         lambda _: check.set_active(
+                                         lambda _=None, __=None: check.set_active(
                                              entry.get_text() != customization_const.EMPTY_STRING)))
         return entry
 
@@ -242,48 +246,49 @@ class CustomizationWindow(Window):
         switch.set_margin_end(self.default_margin)
         switch.set_halign(Align.START)
         self.connect_rows.append(partial(switch.connect, base_const.CONNECT_NOTIFY_ACTIVE,
-                                         lambda _, __: check.set_active(True)))
+                                         lambda _=None, __=None: check.set_active(True)))
         return switch
 
-    def _create_color_button(self, check: CheckButton) -> ColorButton:
-        button = ColorButton(use_alpha=False)
+    def _create_color_button(self, check: CheckButton) -> ColorDialogButton:
+        dialog = ColorDialog(with_alpha=False)
+        button = ColorDialogButton(dialog=dialog)
         button.set_margin_top(self.default_margin)
         button.set_margin_bottom(self.default_margin)
         button.set_margin_start(self.default_margin)
         button.set_margin_end(self.default_margin)
-        self.connect_rows.append(partial(button.connect, base_const.CONNECT_NOTIFY_COLOR_SET,
-                                         lambda _: check.set_active(True)))
+        self.connect_rows.append(partial(button.connect, base_const.CONNECT_NOTIFY_RGBA,
+                                         lambda _=None, __=None: check.set_active(True)))
         return button
 
     def _on_cancel_button(self, _):
         self.destroy()
 
     def _on_add_button(self, _) -> bool:
-        if self.combo_attribute.get_active() < 0:
-            self.combo_attribute.get_style_context().add_class(customization_const.ERROR)
+        if self.condition_attribute.get_selected() < 0:
+            self.condition_attribute.add_css_class(customization_const.ERROR)
             return False
 
-        if self.combo_operator.get_active() < 0:
-            self.combo_operator.get_style_context().add_class(customization_const.ERROR)
+        if self.operator.get_selected() < 0:
+            self.operator.add_css_class(customization_const.ERROR)
             return False
 
         if not self.entry_value.get_text():
-            self.entry_value.get_style_context().add_class(customization_const.ERROR)
+            self.entry_value.add_css_class(customization_const.ERROR)
             return False
 
-        if self.combo_operator.get_active() > 1 and not self._is_number(
+        if self.operator.get_selected() > 1 and not self._is_number(
                 self.entry_value.get_text()):
             # operator needs a number
-            self.combo_operator.get_style_context().add_class(customization_const.ERROR)
-            self.entry_value.get_style_context().add_class(customization_const.ERROR)
+            self.operator.add_css_class(customization_const.ERROR)
+            self.entry_value.add_css_class(customization_const.ERROR)
             return False
 
         return True
 
-    def _on_widget_changed(self, _):
-        self.combo_attribute.get_style_context().remove_class(customization_const.ERROR)
-        self.combo_operator.get_style_context().remove_class(customization_const.ERROR)
-        self.entry_value.get_style_context().remove_class(customization_const.ERROR)
+    def _on_widget_changed(self, *args, **kwargs) -> None:
+        self.condition_attribute.remove_css_class(customization_const.ERROR)
+        self.operator.remove_css_class(customization_const.ERROR)
+        self.entry_value.remove_css_class(customization_const.ERROR)
 
     def _connect_rows(self) -> None:
         """

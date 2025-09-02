@@ -42,8 +42,8 @@ def _get_icon_settings(state: Dict, settings: ShowIconSettings) -> (str, str, st
     # default value for the icon is the icon set in HA
     name = state.get(icon_const.ATTRIBUTES, {}).get(icon_const.ATTRIBUTE_ICON, icon_const.EMPTY_STRING)
     color = settings.get_color()
-    scale = round(settings.get_scale() / 100, 2)
-    opacity = round(settings.get_opacity() / 100, 2)
+    scale = settings.get_scale()
+    opacity = settings.get_opacity()
 
     if settings.get_icon() in MDI_ICONS.keys():
         name = settings.get_icon()
@@ -95,6 +95,8 @@ def _get_icon_settings(state: Dict, settings: ShowIconSettings) -> (str, str, st
     #
     # End custom icon
     #
+    scale = round(scale / 100, 2)
+    opacity = round(opacity / 100, 2)
 
     return name, color, scale, opacity
 

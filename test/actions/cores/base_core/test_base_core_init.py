@@ -1,7 +1,7 @@
 import sys
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
 absolute_mock_path = str(Path(__file__).parent.parent.parent.parent / "stream_controller_mock")
 sys.path.insert(0, absolute_mock_path)
@@ -21,7 +21,7 @@ class TestBaseCoreInit(unittest.TestCase):
         test_arg = "test_arg_value"
         test_kwarg = "test_kwarg_value"
 
-        instance = BaseCore(track_entity, test_arg, test_kwarg=test_kwarg)
+        instance = BaseCore(Mock(), track_entity, test_arg, test_kwarg=test_kwarg)
 
         self.assertIsNone(instance.settings)
         self.assertFalse(instance.initialized)

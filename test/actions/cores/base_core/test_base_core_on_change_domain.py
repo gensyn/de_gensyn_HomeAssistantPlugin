@@ -32,7 +32,7 @@ class TestBaseCoreOnChangeDomain(unittest.TestCase):
 
         domain = "light"
 
-        instance = BaseCore(True)
+        instance = BaseCore(Mock(), True)
         instance.initialized = True
         instance.settings = settings_mock
         instance.entity_combo = entity_combo_mock
@@ -61,7 +61,7 @@ class TestBaseCoreOnChangeDomain(unittest.TestCase):
 
         domain = "light"
 
-        instance = BaseCore(True)
+        instance = BaseCore(Mock(), True)
         instance.initialized = True
         instance.settings = settings_mock
         instance.entity_combo = entity_combo_mock
@@ -92,7 +92,7 @@ class TestBaseCoreOnChangeDomain(unittest.TestCase):
 
         domain = "light"
 
-        instance = BaseCore(False)
+        instance = BaseCore(Mock(), False)
         instance.initialized = True
         instance.settings = settings_mock
         instance.entity_combo = entity_combo_mock
@@ -123,7 +123,7 @@ class TestBaseCoreOnChangeDomain(unittest.TestCase):
 
         domain = None
 
-        instance = BaseCore(True)
+        instance = BaseCore(Mock(), True)
         instance.initialized = True
         instance.settings = settings_mock
         instance.entity_combo = entity_combo_mock
@@ -154,7 +154,7 @@ class TestBaseCoreOnChangeDomain(unittest.TestCase):
 
         domain = "light"
 
-        instance = BaseCore(True)
+        instance = BaseCore(Mock(), True)
         instance.initialized = True
         instance.settings = settings_mock
         instance.entity_combo = entity_combo_mock

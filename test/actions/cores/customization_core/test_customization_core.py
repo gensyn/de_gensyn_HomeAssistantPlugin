@@ -111,7 +111,7 @@ class TestCustomizationCore(unittest.TestCase):
             window_implementation=MagicMock(),
             customization_implementation=MagicMock(),
             row_implementation=self.mock_row_implementation,
-            track_entity=True
+            settings_implementation=MagicMock(), track_entity=True
         )
         self.core.lm = self.mock_lm
         self.core.settings = self.mock_settings

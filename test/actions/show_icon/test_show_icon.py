@@ -103,27 +103,32 @@ class TestShowIcon(unittest.TestCase):
             customization_implementation=IconCustomization,
             row_implementation=IconRow,
             track_entity=True,
+            settings_implementation=self.MockShowIconSettings,
             test_kw="testval"
         )
 
-    def test_on_ready_connected(self):
+    @patch(
+        'de_gensyn_HomeAssistantPlugin.actions.cores.base_core.base_core.log.info')
+    def test_on_ready_connected(self, _):
         self.mock_plugin_base.backend.is_connected.return_value = True
         # Patch _reload so we can check it's called
         self.instance._reload = MagicMock()
         # Patch ShowIconSettings
-        self.MockShowIconSettings.return_value = self.mock_settings
         self.instance.track_entity = True
+        self.instance.settings_implementation = MagicMock()
         # Actually call the real method
         self.instance.on_ready.__func__(self.instance)
-        self.MockShowIconSettings.assert_called_with(self.instance)
         self.instance._reload.assert_called()
         self.assertTrue(self.instance.initialized)
 
-    def test_on_ready_not_connected(self):
+    @patch(
+        'de_gensyn_HomeAssistantPlugin.actions.cores.base_core.base_core.log.info')
+    def test_on_ready_not_connected(self, _):
         self.mock_plugin_base.backend.is_connected.return_value = False
         self.instance.refresh = MagicMock()
         self.MockShowIconSettings.return_value = self.mock_settings
         self.instance.track_entity = True
+        self.instance.settings_implementation = MagicMock()
         self.instance.on_ready.__func__(self.instance)
         self.instance.refresh.assert_called()
         self.assertFalse(self.instance.initialized)

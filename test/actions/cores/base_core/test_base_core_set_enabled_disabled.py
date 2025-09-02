@@ -27,7 +27,7 @@ class TestBaseCoreSetEnabledDisabled(unittest.TestCase):
         entity_combo_mock.get_item_amount = Mock(return_value=2)
         entity_combo_mock.set_sensitive = Mock()
 
-        instance = BaseCore(True)
+        instance = BaseCore(Mock(), True)
         instance.settings = settings_mock
         instance.entity_combo = entity_combo_mock
         instance.initialized = False
@@ -47,7 +47,7 @@ class TestBaseCoreSetEnabledDisabled(unittest.TestCase):
         entity_combo_mock.get_item_amount = Mock(return_value=2)
         entity_combo_mock.set_sensitive = Mock()
 
-        instance = BaseCore(True)
+        instance = BaseCore(Mock(), True)
         instance.settings = settings_mock
         instance.entity_combo = entity_combo_mock
         instance.initialized = True
@@ -66,7 +66,7 @@ class TestBaseCoreSetEnabledDisabled(unittest.TestCase):
         entity_combo_mock.get_item_amount = Mock(return_value=1)
         entity_combo_mock.set_sensitive = Mock()
 
-        instance = BaseCore(True)
+        instance = BaseCore(Mock(), True)
         instance.settings = settings_mock
         instance.entity_combo = entity_combo_mock
         instance.initialized = True
@@ -85,7 +85,7 @@ class TestBaseCoreSetEnabledDisabled(unittest.TestCase):
         entity_combo_mock.get_item_amount = Mock(return_value=2)
         entity_combo_mock.set_sensitive = Mock()
 
-        instance = BaseCore(True)
+        instance = BaseCore(Mock(), True)
         instance.settings = settings_mock
         instance.entity_combo = entity_combo_mock
         instance.initialized = True

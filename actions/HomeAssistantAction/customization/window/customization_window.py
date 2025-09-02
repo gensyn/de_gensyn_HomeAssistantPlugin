@@ -261,30 +261,30 @@ class CustomizationWindow(Window):
 
     def _on_add_button(self, _) -> bool:
         if self.combo_attribute.get_active() < 0:
-            self.combo_attribute.get_style_context().add_class(const.ERROR)
+            self.combo_attribute.add_css_class(const.ERROR)
             return False
 
         if self.combo_operator.get_active() < 0:
-            self.combo_operator.get_style_context().add_class(const.ERROR)
+            self.combo_operator.add_css_class(const.ERROR)
             return False
 
         if not self.entry_value.get_text():
-            self.entry_value.get_style_context().add_class(const.ERROR)
+            self.entry_value.add_css_class(const.ERROR)
             return False
 
         if self.combo_operator.get_active() > 1 and not self._is_number(
                 self.entry_value.get_text()):
             # operator needs a number
-            self.combo_operator.get_style_context().add_class(const.ERROR)
-            self.entry_value.get_style_context().add_class(const.ERROR)
+            self.combo_operator.add_css_class(const.ERROR)
+            self.entry_value.add_css_class(const.ERROR)
             return False
 
         return True
 
     def _on_widget_changed(self, _):
-        self.combo_attribute.get_style_context().remove_class(const.ERROR)
-        self.combo_operator.get_style_context().remove_class(const.ERROR)
-        self.entry_value.get_style_context().remove_class(const.ERROR)
+        self.combo_attribute.remove_css_class(const.ERROR)
+        self.combo_operator.remove_css_class(const.ERROR)
+        self.entry_value.remove_css_class(const.ERROR)
 
     def _connect_rows(self) -> None:
         """

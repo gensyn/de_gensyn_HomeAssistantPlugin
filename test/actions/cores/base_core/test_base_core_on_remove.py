@@ -25,7 +25,7 @@ class TestBaseCoreOnRemove(unittest.TestCase):
 
         track_entity = False
 
-        instance = BaseCore(track_entity)
+        instance = BaseCore(Mock(), track_entity)
         instance.initialized = True
         instance.settings = settings_mock
         instance.on_remove()
@@ -45,7 +45,7 @@ class TestBaseCoreOnRemove(unittest.TestCase):
 
         track_entity = True
 
-        instance = BaseCore(track_entity)
+        instance = BaseCore(Mock(), track_entity)
         instance.initialized = True
         instance.settings = settings_mock
         instance.on_remove()

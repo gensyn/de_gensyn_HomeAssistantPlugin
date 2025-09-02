@@ -19,18 +19,17 @@ class TestBaseCoreOnReady(unittest.TestCase):
     @patch.object(BaseCore, "_load_domains")
     @patch.object(BaseCore, "_load_entities")
     def test_on_read_no_entity(self, load_entities_mock, load_domains_mock, _, __):
-        get_entity_mock = Mock(return_value=None)
-
-        settings_mock = Mock()
-        settings_mock.get_entity = get_entity_mock
-
         track_entity = True
 
-        instance = BaseCore(track_entity)
-        instance.settings = settings_mock
+        settings_implementation = Mock()
+        settings_implementation.return_value = settings_implementation
+        settings_implementation.get_entity.return_value = None
+
+        instance = BaseCore(settings_implementation, track_entity)
         instance.on_ready()
 
         instance.plugin_base.backend.add_action_ready_callback.assert_called_once_with(instance.on_ready)
+        settings_implementation.get_entity.assert_called_once()
         instance.plugin_base.backend.add_tracked_entity.assert_not_called()
         load_entities_mock.assert_called_once()
         load_domains_mock.assert_called_once()
@@ -40,18 +39,17 @@ class TestBaseCoreOnReady(unittest.TestCase):
     @patch.object(BaseCore, "_load_domains")
     @patch.object(BaseCore, "_load_entities")
     def test_on_read_entity_not_tracked(self, load_entities_mock, load_domains_mock, _, __):
-        get_entity_mock = Mock(return_value="entity")
-
-        settings_mock = Mock()
-        settings_mock.get_entity = get_entity_mock
-
         track_entity = False
 
-        instance = BaseCore(track_entity)
-        instance.settings = settings_mock
+        settings_implementation = Mock()
+        settings_implementation.return_value = settings_implementation
+        settings_implementation.get_entity.return_value = "entity"
+
+        instance = BaseCore(settings_implementation, track_entity)
         instance.on_ready()
 
         instance.plugin_base.backend.add_action_ready_callback.assert_called_once_with(instance.on_ready)
+        settings_implementation.get_entity.assert_called_once()
         instance.plugin_base.backend.add_tracked_entity.assert_not_called()
         load_entities_mock.assert_called_once()
         load_domains_mock.assert_called_once()
@@ -61,18 +59,17 @@ class TestBaseCoreOnReady(unittest.TestCase):
     @patch.object(BaseCore, "_load_domains")
     @patch.object(BaseCore, "_load_entities")
     def test_on_read_success(self, load_entities_mock, load_domains_mock, _, __):
-        get_entity_mock = Mock(return_value="entity")
-
-        settings_mock = Mock()
-        settings_mock.get_entity = get_entity_mock
-
         track_entity = True
 
-        instance = BaseCore(track_entity)
-        instance.settings = settings_mock
+        settings_implementation = Mock()
+        settings_implementation.return_value = settings_implementation
+        settings_implementation.get_entity.return_value = "entity"
+
+        instance = BaseCore(settings_implementation, track_entity)
         instance.on_ready()
 
         instance.plugin_base.backend.add_action_ready_callback.assert_called_once_with(instance.on_ready)
+        settings_implementation.get_entity.assert_called_once()
         instance.plugin_base.backend.add_tracked_entity.assert_called_once_with("entity", instance.refresh)
         load_entities_mock.assert_called_once()
         load_domains_mock.assert_called_once()

@@ -1,7 +1,7 @@
 import sys
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
 absolute_mock_path = str(Path(__file__).parent.parent.parent.parent / "stream_controller_mock")
 sys.path.insert(0, absolute_mock_path)
@@ -19,7 +19,7 @@ class TestBaseCoreCreateUiElements(unittest.TestCase):
     def test_create_ui_elements_success(self, _):
         with patch.object(BaseCore, "_create_ui_elements"):
             # _create_ui_elements is called in the constructor
-            instance = BaseCore(False)
+            instance = BaseCore(Mock(), False)
 
         instance._create_ui_elements()
 

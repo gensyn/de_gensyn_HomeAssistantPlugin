@@ -35,60 +35,60 @@ class IconWindow(CustomizationWindow):
         label_scale = self._create_label(self.lm.get(icon_const.LABEL_ICON_SCALE))
         label_opacity = self._create_label(self.lm.get(icon_const.LABEL_ICON_OPACITY))
 
-        self.entry_icon = self._create_entry(self.check_icon)
-        self.entry_icon.set_margin_end(self.default_margin)
+        self.icon = self._create_entry(self.check_icon)
+        self.icon.set_margin_end(self.default_margin)
         self.connect_rows.append(
-            partial(self.entry_icon.connect, base_const.CONNECT_ACTIVATE, self._on_widget_changed))
+            partial(self.icon.connect, base_const.CONNECT_ACTIVATE, self._on_widget_changed))
 
-        self.button_color = self._create_color_button(self.check_color)
+        self.color = self._create_color_button(self.check_color)
 
-        self.scale_scale = self._create_scale(icon_const.ICON_MIN_SCALE, icon_const.ICON_MAX_SCALE, 1,
-                                              self.check_scale)
+        self.scale = self._create_scale(icon_const.ICON_MIN_SCALE, icon_const.ICON_MAX_SCALE, 1,
+                                        self.check_scale)
 
-        self.entry_scale = self._create_scale_entry(self.check_scale)
-        self.entry_scale.set_hexpand(True)
+        self.scale_entry = self._create_scale_entry(self.check_scale)
+        self.scale_entry.set_hexpand(True)
 
         self.connect_rows.append(
-            partial(self.scale_scale.connect, base_const.CONNECT_VALUE_CHANGED,
-                    self._on_change_scale, self.entry_scale, icon_const.ICON_MIN_SCALE,
+            partial(self.scale.connect, base_const.CONNECT_VALUE_CHANGED,
+                    self._on_change_scale, self.scale_entry, icon_const.ICON_MIN_SCALE,
                     icon_const.ICON_MAX_SCALE))
         self.connect_rows.append(
-            partial(self.entry_scale.connect, base_const.CONNECT_CHANGED,
-                    self._on_change_scale_entry, self.scale_scale, icon_const.ICON_MIN_SCALE,
+            partial(self.scale_entry.connect, base_const.CONNECT_CHANGED,
+                    self._on_change_scale_entry, self.scale, icon_const.ICON_MIN_SCALE,
                     icon_const.ICON_MAX_SCALE))
 
-        self.scale_opacity = self._create_scale(icon_const.ICON_MIN_OPACITY, icon_const.ICON_MAX_OPACITY, 1,
-                                                self.check_opacity)
+        self.opacity = self._create_scale(icon_const.ICON_MIN_OPACITY, icon_const.ICON_MAX_OPACITY, 1,
+                                          self.check_opacity)
 
-        self.entry_opacity = self._create_scale_entry(self.check_opacity)
-        self.entry_opacity.set_hexpand(True)
+        self.opacity_entry = self._create_scale_entry(self.check_opacity)
+        self.opacity_entry.set_hexpand(True)
 
         self.connect_rows.append(
-            partial(self.scale_opacity.connect, base_const.CONNECT_VALUE_CHANGED,
-                    self._on_change_scale, self.entry_opacity, icon_const.ICON_MIN_OPACITY,
+            partial(self.opacity.connect, base_const.CONNECT_VALUE_CHANGED,
+                    self._on_change_scale, self.opacity_entry, icon_const.ICON_MIN_OPACITY,
                     icon_const.ICON_MAX_OPACITY))
         self.connect_rows.append(
-            partial(self.entry_opacity.connect, base_const.CONNECT_CHANGED,
-                    self._on_change_scale_entry, self.scale_opacity, icon_const.ICON_MIN_OPACITY,
+            partial(self.opacity_entry.connect, base_const.CONNECT_CHANGED,
+                    self._on_change_scale_entry, self.opacity, icon_const.ICON_MIN_OPACITY,
                     icon_const.ICON_MAX_OPACITY))
 
         self.grid_fields.attach(self.check_icon, 2, 2, 1, 1)
         self.grid_fields.attach(label_icon, 3, 2, 1, 1)
-        self.grid_fields.attach(self.entry_icon, 4, 2, 1, 1)
+        self.grid_fields.attach(self.icon, 4, 2, 1, 1)
 
         self.grid_fields.attach(self.check_color, 2, 3, 1, 1)
         self.grid_fields.attach(label_color, 3, 3, 1, 1)
-        self.grid_fields.attach(self.button_color, 4, 3, 1, 1)
+        self.grid_fields.attach(self.color, 4, 3, 1, 1)
 
         self.grid_fields.attach(self.check_scale, 2, 4, 1, 1)
         self.grid_fields.attach(label_scale, 3, 4, 1, 1)
-        self.grid_fields.attach(self.scale_scale, 4, 4, 1, 1)
-        self.grid_fields.attach(self.entry_scale, 5, 4, 1, 1)
+        self.grid_fields.attach(self.scale, 4, 4, 1, 1)
+        self.grid_fields.attach(self.scale_entry, 5, 4, 1, 1)
 
         self.grid_fields.attach(self.check_opacity, 2, 5, 1, 1)
         self.grid_fields.attach(label_opacity, 3, 5, 1, 1)
-        self.grid_fields.attach(self.scale_opacity, 4, 5, 1, 1)
-        self.grid_fields.attach(self.entry_opacity, 5, 5, 1, 1)
+        self.grid_fields.attach(self.opacity, 4, 5, 1, 1)
+        self.grid_fields.attach(self.opacity_entry, 5, 5, 1, 1)
 
         self._after_init()
 
@@ -96,13 +96,13 @@ class IconWindow(CustomizationWindow):
         super()._set_default_values()
 
         rgba = customization_helper.convert_color_list_to_rgba(icon_const.DEFAULT_ICON_COLOR)
-        self.button_color.set_rgba(rgba)
+        self.color.set_rgba(rgba)
 
-        self.scale_scale.set_value(icon_const.DEFAULT_ICON_SCALE)
-        self.entry_scale.set_text(str(icon_const.DEFAULT_ICON_SCALE))
+        self.scale.set_value(icon_const.DEFAULT_ICON_SCALE)
+        self.scale_entry.set_text(str(icon_const.DEFAULT_ICON_SCALE))
 
-        self.scale_opacity.set_value(icon_const.DEFAULT_ICON_OPACITY)
-        self.entry_opacity.set_text(str(icon_const.DEFAULT_ICON_OPACITY))
+        self.opacity.set_value(icon_const.DEFAULT_ICON_OPACITY)
+        self.opacity_entry.set_text(str(icon_const.DEFAULT_ICON_OPACITY))
 
     def _set_current_values(self) -> None:
         if not self.current:
@@ -110,24 +110,24 @@ class IconWindow(CustomizationWindow):
 
         super()._set_current_values()
 
-        self.entry_icon.set_text(self.current.get_icon() or icon_const.EMPTY_STRING)
+        self.icon.set_text(self.current.get_icon() or icon_const.EMPTY_STRING)
         self.check_icon.set_active(self.current.get_icon() is not None)
 
         if self.current.get_color():
             rgba = customization_helper.convert_color_list_to_rgba(self.current.get_color())
-            self.button_color.set_rgba(rgba)
+            self.color.set_rgba(rgba)
         self.check_color.set_active(self.current.get_color() is not None)
 
-        self.scale_scale.set_value(
+        self.scale.set_value(
             self.current.get_scale() or icon_const.DEFAULT_ICON_SCALE)
         self.check_scale.set_active(self.current.get_scale() is not None)
-        self.entry_scale.set_text(
+        self.scale_entry.set_text(
             str(int(self.current.get_scale() or icon_const.DEFAULT_ICON_SCALE)))
 
-        self.scale_opacity.set_value(
+        self.opacity.set_value(
             self.current.get_opacity() or icon_const.DEFAULT_ICON_OPACITY)
         self.check_opacity.set_active(self.current.get_opacity() is not None)
-        self.entry_opacity.set_text(
+        self.opacity_entry.set_text(
             str(int(self.current.get_opacity() or icon_const.DEFAULT_ICON_OPACITY)))
 
     def _on_add_button(self, _):
@@ -135,53 +135,53 @@ class IconWindow(CustomizationWindow):
             return
 
         if self.check_icon.get_active():
-            icon = self.entry_icon.get_text()
+            icon = self.icon.get_text()
 
             if icon.startswith("mdi:"):
                 icon = icon[4:]
 
-            if self.combo_operator.get_model()[self.combo_operator.get_active()][0] in (
+            if self.operator.get_selected_item().value in (
                     "<", "<=", ">", ">="):
                 # expecting a number in value
                 try:
                     float(self.entry_value.get_text())
                 except ValueError:
-                    self.combo_operator.get_style_context().add_class(icon_const.ERROR)
-                    self.entry_value.get_style_context().add_class(icon_const.ERROR)
+                    self.operator.add_css_class(icon_const.ERROR)
+                    self.entry_value.add_css_class(icon_const.ERROR)
                     return
 
             if icon not in self.icons:
-                self.entry_icon.get_style_context().add_class(icon_const.ERROR)
+                self.icon.add_css_class(icon_const.ERROR)
                 return
 
         if (not self.check_icon.get_active() and not self.check_color.get_active() and not
         self.check_scale.get_active() and not self.check_opacity.get_active()):
-            self.check_icon.get_style_context().add_class(icon_const.ERROR)
-            self.check_color.get_style_context().add_class(icon_const.ERROR)
-            self.check_scale.get_style_context().add_class(icon_const.ERROR)
-            self.check_opacity.get_style_context().add_class(icon_const.ERROR)
+            self.check_icon.add_css_class(icon_const.ERROR)
+            self.check_color.add_css_class(icon_const.ERROR)
+            self.check_scale.add_css_class(icon_const.ERROR)
+            self.check_opacity.add_css_class(icon_const.ERROR)
             return
 
-        icon = self.entry_icon.get_text() if self.check_icon.get_active() else None
-        color = self.button_color.get_rgba() if self.check_color.get_active() else None
+        icon = self.icon.get_text() if self.check_icon.get_active() else None
+        color = self.color.get_rgba() if self.check_color.get_active() else None
         color_list = customization_helper.convert_rgba_to_color_list(color) if color else None
-        scale = int(self.scale_scale.get_value()) if self.check_scale.get_active() else None
+        scale = int(self.scale.get_value()) if self.check_scale.get_active() else None
         opacity = int(
-            self.scale_opacity.get_value()) if self.check_opacity.get_active() else None
+            self.opacity.get_value()) if self.check_opacity.get_active() else None
 
         self.callback(customization=IconCustomization(
-            attribute=self.combo_attribute.get_model()[self.combo_attribute.get_active()][0],
-            operator=self.combo_operator.get_model()[self.combo_operator.get_active()][0],
+            attribute=self.condition_attribute.get_selected_item().get_string(),
+            operator=self.operator.get_selected_item().value,
             value=self.entry_value.get_text(), icon=icon, color=color_list, scale=scale,
             opacity=opacity), index=self.index)
 
         self.destroy()
 
-    def _on_widget_changed(self, _):
-        super()._on_widget_changed(_)
+    def _on_widget_changed(self, *args, **kwargs) -> None:
+        super()._on_widget_changed()
 
-        self.entry_icon.get_style_context().remove_class(icon_const.ERROR)
-        self.check_icon.get_style_context().remove_class(icon_const.ERROR)
-        self.check_color.get_style_context().remove_class(icon_const.ERROR)
-        self.check_scale.get_style_context().remove_class(icon_const.ERROR)
-        self.check_opacity.get_style_context().remove_class(icon_const.ERROR)
+        self.icon.remove_css_class(icon_const.ERROR)
+        self.check_icon.remove_css_class(icon_const.ERROR)
+        self.check_color.remove_css_class(icon_const.ERROR)
+        self.check_scale.remove_css_class(icon_const.ERROR)
+        self.check_opacity.remove_css_class(icon_const.ERROR)

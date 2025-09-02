@@ -30,7 +30,7 @@ class TestBaseCoreLoadDomains(unittest.TestCase):
         domain_combo_mock = Mock()
         domain_combo_mock.populate = Mock()
 
-        instance = BaseCore(True)
+        instance = BaseCore(Mock(), True)
         instance.initialized = True
         instance.settings = settings_mock
         instance.domain_combo = domain_combo_mock
@@ -57,7 +57,7 @@ class TestBaseCoreLoadDomains(unittest.TestCase):
         domain_combo_mock = Mock()
         domain_combo_mock.populate = Mock()
 
-        instance = BaseCore(True)
+        instance = BaseCore(Mock(), True)
         instance.initialized = True
         instance.settings = settings_mock
         instance.domain_combo = domain_combo_mock

@@ -20,12 +20,10 @@ class PerformAction(BaseCore):
     """Action to be loaded by StreamController."""
 
     def __init__(self, *args, **kwargs):
-        super().__init__(track_entity=False, *args, **kwargs)
+        super().__init__(settings_implementation=PerformActionSettings, track_entity=False, *args, **kwargs)
 
     def on_ready(self) -> None:
         """Set up action when StreamController has finished loading."""
-        self.settings: PerformActionSettings = PerformActionSettings(self)
-
         super().on_ready()
 
         if not self.plugin_base.backend.is_connected():
@@ -65,7 +63,7 @@ class PerformAction(BaseCore):
             callback=self._perform_action
         ))
 
-    def get_config_rows(self) -> list:
+    def get_config_rows(self) -> List:
         """Get the rows to be displayed in the UI."""
         return [self.domain_combo.widget, self.action_combo.widget, self.entity_combo.widget,
                 self.parameters_expander.widget]

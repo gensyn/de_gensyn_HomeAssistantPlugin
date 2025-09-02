@@ -8,9 +8,6 @@ from loguru import logger as log
 
 from src.backend.PluginManager.ActionCore import ActionCore
 
-gi.require_version("Adw", "1")
-from gi.repository.Adw import PreferencesGroup
-
 from GtkHelper.GenerativeUI.ComboRow import ComboRow
 from de_gensyn_HomeAssistantPlugin.actions import const
 from de_gensyn_HomeAssistantPlugin.actions.cores.base_core.base_settings import BaseSettings
@@ -28,9 +25,10 @@ def requires_initialization(func):
 class BaseCore(ActionCore):
     """Action core for all Home Assistant Actions."""
 
-    def __init__(self, track_entity: bool, *args, **kwargs):
+    def __init__(self, settings_implementation, track_entity: bool, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.settings: Optional[BaseSettings] = None
+        self.settings = None
+        self.settings_implementation = settings_implementation
         self.initialized = False
         self.lm = self.plugin_base.locale_manager
         self.has_configuration = True
@@ -40,6 +38,8 @@ class BaseCore(ActionCore):
 
     def on_ready(self) -> None:
         """Set up action when StreamController has finished loading."""
+        self.settings = self.settings_implementation(self)
+
         self.plugin_base.backend.add_action_ready_callback(self.on_ready)
 
         entity = self.settings.get_entity()
@@ -61,7 +61,7 @@ class BaseCore(ActionCore):
             )
         self.refresh()
 
-    def get_config_rows(self) -> List[PreferencesGroup]:
+    def get_config_rows(self) -> List:
         """Get the rows to be displayed in the UI."""
         raise NotImplementedError("Must be implemented by subclasses.")
 

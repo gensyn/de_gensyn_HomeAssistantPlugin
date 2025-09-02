@@ -25,12 +25,10 @@ class ShowText(CustomizationCore):
 
     def __init__(self, *args, **kwargs):
         super().__init__(window_implementation=TextWindow, customization_implementation=TextCustomization,
-                         row_implementation=TextRow, track_entity=True, *args, **kwargs)
+                         row_implementation=TextRow, settings_implementation=ShowTextSettings, track_entity=True, *args, **kwargs)
 
     def on_ready(self) -> None:
         """Set up action when StreamController has finished loading."""
-        self.settings: ShowTextSettings = ShowTextSettings(self)
-
         super().on_ready()
 
         if not self.plugin_base.backend.is_connected():
@@ -40,10 +38,10 @@ class ShowText(CustomizationCore):
         self.initialized = True
         self._reload()
 
-    def get_config_rows(self) -> list:
+    def get_config_rows(self) -> List:
         """Get the rows to be displayed in the UI."""
         return [self.domain_combo.widget, self.entity_combo.widget, self.position.widget, self.attribute.widget,
-                self.round.widget, self.round_precision.widget, self.text_size.widget, self.text_color.widget,
+                self.round.widget, self.text_size.widget, self.text_color.widget,
                 self.outline_size.widget, self.outline_color.widget, self.show_unit.widget, self.unit_line_break.widget,
                 self.customization_expander.widget]
 

@@ -20,23 +20,27 @@ from de_gensyn_HomeAssistantPlugin.actions.show_icon.icon_customization import I
 def _add_window_widgets(win):
     # Patch instance attributes that are not created by our patching
     win.entry_value = MagicMock()
-    win.entry_icon = MagicMock()
+    win.icon = MagicMock()
     win.check_icon = MagicMock()
-    win.button_color = MagicMock()
+    win.color = MagicMock()
     win.check_color = MagicMock()
-    win.scale_scale = MagicMock()
+    win.scale = MagicMock()
     win.check_scale = MagicMock()
-    win.entry_scale = MagicMock()
-    win.scale_opacity = MagicMock()
+    win.scale_entry = MagicMock()
+    win.opacity = MagicMock()
     win.check_opacity = MagicMock()
-    win.entry_opacity = MagicMock()
+    win.opacity_entry = MagicMock()
 
 
 class TestIconWindow(unittest.TestCase):
     def setUp(self):
         # Patch all GUI and helper methods
         patcher_icons = patch.object(icon_window.icon_helper, "MDI_ICONS", {"testicon": "M0,0"})
-        self.real_rgba = Gdk.RGBA(red=1.0, green=0.0, blue=0.0, alpha=1.0)
+        self.real_rgba = Gdk.RGBA()
+        self.real_rgba.red = 1.0
+        self.real_rgba.green = 0.0
+        self.real_rgba.blue = 0.0
+        self.real_rgba.alpha = 1.0
         patcher_convert_color_list_to_rgba = patch(
             "de_gensyn_HomeAssistantPlugin.actions.cores.customization_core.customization_helper.convert_color_list_to_rgba",
             return_value=self.real_rgba
@@ -71,11 +75,11 @@ class TestIconWindow(unittest.TestCase):
         _add_window_widgets(win)
         win.default_margin = 5
         win._set_default_values()
-        win.button_color.set_rgba.assert_called_with(self.real_rgba)
-        win.scale_scale.set_value.assert_called_with(icon_const.DEFAULT_ICON_SCALE)
-        win.entry_scale.set_text.assert_called_with(str(icon_const.DEFAULT_ICON_SCALE))
-        win.scale_opacity.set_value.assert_called_with(icon_const.DEFAULT_ICON_OPACITY)
-        win.entry_opacity.set_text.assert_called_with(str(icon_const.DEFAULT_ICON_OPACITY))
+        win.color.set_rgba.assert_called_with(self.real_rgba)
+        win.scale.set_value.assert_called_with(icon_const.DEFAULT_ICON_SCALE)
+        win.scale_entry.set_text.assert_called_with(str(icon_const.DEFAULT_ICON_SCALE))
+        win.opacity.set_value.assert_called_with(icon_const.DEFAULT_ICON_OPACITY)
+        win.opacity_entry.set_text.assert_called_with(str(icon_const.DEFAULT_ICON_OPACITY))
 
     def test_set_current_values(self):
         # Create a customization object
@@ -89,16 +93,16 @@ class TestIconWindow(unittest.TestCase):
             win = icon_window.IconWindow(self.lm, self.attributes, self.callback, current=customization)
         _add_window_widgets(win)
         win._set_current_values()
-        win.entry_icon.set_text.assert_called_with("testicon")
+        win.icon.set_text.assert_called_with("testicon")
         win.check_icon.set_active.assert_called_with(True)
-        win.button_color.set_rgba.assert_called_with(self.real_rgba)
+        win.color.set_rgba.assert_called_with(self.real_rgba)
         win.check_color.set_active.assert_called_with(True)
-        win.scale_scale.set_value.assert_called_with(42)
+        win.scale.set_value.assert_called_with(42)
         win.check_scale.set_active.assert_called_with(True)
-        win.entry_scale.set_text.assert_called_with("42")
-        win.scale_opacity.set_value.assert_called_with(77)
+        win.scale_entry.set_text.assert_called_with("42")
+        win.opacity.set_value.assert_called_with(77)
         win.check_opacity.set_active.assert_called_with(True)
-        win.entry_opacity.set_text.assert_called_with("77")
+        win.opacity_entry.set_text.assert_called_with("77")
 
     def test_set_current_values_none(self):
         win = icon_window.IconWindow(self.lm, self.attributes, self.callback)
@@ -112,22 +116,22 @@ class TestIconWindow(unittest.TestCase):
         with patch.object(icon_window.CustomizationWindow, "_on_add_button", return_value=True):
             # Setup icon entry with valid mdi icon
             win.check_icon.get_active.return_value = True
-            win.entry_icon.get_text.return_value = "mdi:testicon"
+            win.icon.get_text.return_value = "mdi:testicon"
             win.icons = ["testicon"]
             # Set operator not needing float conversion
-            win.combo_operator = MagicMock()
-            win.combo_operator.get_model.return_value = [["=="]]
-            win.combo_operator.get_active.return_value = 0
+            win.operator = MagicMock()
+            win.operator.get_model.return_value = [["=="]]
+            win.operator.get_active.return_value = 0
             win.entry_value.get_text.return_value = "someval"
-            win.combo_attribute = MagicMock()
-            win.combo_attribute.get_model.return_value = [["attr"]]
-            win.combo_attribute.get_active.return_value = 0
+            win.condition_attribute = MagicMock()
+            win.condition_attribute.get_model.return_value = [["attr"]]
+            win.condition_attribute.get_active.return_value = 0
             # Set checks for color/scale/opacity inactive; only icon active
             win.check_color.get_active.return_value = False
             win.check_scale.get_active.return_value = False
             win.check_opacity.get_active.return_value = False
             # Setup style_context mocks
-            win.entry_icon.get_style_context.return_value = MagicMock()
+            win.icon.get_style_context.return_value = MagicMock()
             win.check_icon.get_style_context.return_value = MagicMock()
             win.check_color.get_style_context.return_value = MagicMock()
             win.check_scale.get_style_context.return_value = MagicMock()
@@ -147,13 +151,13 @@ class TestIconWindow(unittest.TestCase):
         _add_window_widgets(win)
         with patch.object(icon_window.CustomizationWindow, "_on_add_button", return_value=True):
             win.check_icon.get_active.return_value = True
-            win.entry_icon.get_text.return_value = "mdi:notfound"
+            win.icon.get_text.return_value = "mdi:notfound"
             win.icons = ["testicon"]
             # Setup style_context mock for error
-            win.entry_icon.get_style_context.return_value = MagicMock()
-            win.entry_icon.get_style_context().add_class = MagicMock()
+            win.icon.get_style_context.return_value = MagicMock()
+            win.icon.add_css_class = MagicMock()
             win._on_add_button(None)
-            win.entry_icon.get_style_context().add_class.assert_called_with(icon_const.ERROR)
+            win.icon.add_css_class.assert_called_with(icon_const.ERROR)
 
     def test_on_add_button_no_checks_active(self):
         win = icon_window.IconWindow(self.lm, self.attributes, self.callback)
@@ -166,10 +170,10 @@ class TestIconWindow(unittest.TestCase):
             # Setup style_context mock for error
             for widget in [win.check_icon, win.check_color, win.check_scale, win.check_opacity]:
                 widget.get_style_context.return_value = MagicMock()
-                widget.get_style_context().add_class = MagicMock()
+                widget.add_css_class = MagicMock()
             win._on_add_button(None)
             for widget in [win.check_icon, win.check_color, win.check_scale, win.check_opacity]:
-                widget.get_style_context().add_class.assert_called_with(icon_const.ERROR)
+                widget.add_css_class.assert_called_with(icon_const.ERROR)
 
     def test_on_add_button_operator_expects_number_but_invalid(self):
         win = icon_window.IconWindow(self.lm, self.attributes, self.callback)
@@ -177,34 +181,34 @@ class TestIconWindow(unittest.TestCase):
         with patch.object(icon_window.CustomizationWindow, "_on_add_button", return_value=True):
             # Setup for operator needing float conversion
             win.check_icon.get_active.return_value = True
-            win.entry_icon.get_text.return_value = "mdi:testicon"
+            win.icon.get_text.return_value = "mdi:testicon"
             win.icons = ["testicon"]
-            win.combo_operator = MagicMock()
-            win.combo_operator.get_model.return_value = [["<"]]
-            win.combo_operator.get_active.return_value = 0
+            win.operator = MagicMock()
+            win.operator.value = "<"
+            win.operator.get_selected_item.return_value = win.operator
             win.entry_value.get_text.return_value = "not_a_number"
-            win.combo_operator.get_style_context.return_value = MagicMock()
-            win.combo_operator.get_style_context().add_class = MagicMock()
+            win.operator.get_style_context.return_value = MagicMock()
+            win.operator.add_css_class = MagicMock()
             win.entry_value.get_style_context.return_value = MagicMock()
-            win.entry_value.get_style_context().add_class = MagicMock()
+            win.entry_value.add_css_class = MagicMock()
             win._on_add_button(None)
-            win.combo_operator.get_style_context().add_class.assert_called_with(icon_const.ERROR)
-            win.entry_value.get_style_context().add_class.assert_called_with(icon_const.ERROR)
+            win.operator.add_css_class.assert_called_with(icon_const.ERROR)
+            win.entry_value.add_css_class.assert_called_with(icon_const.ERROR)
 
     def test_on_widget_changed(self):
         win = icon_window.IconWindow(self.lm, self.attributes, self.callback)
-        win.entry_icon = MagicMock()
+        win.icon = MagicMock()
         win.check_icon = MagicMock()
         win.check_color = MagicMock()
         win.check_scale = MagicMock()
         win.check_opacity = MagicMock()
         # Patch their style_context
-        for widget in [win.entry_icon, win.check_icon, win.check_color, win.check_scale, win.check_opacity]:
+        for widget in [win.icon, win.check_icon, win.check_color, win.check_scale, win.check_opacity]:
             widget.get_style_context.return_value = MagicMock()
-            widget.get_style_context().remove_class = MagicMock()
+            widget.remove_css_class = MagicMock()
         win._on_widget_changed(None)
-        for widget in [win.entry_icon, win.check_icon, win.check_color, win.check_scale, win.check_opacity]:
-            widget.get_style_context().remove_class.assert_called_with(icon_const.ERROR)
+        for widget in [win.icon, win.check_icon, win.check_color, win.check_scale, win.check_opacity]:
+            widget.remove_css_class.assert_called_with(icon_const.ERROR)
 
     def test_on_add_button_super_returns_false(self):
         win = icon_window.IconWindow(self.lm, self.attributes, self.callback)

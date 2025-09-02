@@ -38,7 +38,7 @@ class TestIconHelper(unittest.TestCase):
         with patch("de_gensyn_HomeAssistantPlugin.actions.cores.customization_core.customization_helper.convert_color_list_to_hex", return_value="#FF0000FF"):
             icon, scale = icon_helper.get_icon(state, settings, is_connected=True)
             self.assertIn('<svg', icon)
-            self.assertEqual(scale, 1.0)
+            self.assertEqual(scale, round(settings.get_scale.return_value / 100, 100))
             self.assertIn("#FF0000FF", icon)
             self.assertIn('opacity="1.0"', icon)
 
@@ -63,8 +63,8 @@ class TestIconHelper(unittest.TestCase):
         name, color, scale, opacity = icon_helper._get_icon_settings(state, settings)
         self.assertEqual(name, "thermometer")
         self.assertEqual(color, (1, 2, 3, 4))
-        self.assertEqual(scale, 2)
-        self.assertEqual(opacity, 90)
+        self.assertEqual(scale, round(customization.get_scale.return_value / 100, 2))
+        self.assertEqual(opacity, round(customization.get_opacity.return_value / 100, 90))
 
     def test_operator_with_non_float_value_triggers_continue(self):
         customization = MagicMock(spec=IconCustomization)
@@ -103,12 +103,12 @@ class TestIconHelper(unittest.TestCase):
         customization = MagicMock(spec=IconCustomization)
         customization.get_icon.return_value = "custom"
         customization.get_color.return_value = (10, 20, 30, 40)
-        customization.get_scale.return_value = 1.5
+        customization.get_scale.return_value = 15
         customization.get_opacity.return_value = 80
         name, color, scale, opacity = icon_helper._replace_values("mdi:icon", (0,0,0,0), 1.0, 100, customization)
         self.assertEqual(name, "custom")
         self.assertEqual(color, (10, 20, 30, 40))
-        self.assertEqual(scale, 1.5)
+        self.assertEqual(scale, 15)
         self.assertEqual(opacity, 80)
 
     def test_get_icon_path(self):
@@ -155,8 +155,8 @@ class TestGetIconSettingsUncovered(unittest.TestCase):
         name, color, scale, opacity = icon_helper._get_icon_settings(self.state, self.settings)
         self.assertEqual(name, "custom")
         self.assertEqual(color, (1, 2, 3, 4))
-        self.assertEqual(scale, 2)
-        self.assertEqual(opacity, 90)
+        self.assertEqual(scale, round(customization.get_scale.return_value / 100, 2))
+        self.assertEqual(opacity, round(customization.get_opacity.return_value / 100, 90))
 
     def test_operator_number_lt(self):
         customization = MagicMock(spec=IconCustomization)
@@ -165,15 +165,15 @@ class TestGetIconSettingsUncovered(unittest.TestCase):
         customization.get_attribute.return_value = "temperature"
         customization.get_icon.return_value = "custom"
         customization.get_color.return_value = (10, 20, 30, 40)
-        customization.get_scale.return_value = 1.5
+        customization.get_scale.return_value = 15
         customization.get_opacity.return_value = 80
         self.state["attributes"]["temperature"] = "21"
         self.settings.get_customizations.return_value = [customization]
         name, color, scale, opacity = icon_helper._get_icon_settings(self.state, self.settings)
         self.assertEqual(name, "custom")
         self.assertEqual(color, (10, 20, 30, 40))
-        self.assertEqual(scale, 1.5)
-        self.assertEqual(opacity, 80)
+        self.assertEqual(scale, round(customization.get_scale.return_value / 100, 15))
+        self.assertEqual(opacity, round(customization.get_opacity.return_value / 100, 80))
 
     def test_operator_number_le(self):
         customization = MagicMock(spec=IconCustomization)
@@ -182,15 +182,15 @@ class TestGetIconSettingsUncovered(unittest.TestCase):
         customization.get_attribute.return_value = "temperature"
         customization.get_icon.return_value = "custom"
         customization.get_color.return_value = (11, 22, 33, 44)
-        customization.get_scale.return_value = 3.5
+        customization.get_scale.return_value = 35
         customization.get_opacity.return_value = 81
         self.state["attributes"]["temperature"] = "21"
         self.settings.get_customizations.return_value = [customization]
         name, color, scale, opacity = icon_helper._get_icon_settings(self.state, self.settings)
         self.assertEqual(name, "custom")
         self.assertEqual(color, (11, 22, 33, 44))
-        self.assertEqual(scale, 3.5)
-        self.assertEqual(opacity, 81)
+        self.assertEqual(scale, round(customization.get_scale.return_value / 100, 35))
+        self.assertEqual(opacity, round(customization.get_opacity.return_value / 100, 81))
 
     def test_operator_number_gt(self):
         customization = MagicMock(spec=IconCustomization)
@@ -199,15 +199,15 @@ class TestGetIconSettingsUncovered(unittest.TestCase):
         customization.get_attribute.return_value = "temperature"
         customization.get_icon.return_value = "custom"
         customization.get_color.return_value = (12, 23, 34, 45)
-        customization.get_scale.return_value = 4.5
+        customization.get_scale.return_value = 45
         customization.get_opacity.return_value = 82
         self.state["attributes"]["temperature"] = "21"
         self.settings.get_customizations.return_value = [customization]
         name, color, scale, opacity = icon_helper._get_icon_settings(self.state, self.settings)
         self.assertEqual(name, "custom")
         self.assertEqual(color, (12, 23, 34, 45))
-        self.assertEqual(scale, 4.5)
-        self.assertEqual(opacity, 82)
+        self.assertEqual(scale, round(customization.get_scale.return_value / 100, 45))
+        self.assertEqual(opacity, round(customization.get_opacity.return_value / 100, 82))
 
     def test_operator_number_ge(self):
         customization = MagicMock(spec=IconCustomization)
@@ -216,15 +216,15 @@ class TestGetIconSettingsUncovered(unittest.TestCase):
         customization.get_attribute.return_value = "temperature"
         customization.get_icon.return_value = "custom"
         customization.get_color.return_value = (13, 24, 35, 46)
-        customization.get_scale.return_value = 5.5
+        customization.get_scale.return_value = 55
         customization.get_opacity.return_value = 83
         self.state["attributes"]["temperature"] = "21"
         self.settings.get_customizations.return_value = [customization]
         name, color, scale, opacity = icon_helper._get_icon_settings(self.state, self.settings)
         self.assertEqual(name, "custom")
         self.assertEqual(color, (13, 24, 35, 46))
-        self.assertEqual(scale, 5.5)
-        self.assertEqual(opacity, 83)
+        self.assertEqual(scale, round(customization.get_scale.return_value / 100, 55))
+        self.assertEqual(opacity, round(customization.get_opacity.return_value / 100, 83))
 
     def test_custom_icon_value_not_float(self):
         customization = MagicMock(spec=IconCustomization)
@@ -233,7 +233,7 @@ class TestGetIconSettingsUncovered(unittest.TestCase):
         customization.get_attribute.return_value = "temperature"
         customization.get_icon.return_value = "custom"
         customization.get_color.return_value = (14, 25, 36, 47)
-        customization.get_scale.return_value = 6.5
+        customization.get_scale.return_value = 65
         customization.get_opacity.return_value = 84
         self.state["attributes"]["temperature"] = "21"
         self.settings.get_customizations.return_value = [customization]
@@ -244,5 +244,5 @@ class TestGetIconSettingsUncovered(unittest.TestCase):
             log_mock.assert_called_once_with("Could not convert custom value to float: %s", "not_a_float")
         self.assertNotEqual(name, "custom")
         self.assertNotEqual(color, (14, 25, 36, 47))
-        self.assertNotEqual(scale, 6.5)
-        self.assertNotEqual(opacity, 84)
+        self.assertNotEqual(scale, round(customization.get_scale.return_value / 100, 65))
+        self.assertNotEqual(opacity, round(customization.get_opacity.return_value / 100, 84))

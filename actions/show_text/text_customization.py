@@ -38,7 +38,7 @@ class TextCustomization(Customization):
                    customization[text_const.CUSTOM_ATTRIBUTE],
                    customization[text_const.CUSTOM_CUSTOM_TEXT],
                    customization[text_const.CUSTOM_ROUND],
-                   customization[text_const.CUSTOM_ROUND],
+                   customization[text_const.CUSTOM_ROUND_PRECISION],
                    customization[text_const.CUSTOM_TEXT_SIZE],
                    customization[text_const.CUSTOM_TEXT_COLOR],
                    customization[text_const.CUSTOM_OUTLINE_SIZE],

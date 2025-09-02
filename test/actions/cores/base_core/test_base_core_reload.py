@@ -21,7 +21,7 @@ class TestBaseCoreReload(unittest.TestCase):
     def test_reload_success(self, refresh_mock, set_enabled_disabled_mock, _, __):
         settings_mock = Mock()
 
-        instance = BaseCore(False)
+        instance = BaseCore(Mock(), False)
         instance.initialized = True
         instance.settings = settings_mock
         instance._reload()

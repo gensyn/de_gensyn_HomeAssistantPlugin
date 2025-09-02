@@ -1,7 +1,7 @@
 import sys
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
 absolute_mock_path = str(Path(__file__).parent.parent.parent.parent / "stream_controller_mock")
 sys.path.insert(0, absolute_mock_path)
@@ -21,7 +21,7 @@ class TestBaseCoreOnChangeDomain(unittest.TestCase):
         old_entity_id = None
         new_entity_id = "switch.kitchen"
 
-        instance = BaseCore(True)
+        instance = BaseCore(Mock(), True)
         instance.initialized = True
         instance._on_change_entity(None, new_entity_id, old_entity_id)
 
@@ -36,7 +36,7 @@ class TestBaseCoreOnChangeDomain(unittest.TestCase):
         old_entity_id = "light.living_room"
         new_entity_id = None
 
-        instance = BaseCore(True)
+        instance = BaseCore(Mock(), True)
         instance.initialized = True
         instance._on_change_entity(None, new_entity_id, old_entity_id)
 
@@ -52,7 +52,7 @@ class TestBaseCoreOnChangeDomain(unittest.TestCase):
         old_entity_id = "light.living_room"
         new_entity_id = "switch.kitchen"
 
-        instance = BaseCore(False)
+        instance = BaseCore(Mock(), False)
         instance.initialized = True
         instance._on_change_entity(None, new_entity_id, old_entity_id)
 
@@ -67,7 +67,7 @@ class TestBaseCoreOnChangeDomain(unittest.TestCase):
         old_entity_id = "light.living_room"
         new_entity_id = "switch.kitchen"
 
-        instance = BaseCore(True)
+        instance = BaseCore(Mock(), True)
         instance.initialized = True
         instance._on_change_entity(None, new_entity_id, old_entity_id)
 

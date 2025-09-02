@@ -288,11 +288,11 @@ class CustomizationTextWindow(CustomizationWindow):
             return
 
         if self.check_position.get_active() and self.combo_position.get_active() < 0:
-            self.combo_position.get_style_context().add_class(const.ERROR)
+            self.combo_position.add_css_class(const.ERROR)
             return
 
         if self.check_text_attribute.get_active() and self.combo_text_attribute.get_active() < 0:
-            self.combo_text_attribute.get_style_context().add_class(const.ERROR)
+            self.combo_text_attribute.add_css_class(const.ERROR)
             return
 
         if (not self.check_position.get_active() and not self.check_text_attribute.get_active()
@@ -302,16 +302,16 @@ class CustomizationTextWindow(CustomizationWindow):
                 self.check_outline_color.get_active()
                 and not self.check_show_unit.get_active() and not
                 self.check_line_break.get_active()):
-            self.check_position.get_style_context().add_class(const.ERROR)
-            self.check_text_attribute.get_style_context().add_class(const.ERROR)
-            self.check_round.get_style_context().add_class(const.ERROR)
-            self.check_precision.get_style_context().add_class(const.ERROR)
-            self.check_text_size.get_style_context().add_class(const.ERROR)
-            self.check_text_color.get_style_context().add_class(const.ERROR)
-            self.check_outline_size.get_style_context().add_class(const.ERROR)
-            self.check_outline_color.get_style_context().add_class(const.ERROR)
-            self.check_show_unit.get_style_context().add_class(const.ERROR)
-            self.check_line_break.get_style_context().add_class(const.ERROR)
+            self.check_position.add_css_class(const.ERROR)
+            self.check_text_attribute.add_css_class(const.ERROR)
+            self.check_round.add_css_class(const.ERROR)
+            self.check_precision.add_css_class(const.ERROR)
+            self.check_text_size.add_css_class(const.ERROR)
+            self.check_text_color.add_css_class(const.ERROR)
+            self.check_outline_size.add_css_class(const.ERROR)
+            self.check_outline_color.add_css_class(const.ERROR)
+            self.check_show_unit.add_css_class(const.ERROR)
+            self.check_line_break.add_css_class(const.ERROR)
             return
 
         attribute = \
@@ -320,8 +320,8 @@ class CustomizationTextWindow(CustomizationWindow):
 
         if attribute == const.CUSTOM_TEXT_TEXT_LENGTH and not self._is_number(value):
             # operator needs a number
-            self.combo_operator.get_style_context().add_class(const.ERROR)
-            self.entry_value.get_style_context().add_class(const.ERROR)
+            self.combo_operator.add_css_class(const.ERROR)
+            self.entry_value.add_css_class(const.ERROR)
             return
 
         text_attribute = \
@@ -366,13 +366,13 @@ class CustomizationTextWindow(CustomizationWindow):
     def _on_widget_changed(self, _):
         super()._on_widget_changed(_)
 
-        self.check_position.get_style_context().remove_class(const.ERROR)
-        self.combo_position.get_style_context().remove_class(const.ERROR)
-        self.check_text_attribute.get_style_context().remove_class(const.ERROR)
-        self.combo_text_attribute.get_style_context().remove_class(const.ERROR)
-        self.entry_custom_text.get_style_context().remove_class(const.ERROR)
-        self.check_round.get_style_context().remove_class(const.ERROR)
-        self.check_precision.get_style_context().remove_class(const.ERROR)
-        self.check_text_size.get_style_context().remove_class(const.ERROR)
-        self.check_show_unit.get_style_context().remove_class(const.ERROR)
-        self.check_line_break.get_style_context().remove_class(const.ERROR)
+        self.check_position.remove_css_class(const.ERROR)
+        self.combo_position.remove_css_class(const.ERROR)
+        self.check_text_attribute.remove_css_class(const.ERROR)
+        self.combo_text_attribute.remove_css_class(const.ERROR)
+        self.entry_custom_text.remove_css_class(const.ERROR)
+        self.check_round.remove_css_class(const.ERROR)
+        self.check_precision.remove_css_class(const.ERROR)
+        self.check_text_size.remove_css_class(const.ERROR)
+        self.check_show_unit.remove_css_class(const.ERROR)
+        self.check_line_break.remove_css_class(const.ERROR)

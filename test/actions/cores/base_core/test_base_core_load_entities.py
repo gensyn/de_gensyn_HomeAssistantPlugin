@@ -31,7 +31,7 @@ class TestBaseCoreLoadEntities(unittest.TestCase):
         entity_combo_mock = Mock()
         entity_combo_mock.populate = Mock()
 
-        instance = BaseCore(True)
+        instance = BaseCore(Mock(), True)
         instance.initialized = True
         instance.settings = settings_mock
         instance.domain_combo = domain_combo_mock
@@ -62,7 +62,7 @@ class TestBaseCoreLoadEntities(unittest.TestCase):
         entity_combo_mock = Mock()
         entity_combo_mock.populate = Mock()
 
-        instance = BaseCore(True)
+        instance = BaseCore(Mock(), True)
         instance.initialized = True
         instance.settings = settings_mock
         instance.domain_combo = domain_combo_mock

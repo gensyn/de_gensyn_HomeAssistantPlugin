@@ -13,8 +13,8 @@ class TestCustomizationWindow(unittest.TestCase):
         # Patch all GTK/Adw/gi classes used in CustomizationWindow to allow headless testing
         self.gtk_patches = {}
         gtk_names = [
-            "Align", "Box", "Button", "CellRendererText", "ComboBox", "CssProvider",
-            "Entry", "Grid", "Label", "ListStore", "Window", "ColorButton",
+            "Align", "Box", "Button", "DropDown", "CssProvider",
+            "Entry", "Grid", "Label", "ListStore", "Window", "ColorDialogButton",
             "CheckButton", "Scale", "Orientation", "Switch"
         ]
         for name in gtk_names:
@@ -88,7 +88,7 @@ class TestCustomizationWindow(unittest.TestCase):
             )
             self.widget_patchers[method].start()
             self.widget_patchers[method] = patch(
-                f"de_gensyn_HomeAssistantPlugin.actions.cores.customization_core.customization_window.ComboBox.{method}"
+                f"de_gensyn_HomeAssistantPlugin.actions.cores.customization_core.customization_window.DropDown.{method}"
             )
             self.widget_patchers[method].start()
             self.widget_patchers[method] = patch(
@@ -97,7 +97,7 @@ class TestCustomizationWindow(unittest.TestCase):
             self.widget_patchers[method].start()
 
         # Patch methods for style context and get_model
-        for name in ["combo_attribute", "combo_operator", "entry_value"]:
+        for name in ["condition_attribute", "operator", "entry_value"]:
             setattr(self, f"mock_{name}", MagicMock())
             sc = MagicMock()
             getattr(self, f"mock_{name}").get_style_context.return_value = sc
@@ -136,9 +136,9 @@ class TestCustomizationWindow(unittest.TestCase):
             index=1
         )
         # Patch internal combo/entry widgets for style context and get_model
-        window.combo_attribute = self.mock_combo_attribute
-        window.combo_operator = self.mock_combo_operator
-        window.entry_value = self.mock_entry_value
+        window.condition_attribute = MagicMock()
+        window.operator = MagicMock()
+        window.entry_value = MagicMock()
         return window
 
     def test_init_sets_attributes_and_layout(self):
@@ -158,76 +158,85 @@ class TestCustomizationWindow(unittest.TestCase):
 
     def test_on_add_button_invalid_states(self):
         window = self.get_window()
-        window.combo_attribute.get_active.return_value = -1
-        window.combo_operator.get_active.return_value = 0
+        window.condition_attribute.get_selected.return_value = -1
+        window.operator.get_selected.return_value = 0
         window.entry_value.get_text.return_value = "foo"
         self.assertFalse(window._on_add_button(None))
-        window.combo_attribute.get_style_context().add_class.assert_called_with(self.mock_customization_const.ERROR)
+        window.condition_attribute.add_css_class.assert_called_with(self.mock_customization_const.ERROR)
 
-        window.combo_attribute.get_active.return_value = 0
-        window.combo_operator.get_active.return_value = -1
+        window.condition_attribute.get_selected.return_value = 0
+        window.operator.get_selected.return_value = -1
         self.assertFalse(window._on_add_button(None))
-        window.combo_operator.get_style_context().add_class.assert_called_with(self.mock_customization_const.ERROR)
+        window.operator.add_css_class.assert_called_with(self.mock_customization_const.ERROR)
 
-        window.combo_operator.get_active.return_value = 0
+        window.operator.get_selected.return_value = 0
         window.entry_value.get_text.return_value = ""
         self.assertFalse(window._on_add_button(None))
-        window.entry_value.get_style_context().add_class.assert_called_with(self.mock_customization_const.ERROR)
+        window.entry_value.add_css_class.assert_called_with(self.mock_customization_const.ERROR)
 
-        window.combo_operator.get_active.return_value = 2
+        window.operator.get_selected.return_value = 2
         window.entry_value.get_text.return_value = "not_a_number"
         self.assertFalse(window._on_add_button(None))
-        window.combo_operator.get_style_context().add_class.assert_called_with(self.mock_customization_const.ERROR)
-        window.entry_value.get_style_context().add_class.assert_called_with(self.mock_customization_const.ERROR)
+        window.operator.add_css_class.assert_called_with(self.mock_customization_const.ERROR)
+        window.entry_value.add_css_class.assert_called_with(self.mock_customization_const.ERROR)
 
     def test_on_add_button_valid(self):
         window = self.get_window()
-        window.combo_attribute.get_active.return_value = 0
-        window.combo_operator.get_active.return_value = 0
+        window.condition_attribute.get_selected.return_value = 0
+        window.operator.get_selected.return_value = 0
         window.entry_value.get_text.return_value = "42"
         self.assertTrue(window._on_add_button(None))
 
     def test_on_widget_changed_removes_error(self):
         window = self.get_window()
         window._on_widget_changed(None)
-        window.combo_attribute.get_style_context().remove_class.assert_called_with(self.mock_customization_const.ERROR)
-        window.combo_operator.get_style_context().remove_class.assert_called_with(self.mock_customization_const.ERROR)
-        window.entry_value.get_style_context().remove_class.assert_called_with(self.mock_customization_const.ERROR)
+        window.condition_attribute.remove_css_class.assert_called_with(self.mock_customization_const.ERROR)
+        window.operator.remove_css_class.assert_called_with(self.mock_customization_const.ERROR)
+        window.entry_value.remove_css_class.assert_called_with(self.mock_customization_const.ERROR)
 
     def test_set_default_values_and_current_values(self):
         window = self.get_window()
-        window.combo_attribute.set_active = MagicMock()
-        window.combo_operator.set_active = MagicMock()
+        window.condition_attribute.set_selected = MagicMock()
+        window.operator.set_selected = MagicMock()
         window._set_default_values()
-        window.combo_attribute.set_active.assert_called_with(0)
-        window.combo_operator.set_active.assert_called_with(0)
+        window.condition_attribute.set_selected.assert_called_with(0)
+        window.operator.set_selected.assert_called_with(0)
 
     def test_set_current_values_no_current(self):
         window = self.get_window(current=None)
-        window.combo_attribute.set_active = MagicMock()
-        window.combo_operator.set_active = MagicMock()
+        window.condition_attribute.set_active = MagicMock()
+        window.operator.set_active = MagicMock()
         window.entry_value.set_text = MagicMock()
-        window.combo_attribute.get_model.return_value = [["attr1"], ["attr2"], ["attr3"]]
-        window.combo_operator.get_model.return_value = [["attr1"], ["attr2"], ["attr3"]]
+        window.condition_attribute.get_model.return_value = [["attr1"], ["attr2"], ["attr3"]]
+        window.operator.get_model.return_value = [["attr1"], ["attr2"], ["attr3"]]
         window._set_current_values()
-        window.combo_attribute.set_active.assert_not_called()
-        window.combo_operator.set_active.assert_not_called()
+        window.condition_attribute.set_active.assert_not_called()
+        window.operator.set_active.assert_not_called()
         window.entry_value.set_text.assert_not_called()
 
     def test_set_current_values(self):
+        attr1_mock = MagicMock()
+        attr1_mock.get_string.return_value = "attr1"
+        attr1_mock.value = "attr1"
+        attr2_mock = MagicMock()
+        attr2_mock.get_string.return_value = "attr2"
+        attr2_mock.value = "attr2"
+        attr3_mock = MagicMock()
+        attr3_mock.get_string.return_value = "attr3"
+        attr3_mock.value = "attr3"
         current = MagicMock()
         current.get_attribute.return_value = "attr2"
         current.get_operator.return_value = "attr3"
         current.get_value.return_value = "55"
         window = self.get_window(current=current)
-        window.combo_attribute.set_active = MagicMock()
-        window.combo_operator.set_active = MagicMock()
+        window.condition_attribute.set_selected = MagicMock()
+        window.operator.set_selected = MagicMock()
         window.entry_value.set_text = MagicMock()
-        window.combo_attribute.get_model.return_value = [["attr1"], ["attr2"], ["attr3"]]
-        window.combo_operator.get_model.return_value = [["attr1"], ["attr2"], ["attr3"]]
+        window.condition_attribute.get_model.return_value = [attr1_mock, attr2_mock, attr3_mock]
+        window.operator.get_model.return_value = [attr1_mock, attr2_mock, attr3_mock]
         window._set_current_values()
-        window.combo_attribute.set_active.assert_called_with(1)
-        window.combo_operator.set_active.assert_called_with(2)
+        window.condition_attribute.set_selected.assert_called_with(1)
+        window.operator.set_selected.assert_called_with(2)
         window.entry_value.set_text.assert_called_with("55")
 
     def test_on_cancel_button_calls_destroy(self):
@@ -253,7 +262,7 @@ class TestCustomizationWindow(unittest.TestCase):
 
     def test_create_combo_returns_combo(self):
         window = self.get_window()
-        combo = window._create_combo(["a", "b", "c"])
+        combo = window._create_drop_down(["a", "b", "c"])
         self.assertTrue(combo)
 
     def test_create_combo_with_check(self):
@@ -261,19 +270,19 @@ class TestCustomizationWindow(unittest.TestCase):
         check = MagicMock()
         combo = MagicMock()
         # Patch ComboBox so that window._create_combo uses our combo mock
-        with patch("de_gensyn_HomeAssistantPlugin.actions.cores.customization_core.customization_window.ComboBox",
+        with patch("de_gensyn_HomeAssistantPlugin.actions.cores.customization_core.customization_window.DropDown",
                    return_value=combo):
-            combo.get_active.return_value = 1  # Simulate selected
+            combo.get_selected.return_value = 1  # Simulate selected
             # Clear previous connect_rows so we only have new ones for this call
             window.connect_rows = []
-            result = window._create_combo(["a", "b", "c"], check=check)
+            result = window._create_drop_down(["a", "b", "c"], check=check)
             self.assertIs(result, combo)
             # Find the lambda for check.set_active in connect_rows and call it
             found = False
             for p in window.connect_rows:
                 if isinstance(p, partial) and p.args and callable(p.args[-1]):
                     # This will be the lambda for check.set_active
-                    p.args[-1](None)
+                    p.args[-1](None, None)
                     try:
                         check.set_active.assert_called_with(True)
                         found = True
@@ -284,7 +293,7 @@ class TestCustomizationWindow(unittest.TestCase):
 
     def test_create_combo_operator_returns_combo(self):
         window = self.get_window()
-        combo = window._create_combo_operator()
+        combo = window._create_drop_down_operator()
         self.assertTrue(combo)
 
     def test_create_label_returns_label(self):
