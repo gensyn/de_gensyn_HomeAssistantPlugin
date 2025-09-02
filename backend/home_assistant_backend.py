@@ -8,7 +8,7 @@ from typing import Dict, Callable, Any, List, Set, Optional
 
 from loguru import logger as log
 
-from de_gensyn_HomeAssistantPlugin.backend import const
+from de_gensyn_HomeAssistantPlugin.backend import backend_const
 from de_gensyn_HomeAssistantPlugin.backend.home_assistant_websocket import HomeAssistantWebsocket
 
 class HomeAssistantBackend:
@@ -25,22 +25,22 @@ class HomeAssistantBackend:
         self._retry_connect_thread: Optional[Thread] = None
         self._action_ready_callbacks: Set[Callable] = set()
 
-        self._host: str = const.EMPTY_STRING
+        self._host: str = backend_const.EMPTY_STRING
         self.set_host(host)
-        self._port: str = const.EMPTY_STRING
+        self._port: str = backend_const.EMPTY_STRING
         self.set_port(port)
         self._ssl: bool = True
         self.set_ssl(ssl)
         self._verify_certificate: bool = True
         self.set_verify_certificate(verify_certificate)
-        self._token: str = const.EMPTY_STRING
+        self._token: str = backend_const.EMPTY_STRING
         self.set_token(token)
 
         self.connect()
 
     def set_host(self, host: str) -> None:
         """Set the Home Assistant host."""
-        self._host = host.split(const.DOUBLE_SLASH, 1)[-1]
+        self._host = host.split(backend_const.DOUBLE_SLASH, 1)[-1]
 
     def set_port(self, port: str) -> None:
         """Set the Home Assistant port."""
@@ -69,10 +69,10 @@ class HomeAssistantBackend:
         if not self._host or not self._token or not self._port:
             return
 
-        self._connection_status_callback(const.CONNECTING)
+        self._connection_status_callback(backend_const.CONNECTING)
 
         websocket_host = (
-            f'{const.PROTO_SSL if self._ssl else const.PROTO}{self._host}:{self._port}{const.HASS_WEBSOCKET_API}'
+            f'{backend_const.PROTO_SSL if self._ssl else backend_const.PROTO}{self._host}:{self._port}{backend_const.HASS_WEBSOCKET_API}'
         )
 
         self._websocket = HomeAssistantWebsocket(
@@ -88,7 +88,7 @@ class HomeAssistantBackend:
             self._websocket.connected = False
             self._websocket.close()
         self._websocket = None
-        self._connection_status_callback(const.NOT_CONNECTED)
+        self._connection_status_callback(backend_const.NOT_CONNECTED)
 
     def _readd_tracked_entities(self, _=None) -> None:
         if not self._entities:
@@ -97,20 +97,20 @@ class HomeAssistantBackend:
         # if the connection was lost we might need to resubscribe to entity events
         for domain_entry in self._entities.values():
             for entity, entity_settings in domain_entry.items():
-                if entity_settings.get(const.ACTIONS):
+                if entity_settings.get(backend_const.ACTIONS):
                     # the order here is important
                     # first save the existing actions
-                    actions = entity_settings[const.ACTIONS]
+                    actions = entity_settings[backend_const.ACTIONS]
                     # then reset the entity settings
-                    entity_settings[const.SUBSCRIPTION_ID] = -1
-                    entity_settings[const.ACTIONS] = set()
+                    entity_settings[backend_const.SUBSCRIPTION_ID] = -1
+                    entity_settings[backend_const.ACTIONS] = set()
                     # then re-add the actions
                     for action in actions:
                         self.add_tracked_entity(entity, action)
 
     def _on_connect(self) -> None:
-        self._connection_status_callback(const.CONNECTED)
-        log.info(const.INFO_CONNECTED)
+        self._connection_status_callback(backend_const.CONNECTED)
+        log.info(backend_const.INFO_CONNECTED)
         self._load_entities()
         self._load_actions()
         self._readd_tracked_entities()
@@ -121,44 +121,44 @@ class HomeAssistantBackend:
     def _on_event_message(self, message: Dict) -> None:
         new_state = (
             message
-            .get(const.FIELD_EVENT, {})
-            .get(const.VARIABLES, {})
-            .get(const.TRIGGER, {})
-            .get(const.TO_STATE, {})
+            .get(backend_const.FIELD_EVENT, {})
+            .get(backend_const.VARIABLES, {})
+            .get(backend_const.TRIGGER, {})
+            .get(backend_const.TO_STATE, {})
         )
         if not new_state:
             entity_id = (
                 message
-                .get(const.FIELD_EVENT, {})
-                .get(const.VARIABLES, {})
-                .get(const.TRIGGER, {})
-                .get(const.FROM_STATE, {})
-                .get(const.ENTITY_ID)
+                .get(backend_const.FIELD_EVENT, {})
+                .get(backend_const.VARIABLES, {})
+                .get(backend_const.TRIGGER, {})
+                .get(backend_const.FROM_STATE, {})
+                .get(backend_const.ENTITY_ID)
             )
-            entity_settings = self._entities[entity_id.split(const.DOT)[0]].get(entity_id)
-            actions = entity_settings.get(const.ACTIONS, set())
+            entity_settings = self._entities[entity_id.split(backend_const.DOT)[0]].get(entity_id)
+            actions = entity_settings.get(backend_const.ACTIONS, set())
             for action_entity_updated in actions:
                 action_entity_updated()
             return
 
-        entity_id = new_state.get(const.ENTITY_ID)
-        domain = entity_id.split(const.DOT)[0]
+        entity_id = new_state.get(backend_const.ENTITY_ID)
+        domain = entity_id.split(backend_const.DOT)[0]
         entity_settings = self._entities[domain].get(entity_id)
-        actions = entity_settings.get(const.ACTIONS, set())
-        state = new_state.get(const.STATE)
-        attributes = new_state.get(const.ATTRIBUTES, {})
+        actions = entity_settings.get(backend_const.ACTIONS, set())
+        state = new_state.get(backend_const.STATE)
+        attributes = new_state.get(backend_const.ATTRIBUTES, {})
 
-        self._entities[domain][entity_id][const.STATE] = state
-        self._entities[domain][entity_id][const.ATTRIBUTES] = attributes
+        self._entities[domain][entity_id][backend_const.STATE] = state
+        self._entities[domain][entity_id][backend_const.ATTRIBUTES] = attributes
 
         update_state = {
-            const.STATE: state,
-            const.ATTRIBUTES: attributes,
-            const.HA_CONNECTED: self.is_connected(),
+            backend_const.STATE: state,
+            backend_const.ATTRIBUTES: attributes,
+            backend_const.HA_CONNECTED: self.is_connected(),
         }
 
         if not actions:
-            log.warning(const.WARNING_NOT_SUBSCRIBED.format(entity_id))
+            log.warning(backend_const.WARNING_NOT_SUBSCRIBED.format(entity_id))
 
         for action_entity_updated in actions:
             action_entity_updated(update_state)
@@ -167,10 +167,10 @@ class HomeAssistantBackend:
         if websocket != self._websocket:
             # the call comes from an obsolete websocket instance
             return
-        log.info(const.INFO_DISCONNECTED)
+        log.info(backend_const.INFO_DISCONNECTED)
         for ready in self._action_ready_callbacks:
             ready()
-        sleep(const.RECONNECT_INTERVAL)
+        sleep(backend_const.RECONNECT_INTERVAL)
         if websocket == self._websocket:
             # the websocket instance is still the same, so we can try to reconnect
             self.connect()
@@ -196,24 +196,24 @@ class HomeAssistantBackend:
     def get_entity(self, entity_id: str) -> Dict[str, Any]:
         """Return the entity state with the requested name."""
         entity_fallback_dict = {
-            const.STATE: const.NA,
-            const.ATTRIBUTES: {},
-            const.HA_CONNECTED: self.is_connected(),
+            backend_const.STATE: backend_const.NA,
+            backend_const.ATTRIBUTES: {},
+            backend_const.HA_CONNECTED: self.is_connected(),
         }
-        if not entity_id or const.DOT not in entity_id:
+        if not entity_id or backend_const.DOT not in entity_id:
             return entity_fallback_dict
 
-        domain = entity_id.split(const.DOT)[0]
+        domain = entity_id.split(backend_const.DOT)[0]
         entity_dict = self._entities.get(domain, {}).get(entity_id, entity_fallback_dict)
-        entity_dict[const.HA_CONNECTED] = self.is_connected()
+        entity_dict[backend_const.HA_CONNECTED] = self.is_connected()
         return entity_dict
 
     def _load_entities(self) -> None:
         """Loads the domains and entities from Home Assistant."""
-        success, result, error = self._websocket.send_and_recv(const.GET_STATES)
+        success, result, error = self._websocket.send_and_recv(backend_const.GET_STATES)
 
         if not success:
-            log.error(const.ERROR_STATES.format(error))
+            log.error(backend_const.ERROR_STATES.format(error))
             self._entities = {}
             return
 
@@ -222,25 +222,25 @@ class HomeAssistantBackend:
         entities: Dict[str, Dict[str, Any]] = {}
 
         for entity in states:
-            entity_id = entity.get(const.ENTITY_ID)
-            domain = entity_id.split(const.DOT)[0]
+            entity_id = entity.get(backend_const.ENTITY_ID)
+            domain = entity_id.split(backend_const.DOT)[0]
             if domain not in entities:
                 entities[domain] = {}
             entities[domain][entity_id] = {
-                const.STATE: entity.get(const.STATE, const.OFF),
-                const.ATTRIBUTES: entity.get(const.ATTRIBUTES, {}),
-                const.ACTIONS: set(),
-                const.SUBSCRIPTION_ID: -1,
+                backend_const.STATE: entity.get(backend_const.STATE, backend_const.OFF),
+                backend_const.ATTRIBUTES: entity.get(backend_const.ATTRIBUTES, {}),
+                backend_const.ACTIONS: set(),
+                backend_const.SUBSCRIPTION_ID: -1,
             }
 
         if self._entities:
             for domain, domain_entry in self._entities.items():
                 for entity_id in domain_entry.keys():
                     if entities.get(domain, {}).get(entity_id):
-                        entities[domain][entity_id][const.ACTIONS] = domain_entry[entity_id].get(const.ACTIONS, set())
-                        entities[domain][entity_id][const.SUBSCRIPTION_ID] = domain_entry[
+                        entities[domain][entity_id][backend_const.ACTIONS] = domain_entry[entity_id].get(backend_const.ACTIONS, set())
+                        entities[domain][entity_id][backend_const.SUBSCRIPTION_ID] = domain_entry[
                             entity_id
-                        ].get(const.SUBSCRIPTION_ID, -1)
+                        ].get(backend_const.SUBSCRIPTION_ID, -1)
 
         self._entities = entities
 
@@ -254,10 +254,10 @@ class HomeAssistantBackend:
         return list(self._entities.get(domain, {}).keys())
 
     def _load_actions(self) -> None:
-        success, result, error = self._websocket.send_and_recv(const.GET_SERVICES)
+        success, result, error = self._websocket.send_and_recv(backend_const.GET_SERVICES)
 
         if not success:
-            log.error(const.ERROR_SERVICES.format(error))
+            log.error(backend_const.ERROR_SERVICES.format(error))
             self._actions = {}
             return
 
@@ -278,11 +278,11 @@ class HomeAssistantBackend:
         if not self.is_connected():
             return
 
-        message = self._websocket.create_message(const.CALL_SERVICE)
-        message[const.DOMAIN] = domain
-        message[const.SERVICE] = service
-        message[const.TARGET] = {const.ENTITY_ID: entity_id} if entity_id else {}
-        message[const.SERVICE_DATA] = data if data else {}
+        message = self._websocket.create_message(backend_const.CALL_SERVICE)
+        message[backend_const.DOMAIN] = domain
+        message[backend_const.SERVICE] = service
+        message[backend_const.TARGET] = {backend_const.ENTITY_ID: entity_id} if entity_id else {}
+        message[backend_const.SERVICE_DATA] = data if data else {}
 
         self._websocket.send(message)
 
@@ -307,26 +307,26 @@ class HomeAssistantBackend:
         if not self._entities:
             self._load_entities()
 
-        domain = entity_id.split(const.DOT)[0]
+        domain = entity_id.split(backend_const.DOT)[0]
         entity_settings = self._entities.get(domain, {}).get(entity_id, {})
         if not entity_settings:
             # entity doesn't exist (anymore)
             return
 
-        if action_entity_updated in entity_settings.get(const.ACTIONS, set()):
+        if action_entity_updated in entity_settings.get(backend_const.ACTIONS, set()):
             # action already registered
             return
 
-        entity_settings.get(const.ACTIONS).add(action_entity_updated)
+        entity_settings.get(backend_const.ACTIONS).add(action_entity_updated)
 
-        if entity_settings.get(const.SUBSCRIPTION_ID) > -1:
+        if entity_settings.get(backend_const.SUBSCRIPTION_ID) > -1:
             # already subscribed to entity events
             return
 
-        message = self._websocket.create_message(const.SUBSCRIBE_TRIGGER)
-        message[const.TRIGGER] = {const.PLATFORM: const.STATE, const.ENTITY_ID: entity_id}
+        message = self._websocket.create_message(backend_const.SUBSCRIBE_TRIGGER)
+        message[backend_const.TRIGGER] = {backend_const.PLATFORM: backend_const.STATE, backend_const.ENTITY_ID: entity_id}
         self._websocket.send(message)
-        entity_settings[const.SUBSCRIPTION_ID] = message[const.ID]
+        entity_settings[backend_const.SUBSCRIPTION_ID] = message[backend_const.ID]
 
     def remove_tracked_entity(self, entity_id: str, action_entity_updated: Callable) -> None:
         """Deregister a previously registered entity."""
@@ -336,18 +336,18 @@ class HomeAssistantBackend:
         if not self.is_connected():
             return
 
-        domain = entity_id.split(const.DOT)[0]
+        domain = entity_id.split(backend_const.DOT)[0]
         entity_settings = self._entities[domain].get(entity_id, {})
-        entity_settings.get(const.ACTIONS, set()).remove(action_entity_updated)
+        entity_settings.get(backend_const.ACTIONS, set()).remove(action_entity_updated)
 
-        if len(entity_settings.get(const.ACTIONS, set())) > 0:
+        if len(entity_settings.get(backend_const.ACTIONS, set())) > 0:
             # the entity is still attached to another key, so keep the trigger subscription
             return
 
-        message = self._websocket.create_message(const.UNSUBSCRIBE_EVENTS)
-        message[const.SUBSCRIPTION_ID] = entity_settings[const.SUBSCRIPTION_ID]
+        message = self._websocket.create_message(backend_const.UNSUBSCRIBE_EVENTS)
+        message[backend_const.SUBSCRIPTION_ID] = entity_settings[backend_const.SUBSCRIPTION_ID]
         self._websocket.send(message)
-        entity_settings[const.SUBSCRIPTION_ID] = -1
+        entity_settings[backend_const.SUBSCRIPTION_ID] = -1
 
     def is_connected(self) -> bool:
         """Check if the backend is connected to Home Assistant."""

@@ -11,7 +11,7 @@ sys.path.insert(0, absolute_plugin_path)
 
 from de_gensyn_HomeAssistantPlugin import const
 from de_gensyn_HomeAssistantPlugin.main import HomeAssistant
-from de_gensyn_HomeAssistantPlugin.backend import const as backend_const
+from de_gensyn_HomeAssistantPlugin.backend import backend_const
 
 
 class TestMainGetSettingsArea(unittest.TestCase):

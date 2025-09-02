@@ -7,7 +7,7 @@ absolute_plugin_path = str(Path(__file__).parent.parent.parent.parent.absolute()
 sys.path.insert(0, absolute_plugin_path)
 
 from de_gensyn_HomeAssistantPlugin.backend.home_assistant_backend import HomeAssistantBackend
-from de_gensyn_HomeAssistantPlugin.backend.home_assistant_backend import const
+from de_gensyn_HomeAssistantPlugin.backend import backend_const
 
 
 class TestBackendOnConnect(unittest.TestCase):
@@ -22,13 +22,13 @@ class TestBackendOnConnect(unittest.TestCase):
 
         ready_mock = Mock()
 
-        instance = HomeAssistantBackend(const.EMPTY_STRING, const.EMPTY_STRING, True, True, const.EMPTY_STRING)
+        instance = HomeAssistantBackend(backend_const.EMPTY_STRING, backend_const.EMPTY_STRING, True, True, backend_const.EMPTY_STRING)
         instance._connection_status_callback = connection_status_callback_mock
         instance._action_ready_callbacks = [ready_mock] * 2
 
         instance._on_connect()
 
-        connection_status_callback_mock.assert_called_once_with(const.CONNECTED)
+        connection_status_callback_mock.assert_called_once_with(backend_const.CONNECTED)
         log_mock.assert_called_once_with("Connected to Home Assistant")
         load_entities_mock.assert_called_once()
         load_actions_mock.assert_called_once()

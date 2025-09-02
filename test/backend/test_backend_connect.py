@@ -7,7 +7,7 @@ absolute_plugin_path = str(Path(__file__).parent.parent.parent.parent.absolute()
 sys.path.insert(0, absolute_plugin_path)
 
 from de_gensyn_HomeAssistantPlugin.backend.home_assistant_backend import HomeAssistantBackend
-from de_gensyn_HomeAssistantPlugin.backend.home_assistant_backend import const
+from de_gensyn_HomeAssistantPlugin.backend import backend_const
 
 
 class TestBackendConnect(unittest.TestCase):
@@ -17,8 +17,8 @@ class TestBackendConnect(unittest.TestCase):
         connection_status_callback_mock = Mock()
 
         with patch.object(HomeAssistantBackend, "connect"):
-            # connect is called in the constructor, so we patch it to only call it once
-            instance = HomeAssistantBackend(const.EMPTY_STRING, const.EMPTY_STRING, True, True, const.EMPTY_STRING)
+            # connect is called in the backend_constructor, so we patch it to only call it once
+            instance = HomeAssistantBackend(backend_const.EMPTY_STRING, backend_const.EMPTY_STRING, True, True, backend_const.EMPTY_STRING)
         instance._connection_status_callback = connection_status_callback_mock
 
         instance.connect()
@@ -31,8 +31,8 @@ class TestBackendConnect(unittest.TestCase):
         connection_status_callback_mock = Mock()
 
         with patch.object(HomeAssistantBackend, "connect"):
-            # connect is called in the constructor, so we patch it to only call it once
-            instance = HomeAssistantBackend("localhost", const.EMPTY_STRING, True, True, const.EMPTY_STRING)
+            # connect is called in the backend_constructor, so we patch it to only call it once
+            instance = HomeAssistantBackend("localhost", backend_const.EMPTY_STRING, True, True, backend_const.EMPTY_STRING)
         instance._connection_status_callback = connection_status_callback_mock
         instance.connect()
 
@@ -44,8 +44,8 @@ class TestBackendConnect(unittest.TestCase):
         connection_status_callback_mock = Mock()
 
         with patch.object(HomeAssistantBackend, "connect"):
-            # connect is called in the constructor, so we patch it to only call it once
-            instance = HomeAssistantBackend("localhost", const.EMPTY_STRING, True, True, "abc")
+            # connect is called in the backend_constructor, so we patch it to only call it once
+            instance = HomeAssistantBackend("localhost", backend_const.EMPTY_STRING, True, True, "abc")
         instance._connection_status_callback = connection_status_callback_mock
         instance.connect()
 
@@ -70,14 +70,14 @@ class TestBackendConnect(unittest.TestCase):
         thread_mock.return_value = thread_init_mock
 
         with patch.object(HomeAssistantBackend, "connect"):
-            # connect is called in the constructor, so we patch it to only call it once
+            # connect is called in the backend_constructor, so we patch it to only call it once
             instance = HomeAssistantBackend(host, port, True, True, token)
         instance._connection_status_callback = connection_status_callback_mock
         instance.connect()
 
         disconnect_mock.assert_called_once()
-        connection_status_callback_mock.assert_called_with(const.CONNECTING)
-        websocket_mock.assert_called_once_with(url=f"wss://{host}:{port}{const.HASS_WEBSOCKET_API}", token=token,
+        connection_status_callback_mock.assert_called_with(backend_const.CONNECTING)
+        websocket_mock.assert_called_once_with(url=f"wss://{host}:{port}{backend_const.HASS_WEBSOCKET_API}", token=token,
                                                verify_certificate=True, on_event_message=instance._on_event_message,
                                                on_connected=instance._on_connect, on_close=instance._on_disconnect)
         thread_mock.assert_called_once_with(target=instance._websocket.run_forever, daemon=True)

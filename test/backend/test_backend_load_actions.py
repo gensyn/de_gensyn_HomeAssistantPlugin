@@ -7,7 +7,7 @@ absolute_plugin_path = str(Path(__file__).parent.parent.parent.parent.absolute()
 sys.path.insert(0, absolute_plugin_path)
 
 from de_gensyn_HomeAssistantPlugin.backend.home_assistant_backend import HomeAssistantBackend
-from de_gensyn_HomeAssistantPlugin.backend.home_assistant_backend import const
+from de_gensyn_HomeAssistantPlugin.backend import backend_const
 
 
 class TestBackendLoadActions(unittest.TestCase):
@@ -21,12 +21,12 @@ class TestBackendLoadActions(unittest.TestCase):
         websocket_mock = Mock()
         websocket_mock.send_and_recv = send_and_recv_mock
 
-        instance = HomeAssistantBackend(const.EMPTY_STRING, const.EMPTY_STRING, True, True, const.EMPTY_STRING)
+        instance = HomeAssistantBackend(backend_const.EMPTY_STRING, backend_const.EMPTY_STRING, True, True, backend_const.EMPTY_STRING)
         instance._websocket = websocket_mock
         instance._load_actions()
 
-        send_and_recv_mock.assert_called_once_with(const.GET_SERVICES)
-        log_mock.assert_called_once_with(const.ERROR_SERVICES.format("test_error"))
+        send_and_recv_mock.assert_called_once_with(backend_const.GET_SERVICES)
+        log_mock.assert_called_once_with(backend_const.ERROR_SERVICES.format("test_error"))
         self.assertEqual({}, instance._actions)
 
     @patch.object(HomeAssistantBackend, 'connect')
@@ -49,12 +49,12 @@ class TestBackendLoadActions(unittest.TestCase):
         }
 
         send_and_recv_mock = Mock()
-        send_and_recv_mock.return_value = (True, actions, const.EMPTY_STRING)
+        send_and_recv_mock.return_value = (True, actions, backend_const.EMPTY_STRING)
 
         websocket_mock = Mock()
         websocket_mock.send_and_recv = send_and_recv_mock
 
-        instance = HomeAssistantBackend(const.EMPTY_STRING, const.EMPTY_STRING, True, True, const.EMPTY_STRING)
+        instance = HomeAssistantBackend(backend_const.EMPTY_STRING, backend_const.EMPTY_STRING, True, True, backend_const.EMPTY_STRING)
         instance._websocket = websocket_mock
         instance._load_actions()
 

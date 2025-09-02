@@ -8,7 +8,7 @@ absolute_plugin_path = str(Path(__file__).parent.parent.parent.parent.absolute()
 sys.path.insert(0, absolute_plugin_path)
 
 from de_gensyn_HomeAssistantPlugin.backend.home_assistant_backend import HomeAssistantBackend
-from de_gensyn_HomeAssistantPlugin.backend.home_assistant_backend import const
+from de_gensyn_HomeAssistantPlugin.backend import backend_const
 
 
 class TestBackendGetEntity(unittest.TestCase):
@@ -16,13 +16,13 @@ class TestBackendGetEntity(unittest.TestCase):
     @patch.object(HomeAssistantBackend, 'connect')
     @patch.object(HomeAssistantBackend, 'is_connected', return_value=True)
     def test_get_entity_no_id(self, is_connected_mock, _):
-        instance = HomeAssistantBackend(const.EMPTY_STRING, const.EMPTY_STRING, True, True, const.EMPTY_STRING)
-        result = instance.get_entity(const.EMPTY_STRING)
+        instance = HomeAssistantBackend(backend_const.EMPTY_STRING, backend_const.EMPTY_STRING, True, True, backend_const.EMPTY_STRING)
+        result = instance.get_entity(backend_const.EMPTY_STRING)
 
         expected = {
-            const.STATE: const.NA,
-            const.ATTRIBUTES: {},
-            const.HA_CONNECTED: True
+            backend_const.STATE: backend_const.NA,
+            backend_const.ATTRIBUTES: {},
+            backend_const.HA_CONNECTED: True
         }
 
         self.assertEqual(expected, result)
@@ -31,13 +31,13 @@ class TestBackendGetEntity(unittest.TestCase):
     @patch.object(HomeAssistantBackend, 'connect')
     @patch.object(HomeAssistantBackend, 'is_connected', return_value=True)
     def test_get_entity_no_dot_in_id(self, is_connected_mock, _):
-        instance = HomeAssistantBackend(const.EMPTY_STRING, const.EMPTY_STRING, True, True, const.EMPTY_STRING)
+        instance = HomeAssistantBackend(backend_const.EMPTY_STRING, backend_const.EMPTY_STRING, True, True, backend_const.EMPTY_STRING)
         result = instance.get_entity("domainentitiy")
 
         expected = {
-            const.STATE: const.NA,
-            const.ATTRIBUTES: {},
-            const.HA_CONNECTED: True
+            backend_const.STATE: backend_const.NA,
+            backend_const.ATTRIBUTES: {},
+            backend_const.HA_CONNECTED: True
         }
 
         self.assertEqual(expected, result)
@@ -75,12 +75,12 @@ class TestBackendGetEntity(unittest.TestCase):
             }
         }
 
-        instance = HomeAssistantBackend(const.EMPTY_STRING, const.EMPTY_STRING, True, True, const.EMPTY_STRING)
+        instance = HomeAssistantBackend(backend_const.EMPTY_STRING, backend_const.EMPTY_STRING, True, True, backend_const.EMPTY_STRING)
         instance._entities = entities
         result = instance.get_entity("domain1.entity2")
 
         expected = entities["domain1"]["domain1.entity2"]
-        expected[const.HA_CONNECTED] = True
+        expected[backend_const.HA_CONNECTED] = True
 
         self.assertEqual(expected, result)
         self.assertEqual(2, is_connected_mock.call_count)
