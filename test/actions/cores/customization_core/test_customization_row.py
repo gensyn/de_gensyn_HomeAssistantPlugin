@@ -24,6 +24,12 @@ class TestCustomizationRow(unittest.TestCase):
         self.mock_const.LABEL_CUSTOMIZATION_IF = "If"
         self.mock_const.LABEL_CUSTOMIZATION_CURRENT = "Current"
 
+        self.gtk_window_init_patch = patch(
+            "gi.repository.Adw.ActionRow.__init__",
+            return_value=None
+        )
+        self.mock_gtk_window_init = self.gtk_window_init_patch.start()
+
         # Patch add_suffix method to avoid GTK widget type errors
         from de_gensyn_HomeAssistantPlugin.actions.cores.customization_core import customization_row
         self.customization_row = customization_row
@@ -69,6 +75,7 @@ class TestCustomizationRow(unittest.TestCase):
         self.orientation_patch.stop()
         self.const_patch.stop()
         self.add_suffix_patch.stop()
+        self.mock_gtk_window_init.stop()
 
     def test_customization_row_buttons_setup(self):
         row = self.customization_row.CustomizationRow(
