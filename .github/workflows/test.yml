@@ -25,6 +25,12 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    - name: Run individual tests
+      run: |
+        for test in $(find tests -name "test_*.py"); do
+          python $test || exit 1
+        done
+
     - name: Run unit tests
       run: |
         python -m unittest
