@@ -1,8 +1,7 @@
-import unittest
-from unittest.mock import patch, Mock
-from pathlib import Path
 import sys
-
+import unittest
+from pathlib import Path
+from unittest.mock import patch, Mock
 
 absolute_plugin_path = str(Path(__file__).parent.parent.parent.parent.parent.absolute())
 sys.path.insert(0, absolute_plugin_path)
@@ -11,13 +10,23 @@ from de_gensyn_HomeAssistantPlugin.actions.show_icon import icon_const
 from de_gensyn_HomeAssistantPlugin.actions.show_icon.icon_window import IconWindow
 from de_gensyn_HomeAssistantPlugin.actions.show_icon.icon_customization import IconCustomization
 
+
 class TestIconWindow(unittest.TestCase):
 
     @patch(
-        'de_gensyn_HomeAssistantPlugin.actions.cores.customization_core.customization_window.CustomizationWindow.__init__', autospec=True)
+        'de_gensyn_HomeAssistantPlugin.actions.cores.customization_core.customization_window.CustomizationWindow.__init__',
+        autospec=True)
     @patch.object(IconWindow, "set_title")
     @patch.object(IconWindow, "_after_init")
-    def test_init(self, after_init_mock, set_title_mock, customization_window_init_mock):
+    @patch.object(IconWindow, "_create_check_button")
+    @patch.object(IconWindow, "_create_entry")
+    @patch.object(IconWindow, "_create_color_button")
+    @patch.object(IconWindow, "_create_scale")
+    @patch.object(IconWindow, "_create_scale_entry")
+    @patch.object(IconWindow, "_create_label")
+    def test_init(self, create_label_mock, create_scale_entry_mock, create_scale_mock, create_color_button_mock,
+                  create_entry_mock, create_check_button_mock, after_init_mock, set_title_mock,
+                  customization_window_init_mock):
         lm = Mock()
         lm.get.return_value = "Test Title"
         attributes = Mock()
@@ -33,7 +42,14 @@ class TestIconWindow(unittest.TestCase):
 
         instance = IconWindow(lm, attributes, callback, current, index)
 
-        customization_window_init_mock.assert_called_once_with(instance, lm, attributes, callback, current, index) # with instance because of autospec
+        self.assertEqual(4, create_check_button_mock.call_count)
+        self.assertEqual(1, create_entry_mock.call_count)
+        self.assertEqual(1, create_color_button_mock.call_count)
+        self.assertEqual(2, create_scale_mock.call_count)
+        self.assertEqual(2, create_scale_entry_mock.call_count)
+        self.assertEqual(4, create_label_mock.call_count)
+        customization_window_init_mock.assert_called_once_with(instance, lm, attributes, callback, current,
+                                                               index)  # with instance because of autospec
         set_title_mock.assert_called_once_with("Test Title")
         self.assertEqual(14, instance.grid_fields.attach.call_count)
         after_init_mock.assert_called_once()
@@ -208,7 +224,9 @@ class TestIconWindow(unittest.TestCase):
         instance.color.get_rgba.assert_called_once()
         instance.scale.get_value.assert_called_once()
         instance.opacity.get_value.assert_called_once()
-        icon_customization_mock.assert_called_once_with(attribute="attribute_name", operator="==", value="some_value", icon="mdi:home", color=(67830, 0, 0, 255), scale=150, opacity=200)
+        icon_customization_mock.assert_called_once_with(attribute="attribute_name", operator="==", value="some_value",
+                                                        icon="mdi:home", color=(67830, 0, 0, 255), scale=150,
+                                                        opacity=200)
         instance.callback.assert_called_once()
         instance.destroy.assert_called_once()
 
