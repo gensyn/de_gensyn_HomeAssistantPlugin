@@ -42,6 +42,3 @@ class TestPerformActionGetConfigRows(unittest.TestCase):
             parameters_expander_mock.widget
         ])
 
-
-if __name__ == '__main__':
-    unittest.main()

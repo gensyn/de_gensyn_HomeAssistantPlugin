@@ -98,6 +98,3 @@ class TestBackendRemoveTrackedEntity(unittest.TestCase):
         self.assertEqual(set(), instance._entities["light"]["light.living_room"][backend_const.ACTIONS])
         self.assertEqual(-1, instance._entities["light"]["light.living_room"][backend_const.SUBSCRIPTION_ID])
 
-
-if __name__ == '__main__':
-    unittest.main()

@@ -88,6 +88,3 @@ class TestPerformActionOnChangeDomain(unittest.TestCase):
         load_actions_mock.assert_called_once()
         set_enabled_disabled_mock.assert_called_once()
 
-
-if __name__ == '__main__':
-    unittest.main()

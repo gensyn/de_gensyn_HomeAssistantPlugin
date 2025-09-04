@@ -153,6 +153,3 @@ class TestCustomizationRow(unittest.TestCase):
         self.assertIn("label-equals", title)
         self.assertIn("\"23\"", title)
         self.assertIn("(label-Current: 22):", title)
-
-if __name__ == "__main__":
-    unittest.main()

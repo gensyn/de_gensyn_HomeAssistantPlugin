@@ -101,6 +101,3 @@ class TestMainInit(unittest.TestCase):
 
         backend_mock.assert_called_once_with(host, port, ssl, verify_certificate, token)
 
-
-if __name__ == '__main__':
-    unittest.main()

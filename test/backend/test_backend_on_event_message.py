@@ -172,6 +172,3 @@ class TestBackendOnEventMessage(unittest.TestCase):
             backend_const.HA_CONNECTED: True,
         })
 
-
-if __name__ == '__main__':
-    unittest.main()

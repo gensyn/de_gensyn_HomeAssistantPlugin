@@ -56,6 +56,3 @@ class TestBackendGetActions(unittest.TestCase):
         result = instance.get_actions("switch")
         self.assertEqual(switch, result)
 
-
-if __name__ == '__main__':
-    unittest.main()

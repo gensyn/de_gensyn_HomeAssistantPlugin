@@ -85,6 +85,3 @@ class TestMainOnChangeBaseSwitch(unittest.TestCase):
         set_sensitive_mock.assert_called_once_with(False)
         set_active_mock.assert_called_once_with(False)
 
-
-if __name__ == '__main__':
-    unittest.main()

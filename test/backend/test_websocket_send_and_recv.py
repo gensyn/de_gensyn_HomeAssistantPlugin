@@ -45,6 +45,3 @@ class TestWebsocketSendAndRecv(unittest.TestCase):
 
         send_mock.assert_called_once_with({backend_const.ID: 1, backend_const.FIELD_TYPE: backend_const.GET_CONFIG}, True)
 
-
-if __name__ == '__main__':
-    unittest.main()

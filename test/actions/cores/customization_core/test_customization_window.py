@@ -171,22 +171,22 @@ class TestCustomizationWindow(unittest.TestCase):
         window.condition_attribute.get_selected.return_value = -1
         window.operator.get_selected.return_value = 0
         window.entry_value.get_text.return_value = "foo"
-        self.assertFalse(window._on_add_button(None))
+        self.assertFalse(window.on_add_button(None))
         window.condition_attribute.add_css_class.assert_called_with(self.mock_customization_const.ERROR)
 
         window.condition_attribute.get_selected.return_value = 0
         window.operator.get_selected.return_value = -1
-        self.assertFalse(window._on_add_button(None))
+        self.assertFalse(window.on_add_button(None))
         window.operator.add_css_class.assert_called_with(self.mock_customization_const.ERROR)
 
         window.operator.get_selected.return_value = 0
         window.entry_value.get_text.return_value = ""
-        self.assertFalse(window._on_add_button(None))
+        self.assertFalse(window.on_add_button(None))
         window.entry_value.add_css_class.assert_called_with(self.mock_customization_const.ERROR)
 
         window.operator.get_selected.return_value = 2
         window.entry_value.get_text.return_value = "not_a_number"
-        self.assertFalse(window._on_add_button(None))
+        self.assertFalse(window.on_add_button(None))
         window.operator.add_css_class.assert_called_with(self.mock_customization_const.ERROR)
         window.entry_value.add_css_class.assert_called_with(self.mock_customization_const.ERROR)
 
@@ -195,7 +195,7 @@ class TestCustomizationWindow(unittest.TestCase):
         window.condition_attribute.get_selected.return_value = 0
         window.operator.get_selected.return_value = 0
         window.entry_value.get_text.return_value = "42"
-        self.assertTrue(window._on_add_button(None))
+        self.assertTrue(window.on_add_button(None))
 
     def test_on_widget_changed_removes_error(self):
         window = self.get_window()
@@ -417,6 +417,3 @@ class TestCustomizationWindow(unittest.TestCase):
         window._set_default_values.assert_called_once()
         window._set_current_values.assert_called_once()
         window._connect_rows.assert_called_once()
-
-if __name__ == "__main__":
-    unittest.main()

@@ -24,6 +24,3 @@ class TestBaseCoreRefresh(unittest.TestCase):
         instance.initialized = True
         instance.refresh()
 
-
-if __name__ == '__main__':
-    unittest.main()

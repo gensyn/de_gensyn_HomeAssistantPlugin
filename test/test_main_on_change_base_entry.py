@@ -39,6 +39,3 @@ class TestMainOnChangeBaseEntry(unittest.TestCase):
 
         set_setting_mock.assert_called_once_with(entry, test_text)
 
-
-if __name__ == '__main__':
-    unittest.main()

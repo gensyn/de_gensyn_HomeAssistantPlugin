@@ -47,6 +47,3 @@ class TestPerformActionCreateUiElements(unittest.TestCase):
         self.assertEqual(combo_row_mock.return_value, instance.action_combo)
         self.assertEqual(expander_row_mock.return_value, instance.parameters_expander)
 
-
-if __name__ == '__main__':
-    unittest.main()

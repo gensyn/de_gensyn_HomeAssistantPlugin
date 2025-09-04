@@ -113,6 +113,3 @@ def create_instance(required: bool, parameters: Dict={}, field_name: str="test_f
         check_button_mock.connect = Mock()
         return ParameterRow(action_core_mock, field_name, required)
 
-
-if __name__ == '__main__':
-    unittest.main()

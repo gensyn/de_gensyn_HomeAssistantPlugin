@@ -67,6 +67,3 @@ class TestBaseCoreLoadDomains(unittest.TestCase):
         get_domains_mock.assert_called_once()
         domain_combo_mock.populate.assert_called_once_with(domains_sorted, domain, trigger_callback=False)
 
-
-if __name__ == '__main__':
-    unittest.main()

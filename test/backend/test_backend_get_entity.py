@@ -85,6 +85,3 @@ class TestBackendGetEntity(unittest.TestCase):
         self.assertEqual(expected, result)
         self.assertEqual(2, is_connected_mock.call_count)
 
-
-if __name__ == '__main__':
-    unittest.main()

@@ -76,6 +76,3 @@ class TestBaseCoreOnChangeDomain(unittest.TestCase):
         instance.plugin_base.backend.add_tracked_entity.assert_called_once_with(new_entity_id, instance.refresh)
         set_enabled_disabled_mock.assert_called_once()
 
-
-if __name__ == '__main__':
-    unittest.main()

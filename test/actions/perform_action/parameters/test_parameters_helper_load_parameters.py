@@ -563,6 +563,3 @@ class TestParametersHelperLoadParameters(unittest.TestCase):
         action.parameters_expander.add_row.assert_called_once_with(parameter_entry_row_mock.widget)
         parameter_entry_row_mock.assert_called_once_with(action, f"{perform_const.SETTING_SERVICE}.{perform_const.ACTION_PARAMETERS}.brightness", "Brightness", "some text", False)
 
-
-if __name__ == '__main__':
-    unittest.main()

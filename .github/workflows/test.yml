@@ -8,7 +8,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ["3.13"]
+        python-version: ["3.12", "3.13"]
 
     steps:
     - uses: actions/checkout@v4
@@ -27,7 +27,4 @@ jobs:
 
     - name: Run tests
       run: |
-        for test in $(find test -name "test_*.py"); do
-          echo $test
-          python -m unittest $test || exit 1
-        done
+        python -m unittest -v

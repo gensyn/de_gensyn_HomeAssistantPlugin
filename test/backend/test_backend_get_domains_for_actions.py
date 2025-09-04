@@ -73,6 +73,3 @@ class TestBackendGetDomains(unittest.TestCase):
         load_actions_mock.assert_called_once()
         self.assertEqual(["domain1", "domain2"], result)
 
-
-if __name__ == '__main__':
-    unittest.main()

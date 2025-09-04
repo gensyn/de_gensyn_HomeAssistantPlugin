@@ -106,6 +106,3 @@ class TestPerformActionOnChangeDomain(unittest.TestCase):
         load_parameters_mock.assert_called_once_with(instance)
         reload_mock.assert_called_once()
 
-
-if __name__ == '__main__':
-    unittest.main()

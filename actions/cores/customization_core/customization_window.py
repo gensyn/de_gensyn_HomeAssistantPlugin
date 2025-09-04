@@ -74,7 +74,7 @@ class CustomizationWindow(Window):
             customization_const.LABEL_CUSTOMIZATION_UPDATE)
         add_button = self._create_button(add_label)
         self.connect_rows.append(
-            partial(add_button.connect, base_const.CONNECT_CLICKED, self._on_add_button))
+            partial(add_button.connect, base_const.CONNECT_CLICKED, self.on_add_button))
 
         label_attribute.set_margin_top(15)
         label_operator.set_margin_top(15)
@@ -206,7 +206,7 @@ class CustomizationWindow(Window):
         self.connect_rows.append(
             partial(entry.connect, base_const.CONNECT_CHANGED, self._on_widget_changed))
         self.connect_rows.append(
-            partial(entry.connect, base_const.CONNECT_ACTIVATE, self._on_add_button))
+            partial(entry.connect, base_const.CONNECT_ACTIVATE, self.on_add_button))
         if check is not None:
             self.connect_rows.append(partial(entry.connect, base_const.CONNECT_CHANGED,
                                              lambda _=None, __=None: check.set_active(
@@ -232,7 +232,7 @@ class CustomizationWindow(Window):
         entry.set_width_chars(4)
         entry.set_max_width_chars(4)
         self.connect_rows.append(
-            partial(entry.connect, base_const.CONNECT_ACTIVATE, self._on_add_button))
+            partial(entry.connect, base_const.CONNECT_ACTIVATE, self.on_add_button))
         self.connect_rows.append(partial(entry.connect, base_const.CONNECT_CHANGED,
                                          lambda _=None, __=None: check.set_active(
                                              entry.get_text() != customization_const.EMPTY_STRING)))
@@ -263,7 +263,7 @@ class CustomizationWindow(Window):
     def _on_cancel_button(self, _):
         self.destroy()
 
-    def _on_add_button(self, _) -> bool:
+    def on_add_button(self, *args, **kwargs) -> bool:
         if self.condition_attribute.get_selected() < 0:
             self.condition_attribute.add_css_class(customization_const.ERROR)
             return False

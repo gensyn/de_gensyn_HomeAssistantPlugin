@@ -68,6 +68,3 @@ class TestConnectionSettings(unittest.TestCase):
         reload_settings_mock.assert_called_once()
         set_settings_mock.assert_called_once_with(new_settings)
 
-
-if __name__ == '__main__':
-    unittest.main()

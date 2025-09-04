@@ -35,6 +35,3 @@ class TestBaseCoreCreateUiElements(unittest.TestCase):
                           "on_change": instance._on_change_entity, "can_reset": False,
                           "complex_var_name": True}, instance.entity_combo.kwargs)
 
-
-if __name__ == '__main__':
-    unittest.main()

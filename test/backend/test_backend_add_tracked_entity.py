@@ -140,6 +140,3 @@ class TestBackendAddTrackedEntity(unittest.TestCase):
         self.assertEqual({"123"}, instance._entities["light"]["light.living_room"][backend_const.ACTIONS])
         self.assertEqual(3, instance._entities["light"]["light.living_room"][backend_const.SUBSCRIPTION_ID])
 
-
-if __name__ == '__main__':
-    unittest.main()

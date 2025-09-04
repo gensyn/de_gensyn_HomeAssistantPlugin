@@ -86,6 +86,3 @@ class TestPerformActionOnChangeAction(unittest.TestCase):
         )
         load_parameters_mock.assert_called_once_with(instance)
 
-
-if __name__ == '__main__':
-    unittest.main()

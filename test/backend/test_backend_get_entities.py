@@ -52,6 +52,3 @@ class TestBackendGetEntities(unittest.TestCase):
         result = instance.get_entities("sensor")
         self.assertEqual(["sensor.temperature", "sensor.humidity"], result)
 
-
-if __name__ == '__main__':
-    unittest.main()

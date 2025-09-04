@@ -43,6 +43,3 @@ class TestBackendIsConnected(unittest.TestCase):
         result = instance.is_connected()
 
         self.assertTrue(result)
-
-if __name__ == '__main__':
-    unittest.main()

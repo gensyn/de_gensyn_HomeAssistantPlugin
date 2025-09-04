@@ -94,6 +94,3 @@ class TestBaseCoreSetEnabledDisabled(unittest.TestCase):
         settings_mock.get_domain.assert_called_once()
         entity_combo_mock.set_sensitive.assert_called_once_with(True)
 
-
-if __name__ == '__main__':
-    unittest.main()

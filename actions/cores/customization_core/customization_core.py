@@ -4,6 +4,7 @@ from typing import List
 
 import gi
 
+
 gi.require_version("Gtk", "4.0")
 from gi.repository.Gtk import Button, Align
 
@@ -11,7 +12,7 @@ from GtkHelper.GenerativeUI.ExpanderRow import ExpanderRow
 
 from de_gensyn_HomeAssistantPlugin.actions import const as base_const
 from de_gensyn_HomeAssistantPlugin.actions.cores.customization_core import customization_const
-from de_gensyn_HomeAssistantPlugin.actions.cores.base_core.base_core import BaseCore
+from de_gensyn_HomeAssistantPlugin.actions.cores.base_core.base_core import BaseCore, requires_initialization
 
 
 class CustomizationCore(BaseCore):
@@ -65,7 +66,6 @@ class CustomizationCore(BaseCore):
             if index > -1:
                 # edited item is identical to existing - delete it
                 self.settings.remove_customization(index)
-            self._load_customizations()
             self.refresh()
             return
 
@@ -88,13 +88,11 @@ class CustomizationCore(BaseCore):
         self.settings.move_customization(index, 1)
         self.refresh()
 
+    @requires_initialization
     def _set_enabled_disabled(self) -> None:
         """
         Set the active/inactive state for all rows.
         """
-        if not self.initialized:
-            return
-
         super()._set_enabled_disabled()
 
         domain = self.settings.get_domain()
@@ -106,7 +104,7 @@ class CustomizationCore(BaseCore):
         if not is_domain_set or not is_entity_set:
             self.customization_expander.widget.set_sensitive(False)
             self.customization_expander.widget.set_subtitle(self.lm.get(base_const.LABEL_NO_ENTITY))
-            self.customization_expander.widget.set_expanded(False)
+            self.customization_expander.set_expanded(False)
         else:
             self.customization_expander.widget.set_sensitive(True)
             self.customization_expander.widget.set_subtitle(base_const.EMPTY_STRING)

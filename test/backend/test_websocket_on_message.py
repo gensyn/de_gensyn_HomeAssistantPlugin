@@ -56,6 +56,3 @@ class TestWebsocketOnMessage(unittest.TestCase):
         on_event_message_mock.assert_not_called()
         auth_mock.assert_not_called()
 
-
-if __name__ == '__main__':
-    unittest.main()

@@ -312,6 +312,3 @@ class TestPerformActionSetEnabledDisabled(unittest.TestCase):
         plugin_base_mock.backend.get_actions.assert_called_once_with(domain_combo_mock.get_selected_item.return_value)
         entity_combo_mock.widget.set_sensitive.assert_called_once_with(True)
 
-
-if __name__ == '__main__':
-    unittest.main()

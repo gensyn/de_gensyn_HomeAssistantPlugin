@@ -71,6 +71,3 @@ class TestBaseSettingsInit(unittest.TestCase):
 
         action_mock.set_settings.assert_called_once_with(settings_expected_for_reset)
 
-
-if __name__ == '__main__':
-    unittest.main()

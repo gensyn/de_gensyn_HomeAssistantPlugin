@@ -121,6 +121,3 @@ def create_instance(switch_row_init_mock, parameter_row_init_mock, required) -> 
 
     return instance
 
-
-if __name__ == '__main__':
-    unittest.main()

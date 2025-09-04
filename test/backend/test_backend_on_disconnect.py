@@ -61,6 +61,3 @@ class TestBackendOnDisconnect(unittest.TestCase):
         sleep_mock.assert_called_once_with(backend_const.RECONNECT_INTERVAL)
         self.assertEqual(2, connect_mock.call_count)  # called once during instantiation and once during disconnect
 
-
-if __name__ == '__main__':
-    unittest.main()

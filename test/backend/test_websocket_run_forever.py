@@ -27,6 +27,3 @@ class TestWebsocketRunForever(unittest.TestCase):
 
         websocket_app_mock.assert_called_once_with(sslopt={backend_const.CERT_REQS: CERT_NONE}, reconnect=backend_const.RECONNECT_INTERVAL)
 
-
-if __name__ == '__main__':
-    unittest.main()

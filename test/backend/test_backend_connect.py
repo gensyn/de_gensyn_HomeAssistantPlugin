@@ -83,6 +83,3 @@ class TestBackendConnect(unittest.TestCase):
         thread_mock.assert_called_once_with(target=instance._websocket.run_forever, daemon=True)
         thread_start_mock.assert_called_once()
 
-
-if __name__ == '__main__':
-    unittest.main()

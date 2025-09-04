@@ -25,6 +25,3 @@ class TestPerformActionInit(unittest.TestCase):
 
         home_assistant_action_core_init_mock.assert_called_once_with(test_arg, settings_implementation=PerformActionSettings, track_entity=False, test_kwarg=test_kwarg)
 
-
-if __name__ == '__main__':
-    unittest.main()

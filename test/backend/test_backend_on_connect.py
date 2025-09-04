@@ -35,6 +35,3 @@ class TestBackendOnConnect(unittest.TestCase):
         readd_tracked_entities_mock.assert_called_once()
         self.assertEqual(2, ready_mock.call_count)
 
-
-if __name__ == '__main__':
-    unittest.main()

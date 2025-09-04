@@ -33,6 +33,3 @@ class TestWebsocketSend(unittest.TestCase):
         instance.connected = True
         instance.send({backend_const.FIELD_TYPE: backend_const.FIELD_EVENT})
         send_mock.assert_called_once_with(json.dumps(message))
-
-if __name__ == '__main__':
-    unittest.main()

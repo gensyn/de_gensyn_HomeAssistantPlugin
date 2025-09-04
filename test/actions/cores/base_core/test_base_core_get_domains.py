@@ -20,6 +20,3 @@ class TestBaseCoreGetDomains(unittest.TestCase):
         instance = BaseCore(Mock(), True)
         self.assertRaises(NotImplementedError, instance._get_domains)
 
-
-if __name__ == '__main__':
-    unittest.main()

@@ -144,6 +144,3 @@ class TestMainGetSettingsArea(unittest.TestCase):
             call(entry_mock)
         ])
 
-
-if __name__ == '__main__':
-    unittest.main()

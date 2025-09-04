@@ -7,6 +7,7 @@ from typing import List
 from GtkHelper.GenerativeUI.ColorButtonRow import ColorButtonRow
 from GtkHelper.GenerativeUI.EntryRow import EntryRow
 from GtkHelper.GenerativeUI.ScaleRow import ScaleRow
+from de_gensyn_HomeAssistantPlugin.actions.cores.base_core.base_core import requires_initialization
 from de_gensyn_HomeAssistantPlugin.actions.cores.customization_core.customization_core import CustomizationCore
 from de_gensyn_HomeAssistantPlugin.actions.show_icon import icon_const, icon_helper
 from de_gensyn_HomeAssistantPlugin.actions.show_icon.icon_customization import IconCustomization
@@ -68,13 +69,11 @@ class ShowIcon(CustomizationCore):
             can_reset=False, complex_var_name=True
         )
 
+    @requires_initialization
     def _set_enabled_disabled(self) -> None:
         """
         Set the active/inactive state for all rows.
         """
-        if not self.initialized:
-            return
-
         super()._set_enabled_disabled()
 
         domain = self.settings.get_domain()

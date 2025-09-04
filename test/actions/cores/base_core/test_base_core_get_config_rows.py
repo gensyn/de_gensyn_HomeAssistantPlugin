@@ -20,6 +20,3 @@ class TestBaseCoreGetConfigRows(unittest.TestCase):
         instance = BaseCore(Mock(), True)
         self.assertRaises(NotImplementedError, instance.get_config_rows)
 
-
-if __name__ == '__main__':
-    unittest.main()

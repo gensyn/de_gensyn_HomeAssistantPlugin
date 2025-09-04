@@ -110,6 +110,3 @@ class TestCustomizationSettings(unittest.TestCase):
         )
         self.settings._action.set_settings.assert_called_once_with(expected)
         mock_cust.export.assert_called_once()
-
-if __name__ == "__main__":
-    unittest.main()

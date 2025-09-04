@@ -19,7 +19,3 @@ class TestBackendSetConnectionStatusCallback(unittest.TestCase):
         instance.set_connection_status_callback(lambda: backend_const.FIELD_SUCCESS)
 
         self.assertEqual(backend_const.FIELD_SUCCESS, instance._connection_status_callback())
-
-
-if __name__ == '__main__':
-    unittest.main()

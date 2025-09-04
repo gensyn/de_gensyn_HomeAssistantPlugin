@@ -123,6 +123,3 @@ class TestPerformActionSettingsInit(unittest.TestCase):
         self.assertEqual(expected_settings_reset, instance._action.get_settings())
         action_mock.set_settings.assert_called_once_with(expected_settings_reset)
 
-
-if __name__ == '__main__':
-    unittest.main()

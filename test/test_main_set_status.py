@@ -39,6 +39,3 @@ class TestMainSetStatus(unittest.TestCase):
 
         idle_add_mock.assert_called_once_with(set_text_mock, const.HOME_ASSISTANT)
 
-
-if __name__ == '__main__':
-    unittest.main()

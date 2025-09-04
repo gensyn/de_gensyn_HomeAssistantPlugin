@@ -21,6 +21,3 @@ class TestBackendAddActionReadyCallback(unittest.TestCase):
 
         self.assertEqual({"123", "321"}, instance._action_ready_callbacks)
 
-
-if __name__ == '__main__':
-    unittest.main()

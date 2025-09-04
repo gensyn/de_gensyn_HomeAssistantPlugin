@@ -60,6 +60,3 @@ class TestBackendLoadEntities(unittest.TestCase):
         send_and_recv_mock.assert_called_once_with(backend_const.GET_STATES)
         self.assertEqual(expected_entities, instance._entities)
 
-
-if __name__ == '__main__':
-    unittest.main()

@@ -53,6 +53,3 @@ class TestPerformActionOnReady(unittest.TestCase):
         reload_mock.assert_called_once()
         self.assertTrue(instance.initialized)
 
-
-if __name__ == '__main__':
-    unittest.main()

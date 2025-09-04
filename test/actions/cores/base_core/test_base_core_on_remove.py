@@ -54,6 +54,3 @@ class TestBaseCoreOnRemove(unittest.TestCase):
         instance.plugin_base.backend.remove_tracked_entity.assert_called_once_with("entity", instance.refresh)
         refresh_mock.assert_called_once()
 
-
-if __name__ == '__main__':
-    unittest.main()

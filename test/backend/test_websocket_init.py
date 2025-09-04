@@ -37,6 +37,3 @@ class TestWebsocketInit(unittest.TestCase):
                                                    on_error=_on_error,
                                                    on_close=on_close_mock)
 
-
-if __name__ == '__main__':
-    unittest.main()

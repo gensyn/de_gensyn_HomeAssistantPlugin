@@ -28,6 +28,3 @@ class TestPerformActionGetDomains(unittest.TestCase):
         self.assertEqual(result, ['light', 'switch', 'media_player'])
         plugin_base_mock.backend.get_domains_for_actions.assert_called_once()
 
-
-if __name__ == '__main__':
-    unittest.main()

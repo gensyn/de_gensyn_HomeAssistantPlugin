@@ -60,6 +60,3 @@ class TestBackendLoadActions(unittest.TestCase):
 
         self.assertEqual(actions, instance._actions)
 
-
-if __name__ == '__main__':
-    unittest.main()

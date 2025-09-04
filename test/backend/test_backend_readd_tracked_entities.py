@@ -60,6 +60,3 @@ class TestBackendReaddTrackedEntities(unittest.TestCase):
         self.assertEqual(set(), entities["domain1"]["domain1.entity2"][backend_const.ACTIONS])
         self.assertEqual(set(), entities["domain2"]["domain2.entity3"][backend_const.ACTIONS])
 
-
-if __name__ == '__main__':
-    unittest.main()

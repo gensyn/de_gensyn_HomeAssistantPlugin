@@ -21,6 +21,3 @@ class TestBaseCoreGetGenerativeUi(unittest.TestCase):
         result = instance.get_generative_ui()
         self.assertEqual([], result)
 
-
-if __name__ == '__main__':
-    unittest.main()

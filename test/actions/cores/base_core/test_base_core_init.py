@@ -33,6 +33,3 @@ class TestBaseCoreInit(unittest.TestCase):
         create_ui_elements_mock.assert_called_once()
         create_event_assigner_mock.assert_called_once()
 
-
-if __name__ == '__main__':
-    unittest.main()

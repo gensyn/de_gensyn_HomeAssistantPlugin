@@ -51,7 +51,3 @@ class TestShowIconSettings(unittest.TestCase):
         sis = icon_settings.ShowIconSettings(self.action)
         self.assertEqual(sis.get_scale(), 99)
         self.assertEqual(sis.get_opacity(), 56)
-
-
-if __name__ == "__main__":
-    unittest.main()

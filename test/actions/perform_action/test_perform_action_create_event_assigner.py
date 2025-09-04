@@ -28,6 +28,3 @@ class TestPerformActionCreateEventAssigner(unittest.TestCase):
                                                     default_events=[Input.Key.Events.DOWN],
                                                     callback=instance._perform_action)
 
-
-if __name__ == '__main__':
-    unittest.main()

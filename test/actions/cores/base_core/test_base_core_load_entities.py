@@ -75,6 +75,3 @@ class TestBaseCoreLoadEntities(unittest.TestCase):
         instance.plugin_base.backend.get_entities.assert_called_once_with(domain)
         entity_combo_mock.populate.assert_called_once_with(entities_sorted, entity, trigger_callback=False)
 
-
-if __name__ == '__main__':
-    unittest.main()

@@ -33,6 +33,3 @@ class TestBackendDisconnect(unittest.TestCase):
         self.assertIsNone(instance._websocket)
         callback_mock.assert_called_once_with(backend_const.NOT_CONNECTED)
 
-
-if __name__ == '__main__':
-    unittest.main()

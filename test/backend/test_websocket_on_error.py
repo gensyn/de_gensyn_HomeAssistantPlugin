@@ -18,6 +18,3 @@ class TestWebsocketOnError(unittest.TestCase):
         _on_error(None, error)
         log_mock.assert_called_once_with(backend_const.ERROR_GENERIC.format(error))
 
-
-if __name__ == '__main__':
-    unittest.main()

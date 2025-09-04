@@ -284,8 +284,8 @@ class TextWindow(CustomizationWindow):
             self.current.get_line_break() or text_const.DEFAULT_UNIT_LINE_BREAK)
         self.check_line_break.set_active(self.current.get_line_break() is not None)
 
-    def _on_add_button(self, _) -> None:
-        if not super()._on_add_button(_):
+    def on_add_button(self, *args, **kwargs) -> None:
+        if not super().on_add_button():
             return
 
         if self.check_position.get_active() and self.position.get_selected() < 0:

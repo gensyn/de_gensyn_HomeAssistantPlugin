@@ -74,6 +74,3 @@ class TestBaseCoreOnReady(unittest.TestCase):
         load_entities_mock.assert_called_once()
         load_domains_mock.assert_called_once()
 
-
-if __name__ == '__main__':
-    unittest.main()

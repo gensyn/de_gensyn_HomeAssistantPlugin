@@ -58,6 +58,3 @@ class TestCustomizationHelper(unittest.TestCase):
         self.assertEqual(customization_helper.convert_color_list_to_hex((16, 32, 48, 255)), "#102030")
         # Ensure rounding works
         self.assertEqual(customization_helper.convert_color_list_to_hex((254.9, 128.7, 64.2, 0)), "#FE8040")
-
-if __name__ == "__main__":
-    unittest.main()

@@ -29,6 +29,3 @@ class TestBaseCoreReload(unittest.TestCase):
         set_enabled_disabled_mock.assert_called_once()
         refresh_mock.assert_called_once()
 
-
-if __name__ == '__main__':
-    unittest.main()

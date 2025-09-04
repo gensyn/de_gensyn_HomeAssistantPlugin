@@ -35,6 +35,3 @@ class TestWebsocketGetFieldFromMessage(unittest.TestCase):
 
         self.assertEqual(state_result, result)
 
-
-if __name__ == '__main__':
-    unittest.main()

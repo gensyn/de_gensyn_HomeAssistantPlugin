@@ -60,6 +60,3 @@ class TestMainReloadSettings(unittest.TestCase):
         set_token_mock.assert_called_once_with(token)
         connect_mock.assert_called_once()
 
-
-if __name__ == '__main__':
-    unittest.main()

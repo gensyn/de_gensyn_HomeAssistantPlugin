@@ -21,6 +21,3 @@ class TestBaseCoreCreateEventAssigner(unittest.TestCase):
             instance = BaseCore(Mock(), True)
         instance._create_event_assigner()
 
-
-if __name__ == '__main__':
-    unittest.main()

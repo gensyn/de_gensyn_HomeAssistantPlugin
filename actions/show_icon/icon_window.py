@@ -130,8 +130,8 @@ class IconWindow(CustomizationWindow):
         self.opacity_entry.set_text(
             str(int(self.current.get_opacity() or icon_const.DEFAULT_ICON_OPACITY)))
 
-    def _on_add_button(self, _):
-        if not super()._on_add_button(_):
+    def on_add_button(self, *args, **kwargs) -> None:
+        if not super().on_add_button():
             return
 
         if self.check_icon.get_active():
@@ -139,16 +139,6 @@ class IconWindow(CustomizationWindow):
 
             if icon.startswith("mdi:"):
                 icon = icon[4:]
-
-            if self.operator.get_selected_item().value in (
-                    "<", "<=", ">", ">="):
-                # expecting a number in value
-                try:
-                    float(self.entry_value.get_text())
-                except ValueError:
-                    self.operator.add_css_class(icon_const.ERROR)
-                    self.entry_value.add_css_class(icon_const.ERROR)
-                    return
 
             if icon not in self.icons:
                 self.icon.add_css_class(icon_const.ERROR)

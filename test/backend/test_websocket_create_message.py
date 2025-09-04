@@ -21,6 +21,3 @@ class TestWebsocketCreateMessage(unittest.TestCase):
         self.assertEqual(message_id + 1, result[backend_const.ID])
         self.assertEqual(backend_const.GET_CONFIG, result[backend_const.FIELD_TYPE])
 
-
-if __name__ == '__main__':
-    unittest.main()

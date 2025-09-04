@@ -33,6 +33,3 @@ class TestBackendInitAndSetters(unittest.TestCase):
         self.assertFalse(instance._verify_certificate)
         self.assertEqual("cba", instance._token)
 
-
-if __name__ == '__main__':
-    unittest.main()

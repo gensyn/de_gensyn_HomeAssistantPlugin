@@ -24,6 +24,3 @@ class TestWebsocketOnClose(unittest.TestCase):
         self.assertFalse(instance.connected)
         on_close_callback_mock.assert_called_once()
 
-
-if __name__ == '__main__':
-    unittest.main()
