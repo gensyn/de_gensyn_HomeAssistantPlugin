@@ -23,17 +23,6 @@ class ShowIcon(CustomizationCore):
         super().__init__(window_implementation=IconWindow, customization_implementation=IconCustomization,
                          row_implementation=IconRow, settings_implementation=ShowIconSettings, track_entity=True, *args, **kwargs)
 
-    def on_ready(self) -> None:
-        """Set up action when StreamController has finished loading."""
-        super().on_ready()
-
-        if not self.plugin_base.backend.is_connected():
-            self.refresh()
-            return
-
-        self.initialized = True
-        self._reload()
-
     def get_config_rows(self) -> List:
         """Get the rows to be displayed in the UI."""
         return [self.domain_combo.widget, self.entity_combo.widget, self.icon.widget, self.color.widget,

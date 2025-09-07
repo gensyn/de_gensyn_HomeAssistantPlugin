@@ -14,7 +14,7 @@ from de_gensyn_HomeAssistantPlugin.actions.show_icon.icon_customization import I
 class TestIconWindow(unittest.TestCase):
 
     @patch(
-        'de_gensyn_HomeAssistantPlugin.actions.cores.customization_core.customization_window.CustomizationWindow.__init__',
+        'de_gensyn_HomeAssistantPlugin.actions.show_icon.icon_window.CustomizationWindow.__init__',
         autospec=True)
     @patch.object(IconWindow, "set_title")
     @patch.object(IconWindow, "_after_init")
@@ -55,7 +55,7 @@ class TestIconWindow(unittest.TestCase):
         after_init_mock.assert_called_once()
 
     @patch(
-        'de_gensyn_HomeAssistantPlugin.actions.cores.customization_core.customization_window.CustomizationWindow._set_default_values')
+        'de_gensyn_HomeAssistantPlugin.actions.show_icon.icon_window.CustomizationWindow._set_default_values')
     def test_set_default_values(self, super_set_default_values_mock):
         instance = IconWindow.__new__(IconWindow)
         instance.color = Mock()

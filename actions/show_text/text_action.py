@@ -27,17 +27,6 @@ class ShowText(CustomizationCore):
         super().__init__(window_implementation=TextWindow, customization_implementation=TextCustomization,
                          row_implementation=TextRow, settings_implementation=ShowTextSettings, track_entity=True, *args, **kwargs)
 
-    def on_ready(self) -> None:
-        """Set up action when StreamController has finished loading."""
-        super().on_ready()
-
-        if not self.plugin_base.backend.is_connected():
-            self.refresh()
-            return
-
-        self.initialized = True
-        self._reload()
-
     def get_config_rows(self) -> List:
         """Get the rows to be displayed in the UI."""
         return [self.domain_combo.widget, self.entity_combo.widget, self.position.widget, self.attribute.widget,
@@ -56,14 +45,14 @@ class ShowText(CustomizationCore):
 
         self.position: ComboRow = ComboRow(
             self, text_const.SETTING_TEXT_POSITION, text_const.POSITION_CENTER,
-            text_position_model, text_const.LABEL_POSITION,
+            text_position_model, title=text_const.LABEL_POSITION,
             on_change=self._reload, can_reset=False, complex_var_name=True
         )
 
         # Text attribute
         self.attribute: ComboRow = ComboRow(
             self, text_const.SETTING_TEXT_ATTRIBUTE, text_const.DEFAULT_ATTRIBUTE,
-            [], text_const.LABEL_ATTRIBUTE, on_change=self._reload,
+            [], title=text_const.LABEL_ATTRIBUTE, on_change=self._reload,
             can_reset=False, complex_var_name=True
         )
 
@@ -175,7 +164,7 @@ class ShowText(CustomizationCore):
             self.position.widget.set_sensitive(True)
             self.position.widget.set_subtitle(text_const.EMPTY_STRING)
 
-            self.attribute.set_sensitive(self.attribute.get_item_amount() > 1)
+            self.attribute.widget.set_sensitive(self.attribute.get_item_amount() > 1)
             self.attribute.widget.set_subtitle(text_const.EMPTY_STRING)
 
             self.round.widget.set_sensitive(True)
@@ -270,7 +259,6 @@ class ShowText(CustomizationCore):
             state = self.plugin_base.backend.get_entity(entity)
 
         if state is None:
-            self.set_media()
             return
 
         text, position, text_size, text_color, outline_size, outline_color = text_helper.get_text(

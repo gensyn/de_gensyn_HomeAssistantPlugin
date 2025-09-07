@@ -19,7 +19,7 @@ class TextRow(CustomizationRow):
                  state: Dict, settings: ShowTextSettings):
         super().__init__(lm, customization_count, index, attributes, state, settings)
 
-        current_value = text_helper.get_value(self.state, self.settings, customization)
+        current_value = text_helper.get_value(state, settings, customization)
 
         title = self._init_title(customization, current_value)
 

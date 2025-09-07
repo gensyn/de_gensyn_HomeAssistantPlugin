@@ -33,6 +33,38 @@ class TestCustomizationCore(unittest.TestCase):
         self.assertEqual(instance.customization_implementation, customization_implementation)
         self.assertEqual(instance.row_implementation, row_implementation)
 
+    @patch('de_gensyn_HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore.on_ready')
+    def test_on_ready_not_connected(self, super_on_ready_mock):
+        instance = CustomizationCore.__new__(CustomizationCore)
+        instance.plugin_base = Mock()
+        instance.plugin_base.backend.is_connected.return_value = False
+        instance.refresh = Mock()
+        instance.initialized = False
+        instance._reload = Mock()
+
+        instance.on_ready()
+
+        super_on_ready_mock.assert_called_once()
+        instance.refresh.assert_called_once()
+        self.assertFalse(instance.initialized)
+        instance._reload.assert_not_called()
+
+    @patch('de_gensyn_HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore.on_ready')
+    def test_on_ready_connected(self, super_on_ready_mock):
+        instance = CustomizationCore.__new__(CustomizationCore)
+        instance.plugin_base = Mock()
+        instance.plugin_base.backend.is_connected.return_value = True
+        instance.refresh = Mock()
+        instance.initialized = False
+        instance._reload = Mock()
+
+        instance.on_ready()
+
+        super_on_ready_mock.assert_called_once()
+        instance.refresh.assert_not_called()
+        self.assertTrue(instance.initialized)
+        instance._reload.assert_called_once()
+
     @patch(
         'de_gensyn_HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore._create_ui_elements')
     @patch(

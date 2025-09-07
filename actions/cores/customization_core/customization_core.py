@@ -24,6 +24,17 @@ class CustomizationCore(BaseCore):
         self.customization_implementation = customization_implementation
         self.row_implementation = row_implementation
 
+    def on_ready(self) -> None:
+        """Set up action when StreamController has finished loading."""
+        super().on_ready()
+
+        if not self.plugin_base.backend.is_connected():
+            self.refresh()
+            return
+
+        self.initialized = True
+        self._reload()
+
     def _create_ui_elements(self) -> None:
         """Get all action rows."""
         super()._create_ui_elements()

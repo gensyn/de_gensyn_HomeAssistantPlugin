@@ -21,12 +21,12 @@ class TextWindow(CustomizationWindow):
 
     def __init__(self, lm, attributes: List, callback: Callable,
                  current: TextCustomization = None, index: int = None):
+        # add text_length to attributes
+        attributes.insert(0, text_const.CUSTOM_TEXT_LENGTH)
+
         super().__init__(lm, attributes, callback, current, index)
 
         self.set_title(lm.get(text_const.CUSTOMIZATION_WINDOW_TITLE))
-
-        # add text_length to attributes
-        self.condition_attribute.get_model().insert(0, StringObject.new(text_const.CUSTOM_TEXT_LENGTH))
 
         #
         # check buttons
@@ -182,10 +182,8 @@ class TextWindow(CustomizationWindow):
         self._after_init()
 
     def _on_change_attribute(self, *args, **kwargs) -> None:
-        if self.attribute.get_selected_item().get_string() == text_const.CUSTOM_CUSTOM_TEXT:
-            self.custom_text.set_visible(True)
-            return
-        self.custom_text.set_visible(False)
+        custom_text_visible = self.attribute.get_selected_item().get_string() == text_const.CUSTOM_CUSTOM_TEXT
+        self.custom_text.set_visible(custom_text_visible)
 
     def _set_default_values(self) -> None:
         super()._set_default_values()

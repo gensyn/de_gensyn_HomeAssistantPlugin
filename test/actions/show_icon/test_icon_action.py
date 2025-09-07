@@ -35,38 +35,6 @@ class TestShowIcon(unittest.TestCase):
             **kwargs
         )
 
-    @patch('de_gensyn_HomeAssistantPlugin.actions.show_icon.icon_action.CustomizationCore.on_ready')
-    def test_on_ready_not_connected(self, super_on_ready_mock):
-        instance = ShowIcon.__new__(ShowIcon)
-        instance.plugin_base = Mock()
-        instance.plugin_base.backend.is_connected.return_value = False
-        instance.refresh = Mock()
-        instance.initialized = False
-        instance._reload = Mock()
-
-        instance.on_ready()
-
-        super_on_ready_mock.assert_called_once()
-        instance.refresh.assert_called_once()
-        self.assertFalse(instance.initialized)
-        instance._reload.assert_not_called()
-
-    @patch('de_gensyn_HomeAssistantPlugin.actions.show_icon.icon_action.CustomizationCore.on_ready')
-    def test_on_ready_connected(self, super_on_ready_mock):
-        instance = ShowIcon.__new__(ShowIcon)
-        instance.plugin_base = Mock()
-        instance.plugin_base.backend.is_connected.return_value = True
-        instance.refresh = Mock()
-        instance.initialized = False
-        instance._reload = Mock()
-
-        instance.on_ready()
-
-        super_on_ready_mock.assert_called_once()
-        instance.refresh.assert_not_called()
-        self.assertTrue(instance.initialized)
-        instance._reload.assert_called_once()
-
     def test_get_config_rows(self):
         instance = ShowIcon.__new__(ShowIcon)
         instance.domain_combo = Mock()
@@ -103,9 +71,6 @@ class TestShowIcon(unittest.TestCase):
     def test_create_ui_elements(self, scale_row_mock, color_button_row_mock, entry_row_mock, super_create_ui_elements_mock):
         instance = ShowIcon.__new__(ShowIcon)
         instance._reload = Mock()
-        instance.plugin_base = Mock()
-        instance.plugin_base.backend = Mock()
-        instance.plugin_base.backend.is_connected.return_value = True
 
         instance._create_ui_elements()
 

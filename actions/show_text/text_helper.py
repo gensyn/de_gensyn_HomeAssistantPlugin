@@ -1,11 +1,12 @@
 """
 Module for text related operations.
 """
-import logging
+import logging as log
 from typing import Dict, List, Any
 
-from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction import const
-from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.customization.text_customization import TextCustomization
+from de_gensyn_HomeAssistantPlugin.actions.cores.customization_core import customization_const
+from de_gensyn_HomeAssistantPlugin.actions.show_text import text_const
+from de_gensyn_HomeAssistantPlugin.actions.show_text.text_customization import TextCustomization
 from de_gensyn_HomeAssistantPlugin.actions.show_text.text_settings import ShowTextSettings
 
 
@@ -65,7 +66,7 @@ def get_text(state: Dict, settings: ShowTextSettings, is_connected: bool) -> (st
         try:
             custom_text_value = float(custom_text_value)
         except ValueError:
-            logging.error("Could not convert custom value to float: %s",
+            log.error("Could not convert custom value to float: %s",
                           custom_text_value)
             continue
 
@@ -82,7 +83,7 @@ def get_text(state: Dict, settings: ShowTextSettings, is_connected: bool) -> (st
     # End custom text
     #
 
-    if attribute != const.CUSTOM_TEXT_CUSTOM_TEXT:
+    if attribute != text_const.CUSTOM_CUSTOM_TEXT:
         # get text a second time based on the customizations but only if no custom text is defined
         text = _get_text(state, attribute, text_round, round_precision, show_unit, line_break)
 
@@ -98,34 +99,35 @@ def get_value(state: Dict, settings: ShowTextSettings, customization: TextCustom
     round_precision = settings.get_round_precision()
     show_unit = settings.get_show_unit()
 
-    # get text without line break to calculate the correct length
-    text = _get_text(state, attribute, text_round, round_precision, show_unit, False)
+    customization_attribute = customization.get_attribute()
 
-    if customization.get_attribute() == const.STATE:
-        value = state[const.STATE]
-    elif customization.get_attribute() == const.CUSTOM_TEXT_TEXT_LENGTH:
+    if customization_attribute == text_const.STATE:
+        value = state[text_const.STATE]
+    elif customization_attribute == text_const.CUSTOM_TEXT_LENGTH:
+        # get text without line break to calculate the correct length
+        text = _get_text(state, attribute, text_round, round_precision, show_unit, False)
         value = len(text)
     else:
-        value = state[const.ATTRIBUTES].get(customization.get_attribute())
+        value = state[customization_const.ATTRIBUTES].get(customization_attribute)
 
     return value
 
 
 def _get_text(state: Dict, attribute: str, text_round: bool, round_precision: int, show_unit: bool,
               line_break: bool) -> str:
-    if attribute == const.STATE:
-        text = _round_value(str(state.get(const.STATE)), text_round, round_precision)
+    if attribute == text_const.STATE:
+        text = _round_value(str(state.get(text_const.STATE)), text_round, round_precision)
 
         if show_unit:
-            unit = state.get(const.ATTRIBUTES, {}).get(const.ATTRIBUTE_UNIT_OF_MEASUREMENT,
-                                                       const.EMPTY_STRING)
+            unit = state.get(customization_const.ATTRIBUTES, {}).get(customization_const.UNIT_OF_MEASUREMENT,
+                                                       text_const.EMPTY_STRING)
 
             if line_break:
                 text = f"{text}\n{unit}"
             else:
                 text = f"{text} {unit}"
     else:
-        text = str(state.get(const.ATTRIBUTES, {}).get(attribute, const.EMPTY_STRING))
+        text = str(state.get(customization_const.ATTRIBUTES, {}).get(attribute, text_const.EMPTY_STRING))
         text = _round_value(text, text_round, round_precision)
 
     return text
