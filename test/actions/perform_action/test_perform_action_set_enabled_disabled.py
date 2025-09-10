@@ -15,10 +15,8 @@ from de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action import 
 
 class TestPerformActionSetEnabledDisabled(unittest.TestCase):
 
-    @patch(
-        'de_gensyn_HomeAssistantPlugin.actions.cores.base_core.base_core.log.info')
     @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
-    def test_set_enabled_disabled_not_initialized(self, _, __):
+    def test_set_enabled_disabled_not_initialized(self, _):
         settings_mock = Mock()
         settings_mock.get_domain = Mock(return_value="light")
 
@@ -258,7 +256,7 @@ class TestPerformActionSetEnabledDisabled(unittest.TestCase):
         settings_mock.get_action.assert_called_once()
         domain_combo_mock.get_selected_item.assert_called_once()
         plugin_base_mock.backend.get_actions.assert_called_once_with(domain_combo_mock.get_selected_item.return_value)
-        entity_combo_mock.widget.set_sensitive.assert_called_once_with(False)
+        entity_combo_mock.widget.set_sensitive.assert_called_once_with(True)
 
     @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
     def test_set_enabled_disabled_parameters_target_two_entities(self, _):

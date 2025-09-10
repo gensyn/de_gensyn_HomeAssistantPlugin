@@ -30,8 +30,8 @@ class TestPerformActionOnReady(unittest.TestCase):
         instance.on_ready()
 
         on_ready_mock.assert_called_once()
-        load_actions_mock.assert_not_called()
-        reload_mock.assert_not_called()
+        load_actions_mock.assert_called_once()
+        reload_mock.assert_called_once()
 
     @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
     @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.on_ready')
@@ -51,5 +51,4 @@ class TestPerformActionOnReady(unittest.TestCase):
         on_ready_mock.assert_called_once()
         load_actions_mock.assert_called_once()
         reload_mock.assert_called_once()
-        self.assertTrue(instance.initialized)
 

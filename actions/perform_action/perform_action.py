@@ -26,11 +26,7 @@ class PerformAction(BaseCore):
         """Set up action when StreamController has finished loading."""
         super().on_ready()
 
-        if not self.plugin_base.backend.is_connected():
-            return
-
         self._load_actions()
-        self.initialized = True
         self._reload()
 
     @requires_initialization
@@ -169,7 +165,7 @@ class PerformAction(BaseCore):
                 str(self.domain_combo.get_selected_item())
             )
             has_target = bool(actions.get(action, {}).get(perform_const.TARGET))
-            self.entity_combo.widget.set_sensitive(has_target and self.entity_combo.get_item_amount() > 1)
+            self.entity_combo.widget.set_sensitive(has_target)
 
     @requires_initialization
     def _get_domains(self) -> List[str]:

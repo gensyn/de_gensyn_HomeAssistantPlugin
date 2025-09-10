@@ -32,7 +32,6 @@ class CustomizationCore(BaseCore):
             self.refresh()
             return
 
-        self.initialized = True
         self._reload()
 
     def _create_ui_elements(self) -> None:

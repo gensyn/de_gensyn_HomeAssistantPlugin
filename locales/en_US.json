@@ -14,8 +14,8 @@
     "actions.home_assistant.entity.domain.label": "Domain:",
     "actions.home_assistant.entity.entity.label": "Entity:",
 
-    "actions.home_assistant.service.call_service.label": "Call service:",
-    "actions.home_assistant.service.service.label": "Service:",
+    "actions.home_assistant.service.call_service.label": "Perform action:",
+    "actions.home_assistant.service.service.label": "Action:",
     "actions.home_assistant.service.no_domain.label": "No domain selected",
     "actions.home_assistant.service.no_entity.label": "No entity selected",
     "actions.home_assistant.service.no_services.label": "The selected domain provides no services",

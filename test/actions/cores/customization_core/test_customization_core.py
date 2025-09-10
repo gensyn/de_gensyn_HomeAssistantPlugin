@@ -62,7 +62,6 @@ class TestCustomizationCore(unittest.TestCase):
 
         super_on_ready_mock.assert_called_once()
         instance.refresh.assert_not_called()
-        self.assertTrue(instance.initialized)
         instance._reload.assert_called_once()
 
     @patch(

@@ -14,15 +14,13 @@ from de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action import 
 
 class TestPerformActionOnChangeDomain(unittest.TestCase):
 
-    @patch(
-        'de_gensyn_HomeAssistantPlugin.actions.cores.base_core.base_core.log.info')
     @patch('de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
     @patch(
         'de_gensyn_HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore._on_change_domain')
     @patch.object(PerformAction, '_load_actions')
     @patch.object(PerformAction, '_set_enabled_disabled')
     def test_on_change_domain_not_initialized(self, set_enabled_disabled_mock, load_actions_mock, on_change_domain_mock,
-                                              _, __):
+                                              _):
         new_domain = 'light'
         old_domain = 'switch'
 
@@ -87,4 +85,3 @@ class TestPerformActionOnChangeDomain(unittest.TestCase):
         on_change_domain_mock.assert_called_once_with(None, new_domain, old_domain)
         load_actions_mock.assert_called_once()
         set_enabled_disabled_mock.assert_called_once()
-

@@ -1,23 +1,16 @@
 """The module for the Home Assistant action that is loaded in StreamController."""
 
-from typing import List, Optional
-
-import gi
-
-from loguru import logger as log
-
-from src.backend.PluginManager.ActionCore import ActionCore
+from typing import List
 
 from GtkHelper.GenerativeUI.ComboRow import ComboRow
 from de_gensyn_HomeAssistantPlugin.actions import const
-from de_gensyn_HomeAssistantPlugin.actions.cores.base_core.base_settings import BaseSettings
+from src.backend.PluginManager.ActionCore import ActionCore
 
 
 def requires_initialization(func):
     def wrapper(self, *args, **kwargs):
         if not getattr(self, 'initialized', False):
-            log.info(f"Skipping {func.__name__} because the object is not initialized.")
-            return None  # or another default value
+            return None
         return func(self, *args, **kwargs)
     return wrapper
 
@@ -39,6 +32,7 @@ class BaseCore(ActionCore):
     def on_ready(self) -> None:
         """Set up action when StreamController has finished loading."""
         self.settings = self.settings_implementation(self)
+        self.initialized = True
 
         self.plugin_base.backend.add_action_ready_callback(self.on_ready)
 
@@ -151,7 +145,7 @@ class BaseCore(ActionCore):
         """Load entities from Home Assistant."""
         entity = self.settings.get_entity()
         entities = self.plugin_base.backend.get_entities(
-                str(self.domain_combo.get_selected_item())
+            str(self.domain_combo.get_selected_item())
         )
         if entity not in entities:
             entities.append(entity)
@@ -163,9 +157,7 @@ class BaseCore(ActionCore):
         """Set the active/inactive state for all rows."""
         domain = self.settings.get_domain()
         is_domain_set = bool(domain)
-        self.entity_combo.set_sensitive(
-            is_domain_set and self.entity_combo.get_item_amount() > 1
-        )
+        self.entity_combo.set_sensitive(is_domain_set)
 
     def _get_domains(self) -> List[str]:
         """Get the domains available in Home Assistant."""

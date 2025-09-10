@@ -14,11 +14,9 @@ from de_gensyn_HomeAssistantPlugin.actions.cores.base_core.base_core import Base
 
 class TestBaseCoreRefresh(unittest.TestCase):
 
-    @patch(
-        'de_gensyn_HomeAssistantPlugin.actions.cores.base_core.base_core.log.info')
     @patch.object(BaseCore, "_create_ui_elements")
     @patch.object(BaseCore, "_create_event_assigner")
-    def test_refresh_success(self, _, __, ___):
+    def test_refresh_success(self, _, __):
         # This test checks if the _entity_updated method can be called without errors
         instance = BaseCore(Mock(), True)
         instance.initialized = True

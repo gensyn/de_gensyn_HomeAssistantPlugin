@@ -14,11 +14,9 @@ from de_gensyn_HomeAssistantPlugin.actions.cores.base_core.base_core import Base
 
 class TestBaseCoreSetEnabledDisabled(unittest.TestCase):
 
-    @patch(
-        'de_gensyn_HomeAssistantPlugin.actions.cores.base_core.base_core.log.info')
     @patch.object(BaseCore, "_create_ui_elements")
     @patch.object(BaseCore, "_create_event_assigner")
-    def test_set_enabled_disabled_not_initialized(self, _, __, ___):
+    def test_set_enabled_disabled_not_initialized(self, _, __):
         settings_mock = Mock()
         settings_mock.load = Mock()
         settings_mock.get_domain = Mock(return_value="light")
@@ -58,7 +56,7 @@ class TestBaseCoreSetEnabledDisabled(unittest.TestCase):
 
     @patch.object(BaseCore, "_create_ui_elements")
     @patch.object(BaseCore, "_create_event_assigner")
-    def test_set_enabled_disabled_only_one_entity(self, _, __):
+    def test_set_enabled_enabled_only_one_entity(self, _, __):
         settings_mock = Mock()
         settings_mock.get_domain = Mock(return_value="light")
 
@@ -73,7 +71,7 @@ class TestBaseCoreSetEnabledDisabled(unittest.TestCase):
         instance._set_enabled_disabled()
 
         settings_mock.get_domain.assert_called_once()
-        entity_combo_mock.set_sensitive.assert_called_once_with(False)
+        entity_combo_mock.set_sensitive.assert_called_once_with(True)
 
     @patch.object(BaseCore, "_create_ui_elements")
     @patch.object(BaseCore, "_create_event_assigner")
