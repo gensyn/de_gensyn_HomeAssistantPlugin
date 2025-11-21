@@ -1,5 +1,7 @@
+# This version of the plugin is deprecated. Please use the new [HomeAssistantPlugin](https://github.com/gensyn/HomeAssistantPlugin).
+
 # HomeAssistantPlugin for [StreamController](https://github.com/StreamController/StreamController)
-Control your Home Assistant instance from your StreamDeck
+Control your Home Assistant instance from your StreamDeck.
 
 __This is no official plugin - I have no affiliation with Home Assistant, StreamDeck or StreamController.__
 
