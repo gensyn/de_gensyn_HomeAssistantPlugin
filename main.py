@@ -25,7 +25,7 @@ from de_gensyn_HomeAssistantPlugin.actions.HomeAssistantAction.home_assistant_ac
 from de_gensyn_HomeAssistantPlugin.backend.home_assistant import HomeAssistantBackend
 
 
-class HomeAssistant(PluginBase):  # pylint: disable=too-few-public-methods
+class HomeAssistantDeprecated(PluginBase):  # pylint: disable=too-few-public-methods
     """The plugin class to be loaded by Stream Controller. Manages the credentials."""
     host_entry: EntryRow
     port_entry: EntryRow

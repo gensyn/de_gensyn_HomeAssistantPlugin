@@ -3,7 +3,7 @@ Constants for the Home Assistant plugin.
 """
 
 EMPTY_STRING = ""
-HOME_ASSISTANT = "Home Assistant"
+HOME_ASSISTANT = "Home Assistant (deprecated)"
 ERROR = "error"
 
 # BASE

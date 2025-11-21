@@ -2,14 +2,14 @@
     "version": "1.0.3",
     "thumbnail": "assets/homeassistant.png",
     "id": "de_gensyn_HomeAssistantPlugin",
-    "name": "Home Assistant",
+    "name": "Home Assistant (deprecated)",
     "descriptions": {
-        "en_US": "Control your Home Assistant instance from your StreamDeck.",
-        "de_DE": "Steuere dein Home Assistant von deinem StreamDeck aus"
+        "en_US": "(Deprecated) Control your Home Assistant instance from your StreamDeck.",
+        "de_DE": "(Veraltet) Steuere dein Home Assistant von deinem StreamDeck aus"
     },
     "short-descriptions": {
-        "en_US": "Control Home Assistant",
-        "de_DE": "Steuere Home Assistant"
+        "en_US": "Control Home Assistant. This plugin is deprecated, please use the new Home Assistant plugin.",
+        "de_DE": "Steuere Home Assistant. Dieses Plugin ist veraltet, bitte benutze das neue Home Assistant Plugin."
     },
     "tags": ["Utilities"],
     "minimum-app-version": "1.0.2",
